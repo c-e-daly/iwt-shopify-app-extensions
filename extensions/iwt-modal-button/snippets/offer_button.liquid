@@ -1,0 +1,48 @@
+<!-- offer_button.liquid -->
+{{ 'styles.css' | asset_url | stylesheet_tag }}
+
+{% assign default_variant = product.variants.first.id %}
+{% assign isdefault = product.has_only_default_variant %}
+{% assign pagetemplate = template %}
+
+
+
+  <button 
+    id="iwt-modal-offer-button"
+    class="iwtOfferButton"
+    onclick="openOfferModal({  isdefault: '{{ isdefault }}', default_variantID: '{{ default_variant}}', template: '{{ pagetemplate }}'})">
+    Wanna Make a Deal?
+    <img src="{{ 'iwtlogoicon.png' | asset_url }}" class="iwtLogoIcon" width="35" height="35"> 
+  </button>
+
+
+{% style %}
+.iwtOfferButton {
+    display:flex !important;
+    justify-content:space-evenly !important;
+    align-items:center !important;
+    text-align: center !important;
+    bottom:0;
+    width:100% !important;
+    height:auto !important;
+    font-size: 16px !important;
+    color: #fff !important;
+    background-color:#0442bf !important;
+    border: solid 1px #fff !important;
+    border-radius: 10px !important;
+    transition: all ease .5s;
+    padding:14px 0px 14px 0px !important;
+}
+
+.iwtOfferButton:hover {
+    background-color: #FFFFFF !important;
+    color: #0442bf !important;
+    border-color: #0442bf !important;
+    border: solid 2px #0442bf !important;
+}
+
+.iwtLogoIcon{
+  width: 35px !important;
+}
+
+{% endstyle %}

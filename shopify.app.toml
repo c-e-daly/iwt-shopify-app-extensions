@@ -1,0 +1,26 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "61b36a57ba82c920e1c9ca04d6595cad"
+name = "development"
+handle = "development-43"
+application_url = "https://iwt-shopify--development.gadget.app/api/shopify/install-or-render"
+embedded = true
+
+[build]
+dev_store_url = "iwanttthat.myshopify.com"
+include_config_on_deploy = true
+
+[auth]
+redirect_urls = [
+  "https://iwt-shopify--development.gadget.app/api/connections/auth/shopify/callback"
+]
+
+[webhooks]
+api_version = "2024-04"
+
+  [[webhooks.subscriptions]]
+  uri = "https://iwt-shopify-app--development.gadget.app/api/webhooks/shopify"
+  compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+
+[pos]
+embedded = false

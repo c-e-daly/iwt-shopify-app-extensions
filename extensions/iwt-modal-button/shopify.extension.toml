@@ -1,0 +1,13 @@
+
+
+api_version = "2024-04"
+
+[[extensions]]
+name = "iwt-modal-button"
+description = "Make an Offer Button"
+handle = "iwt-modal-button"
+type = "theme"
+
+[extensions.capabilities]
+  api_access = true
+

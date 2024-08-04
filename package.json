@@ -1,0 +1,67 @@
+{
+  "name": "iwt-shopify-app-extensions",
+  "version": "0.1.0",
+  "description": "IWT Shopify App Extensions",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "build:iwt-modal-button": "babel extensions/iwt-modal-button --out-dir extensions/iwt-modal-button/assets"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.10.4",
+    "@gadget-client/iwt-shopify-app": "file:.gadget/client",
+    "@gadgetinc/react": "^0.15.7",
+    "@gadgetinc/react-shopify-app-bridge": "^0.15.2",
+    "@shopify/app-bridge-react": "^4.1.3",
+    "@shopify/cli": "^3.60.1",
+    "@shopify/polaris": "^13.4.0",
+    "@shopify/polaris-icons": "^8.1.0",
+    "@shopify/ui-extensions": "2024.4.x",
+    "@shopify/ui-extensions-react": "2024.4.x",
+    "@urql/core": "^5.0.0",
+    "gadget-server": "file:.gadget/server",
+    "graphql": "^16.8.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.51.4",
+    "react-reconciler": "^0.29.2",
+    "react-router-dom": "6.15.0",
+    "shopify-api-node": "^3.12.6",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-merge": "^5.10.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.24.6",
+    "@babel/core": "^7.24.6",
+    "@babel/preset-env": "^7.24.6",
+    "@babel/preset-react": "^7.24.6",
+    "@types/node": "^20.8.4",
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
+    "@vitejs/plugin-react": "^4.3.0",
+    "@vitejs/plugin-react-swc": "3.2.0",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "@urql/core": "^5.0.0",
+    "graphql": "^16.8.1"
+  },
+  "resolutions": {
+    "strip-ansi": "^6.0.1",
+    "string-width": "^4.2.3"
+  },
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/c-e-daly/iwt-shopify-app-extensions.git"
+  },
+  "author": "Chris D <127351760+c-e-daly@users.noreply.github.com>",
+  "bugs": {
+    "url": "https://github.com/c-e-daly/iwt-shopify-app-extensions/issues"
+  },
+  "homepage": "https://github.com/c-e-daly/iwt-shopify-app-extensions#readme"
+}
