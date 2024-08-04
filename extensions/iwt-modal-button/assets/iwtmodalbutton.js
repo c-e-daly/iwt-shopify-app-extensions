@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
   
-    let tableContent = '<table><thead><tr>';
+    let tableContent = '<table><thead class="table-header"><tr>';
     const allowedKeys = ['sku', 'product_title', 'quantity', 'price'];
     const labels = {
       sku: 'SKU',
@@ -226,31 +226,35 @@ document.addEventListener('DOMContentLoaded', () => {
       tableContent += `<th>${labels[key]}</th>`;
     });
   
-    tableContent += `<th>${labels.line_price}</th><th>Actions</th></tr></thead><tbody>`;
+    tableContent += `<th>${labels.line_price}</th></tr></thead><tbody>`
   
     let subtotal = 0;
-  
-    cart.items.forEach(item => {
-      tableContent += '<tr>';
-      allowedKeys.forEach(key => {
-        if (key === 'quantity') {
-          tableContent += `<td><input type="number" classe="iwt-input-number" value="${item[key]}" min="1" onchange="updateItemQuantity('${item.key}', this.value)"></td>`;
-        } else {
-          const value = key === 'price' ? formatPrice(item[key]) : item[key];
-          tableContent += `<td>${value || ''}</td>`;
-        }
+
+    cart.items.forEach((item, index) => {
+        const rowColor = index % 2 === 0 ? '#fff' : '#f2f2f2';
+        tableContent += `<tr style="background-color: ${rowColor};">`;
+        allowedKeys.forEach(key => {
+          if (key === 'quantity') {
+            tableContent += `<td><input type="number" class-"iwt-input-number" value="${item[key]}" min="1" onchange="updateItemQuantity('${item.key}', this.value)" style="max-width:50px; border: .5px solid #e6e6e6; background-color: ${rowColor}"></td>`;
+          } else {
+            const value = key === 'price' ? formatPrice(item[key]) : item[key];
+            tableContent += `<td>${value || ''}</td>`;
+          }
+        });
+        const lineTotal = item.price * item.quantity;
+        subtotal += lineTotal;
+        tableContent += `<td>${formatPrice(lineTotal)}</td>`;
+        tableContent += `
+          <td style="background-color: white;">
+            <button class="iwt-remove-item" onclick="removeItemFromCart('${item.key}')" title="Remove item" style="border:none; background-color: ${rowColor}">
+              &cross;
+            </button>
+          </td>
+        `;
+        tableContent += '</tr>';
       });
-      const lineTotal = item.price * item.quantity;
-      subtotal += lineTotal;
-      tableContent += `<td>${formatPrice(lineTotal)}</td>`;
-      tableContent += `
-        <td>
-          <button onclick="removeItemFromCart('${item.key}')" title="Remove item">Remove</button>
-          <img src="{{ 'trashcanicon.png' | asset_url }}" alt="Remove item" width="16" height="16">
-        </td>
-      `;
-      tableContent += '</tr>';
-    });
+    
+
   
     tableContent += `
       </tbody>

@@ -90,8 +90,8 @@
     border-bottom: solid 1px #f2f2f2 !important;
     border-right: solid 1px #f2f2f2 !important;
     border-radius: 7px;
-    width: 75% !important;
-    max-width:400px;
+    min-width: 25px !important;
+    max-width:5%;
     padding: 12px 15px !important;
     background-color: #f8f8f8;
 }
@@ -140,7 +140,8 @@
     border-bottom: .5px solid #0442bf;
     border-collapse: collapse;
     width: 100%;
-    max-width: 800px;
+    max-width: 650px;
+    min-width: 425px;
     table-layout: auto;
     padding: 4px;
 }
@@ -155,6 +156,11 @@
    
 }
 
+.table-header{
+    background-color: #0442bf;
+    border-bottom: .5px solid white;
+}   
+
 .cart-table .tr{
     padding: 2px 3px 2px 3px;
     vertical-align: top;
@@ -164,7 +170,7 @@
 
 .cart-table tr:nth-child(odd){
     background-color: #f2f2f2;
-    border-bottom: .5px solid #0442bf;
+
 }
 cart-table th,
 .cart-table td {
@@ -254,4 +260,12 @@ cart-table th,
       width: 35px !important;
       height: 35px !important;
       vertical-align: text-center;
+    }
+
+    .iwt-remove-item{
+        color: #a40404 !important;
+        font-size: 1em !important;
+        font-weight: bold !important;
+        cursor: pointer !important;
+        text-align: center !important
     }
