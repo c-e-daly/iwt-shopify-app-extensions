@@ -147,9 +147,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
   
+// Function to check the inventory level by variant to assure the product is available
+const fetchInventoryLevel = async (variantId) => {
+    try {
+      const response = await fetch(`/admin/api/2021-01/inventory_levels.json?inventory_item_ids=${variantId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Access-Token': process.env.SHOPIFY-ACCESS-TOKEN // Replace with your actual access token
+        }
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Network response was not ok, status: ${response.status}`);
+      }
+  
+      const inventoryData = await response.json();
+      const inventoryLevel = inventoryData.inventory_levels[0].available;
+      console.log('Inventory level:', inventoryLevel);
+      return inventoryLevel;
+    } catch (error) {
+      console.error('Error fetching inventory level:', error);
+      return null;
+    }
+  };
+  
+
+
   // Function to update item quantity in the cart
   const updateItemQuantity = async (lineItemKey, newQuantity) => {
     try {
+
+    const currentItem = cart.items.find(item => item.key === lineItemKey);
+    if (!currentItem) {
+      throw new Error('Item not found in the cart');
+    }
+
+    // Fetch inventory level for the variant
+    const inventoryLevel = await fetchInventoryLevel(currentItem.variant_id);
+    if (inventoryLevel === null) {
+      throw new Error('Unable to fetch inventory level');
+    }
+
+    // Check if the new quantity is within the available inventory
+    if (newQuantity > inventoryLevel) {
+      alert(`Only ${inventoryLevel} items are available in stock`);
+      return;
+    }
+
       const response = await fetch(`/cart/change.js`, {
         method: 'POST',
         headers: {
@@ -226,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tableContent += `<th>${labels[key]}</th>`;
     });
   
-    tableContent += `<th>${labels.line_price}</th></tr></thead><tbody>`
+    tableContent += `<th>${labels.line_price}</th></tr></thead style="bakcground-color:#0442bfl color:#fff;"><tbody>`
   
     let subtotal = 0;
 

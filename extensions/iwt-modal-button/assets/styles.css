@@ -11,7 +11,7 @@
 
 
 .modal-container{
-    display: block;
+    display: none;
     position: fixed;
     z-index: 999999;
     left: 0;
