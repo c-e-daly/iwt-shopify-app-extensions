@@ -1,3 +1,4 @@
+
 //////// MODAL DEFINITION AND POSITIONING /////////
 document.addEventListener('DOMContentLoaded', () => {
   const modalContainer = document.getElementById('iwt-modal-container');
@@ -21,7 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+
+///////// GLOBAL VARIABLES //////////
 let cart; // Global variable to store cart data
+ // Global variable to store store token
 
 document.addEventListener('DOMContentLoaded', async () => {
   cart = await fetchCart(); // Fetch cart data on page load
@@ -50,14 +54,15 @@ function displayFailModal() {
 }
 
 ///////// OFFER BUILDING AND DATA COLLECTION //////////
-const openOfferModal = async function({ template, isdefault, default_variantID }) {
-  let cartToken, cartDate;
+const openOfferModal = async function({ template, default_variantID, storeUrl}) {
+    const platformToken = fetchStoreToken();
+    let cartToken, cartDate;
 
   if (template === 'cart') {
       cart = await fetchCart();
       console.log('Cart:', cart);
       cartToken = cart.token;
-      cartDate = cart.updated_at;
+      cartDate = cart.created_at;
       console.log(`Cart Token: ${cartToken} || Cart Date: ${cartDate}`);
       renderCartTable(cart);
 
@@ -83,7 +88,7 @@ const openOfferModal = async function({ template, isdefault, default_variantID }
       cart = await fetchCart();
       console.log('Cart:', cart);
       cartToken = cart.token;
-      cartDate = cart.updated_at;
+      cartDate = cart.created_at;
       console.log(`Cart Token: ${cartToken} || Cart Date: ${cartDate}`);
       renderCartTable(cart);
   }
@@ -93,6 +98,37 @@ const openOfferModal = async function({ template, isdefault, default_variantID }
 };
 
 ////////// HELPER FUNCTIONS //////////
+// Function to fetch store token using Supabase REST API
+
+const fetchStoreToken = async (storeUrl) => {
+    try {
+        const response = await fetch('https://anmtrrtrftdsvjsnkbvf.supabase.co/functions/v1/get-authorization', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ storeUrl })
+        });
+  
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+  
+        const data = await response.json();
+  
+        if (!data.platformToken) {
+            throw new Error('Platform token not found');
+        }
+  
+        console.log(data.platformToken);
+        return data.platformToken;
+    } catch (error) {
+        console.error('Error fetching store token:', error);
+        return null;
+    }
+  };
+  
+
 
 // Function to get the variant ID from the URL
 function getVariantFromURL() {
@@ -163,7 +199,7 @@ const fetchInventoryItemData = async (variantId) => {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': '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' // Replace with your actual access token
+        'X-Shopify-Access-Token': platformToken // Replace with your actual access token
       }
     });
 
@@ -191,7 +227,6 @@ const fetchInventoryItemData = async (variantId) => {
 
 
 
-
 // Function to check the inventory level by variant to assure the product is available
 const fetchInventoryLevel = async (inventoryItemId) => {
   console.log(`Fetching inventory level for inventory item ID: ${inventoryItemId}`); // Log the inventory item ID
@@ -200,7 +235,7 @@ const fetchInventoryLevel = async (inventoryItemId) => {
           method: 'GET',
           headers: {
               'Content-Type': 'application/json',
-              'X-Shopify-Access-Token': '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' // Replace with your actual access token
+              'X-Shopify-Access-Token': platformToken // Replace with your actual access token
           }
       });
 
@@ -385,7 +420,7 @@ function formatPrice(cents) {
 // Handle the submission of the offer and process the return data
 const submitButton = document.getElementById('submit-offer-button');
 if (submitButton) {
-  submitButton.onclick = function(event) {
+  submitButton.onclick = async function(event) {
       event.preventDefault();
       const name = document.getElementById('iwt-consumer-name').value;
       const email = document.getElementById('iwt-consumer-email').value;
@@ -401,44 +436,17 @@ if (submitButton) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
               storeUrl: host,
+              platformToken: platformToken,
               consumerEmail: email,
               offerAmount: offer,
               consumerName: name,
               consumerPostalCode: postalCode,
               cartToken: cart.token,
-              cartDate: cart.updated_at,
+              cartDate: cart.created_at,
               offerDate: new Date().toISOString()
           })
       };
 
-      fetch('https://app.iwantthat.io/api/1.1/wf/offer-evaluation', submitOfferOptions)
-          .then(response => {
-              if (response.ok) return response.json();
-              else {
-                  console.log("Error when submitting offer.", response);
-                  throw new Error("Error when sending request: " + response.status);
-              }
-          })
-          .then(response => {
-              console.log(response);
-              if (response.response.hasOwnProperty("offerAccepted") && response.response.offerAccepted) {
-                  console.log("Offer is accepted!");
-                  displaySuccessModal(response.response.abandonedCheckoutUrl, response.response.discount);
-              } else {
-                  console.log("Offer is rejected :(");
-                  displayFailModal();
-              }
-          })
-          .catch(error => {
-              console.log("Caught error", error);
-          });
-  };
-}
-
-// Supabase configuration
-const supabaseUrl = 'https://anmtrrtrftdsvjsnkbvf.supabase.co';
-const supabaseKey = process.env.SUPABASEKEY;
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 const submitOfferToSupabase = async function(event) {
   event.preventDefault(); // Prevent default form submission
@@ -447,6 +455,7 @@ const submitOfferToSupabase = async function(event) {
   const data = {
       iwtToken: iwttoken,
       merchantUrl: host,
+      platformToken: platformToken,
       consumerEmail: email.value,
       offerAmount: offer.value,
       consumerName: name.value,
@@ -482,3 +491,4 @@ const submitOfferToSupabase = async function(event) {
       console.log("Caught error", error);
   }
 };
+  }};

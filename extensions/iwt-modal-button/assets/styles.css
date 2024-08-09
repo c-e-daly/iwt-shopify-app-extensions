@@ -1,14 +1,4 @@
 
-@font-face {
-    font-family: "Inter";
-    src: url('{{ "Inter-VariableFont_slnt,wght.woff2" | asset_url }}') format('woff2');
-}
-
-@font-face {
-    font-family: "Kaushan Script";
-    src: url('{{ "KaushanScript-Regular.woff2" | asset_url }}') format('woff2');
-}
-
 
 .modal-container{
     display: none;
@@ -24,13 +14,13 @@
 .modal-content{
     background-color: #fefefe;
     margin: 10% auto;
-    padding: 20px;
+    padding: 15px;
     border: 1px solid #888;
     width: 60%;
     border-radius: 15px;
     border: 2px solid #0442bf;
     max-width: 650px;
-    min-width: 450px;
+    min-width: 438px;
 }
 
 .modal-content-container{
@@ -63,6 +53,7 @@
     font-weight: 400 !important;
     color: #3e3e3e !important;
     line-height: 1.5em !important;
+    letter-spacing: -.25px !important;
 }
 
 .inputTXT{
@@ -85,20 +76,21 @@
 }
 
 .iwt-input-number{
-    border-left: 3px solid #0442bf !important;
-    border-top: solid 1px #f2f2f2 !important;
-    border-bottom: solid 1px #f2f2f2 !important;
-    border-right: solid 1px #f2f2f2 !important;
-    border-radius: 7px;
-    min-width: 25px !important;
-    max-width:5%;
-    padding: 12px 15px !important;
-    background-color: #f8f8f8;
+    border: none !important;
+    min-width: 50px !important;
+    max-width: 60px;
+    padding: 5px 5px !important;
+    color:#3e3e3e;
+    font-size: 1em !important;
+
 }
 
 .iwt-input-number:focus{
-    background-color: #0442bf;
+    border: none !important;
+    background-color: #8baff6;
     color: #0442bf;
+    font-size: .85em !important;
+    vertical-align: middle !important;
 }
 
 
@@ -125,21 +117,20 @@
     font-family: "Inter";
     font-weight: 400;
     color: #656565;
-    letter-spacing: 1px;
+    letter-spacing: -.25px;
     font-family: 'Inter-regular', sans-serif;
 }
 
-#modal-content-container .cart-table {
+.modal-content-container .cart-table {
     width: 100%;
     background-color:#fff;
-    border: .5px solid #0442bf;
     table-layout: auto;
 }
 
 .cart-table, .cart-table .th, .cart-table .td {
-    border-bottom: .5px solid #0442bf;
     border-collapse: collapse;
     width: 100%;
+    min-width: 100vw;
     max-width: 650px;
     min-width: 425px;
     table-layout: auto;
@@ -150,15 +141,14 @@
     color: #3e3e3e;
     font-family: 'Inter', sans-serif;
     font-size: .5em;
-    font-weight: 400;
+    font-weight: 400 !important;
     text-align: left !important;
     line-height: .5em;
    
 }
 
-.table-header{
-    background-color: #0442bf;
-    border-bottom: .5px solid white;
+.cart-table thead .table-header{
+    background-color: #0442bf !important;
 }   
 
 .cart-table .tr{
@@ -176,9 +166,9 @@ cart-table th,
 .cart-table td {
     color: #3e3e3e;
     font-family: 'Inter', sans-serif; /* Ensure fallback to sans-serif */
-    font-size: 0.8em; /* Adjust the font size as needed */
+    font-size: .9em !important; /* Adjust the font size as needed */
     font-weight: 300;
-    border: 0.5px solid #f2f2f2; /* Fixed border style */
+    letter-spacing: -.25px !important;
     line-height: 1.25em;
     padding: 2px;
     vertical-align: top;
@@ -200,10 +190,39 @@ cart-table th,
     text-align: left;
 }
 
+.cart-table th:nth-child(2),
+.cart-table td:nth-child(2){
+    min-width:40%;
+    max-width:40%;
+    font-size: .85em !important;
+    vertical-align: middle !important;
+}
+
+.cart-table th:nth-child(1),
+.cart-table td:nth-child(1),
+.cart-table th:nth-child(3),
+.cart-table td:nth-child(3),
+.cart-table th:nth-child(4),
+.cart-table td:nth-child(4),
+.cart-table th:nth-child(5),
+.cart-table td:nth-child(5){
+    min-width: 45px !important;
+    max-width: 45px !important;
+    font-size: .85em !important;
+    vertical-align: middle !important;
+}
+
+.cart-table tfoot{
+    font-size: 1em;
+    line-height: 3em;
+    padding: 5px 0px 5px 0px !important;
+}
+
 .cart-table tfoot td {
     text-align: right;
-    font-weight: 700;
+    font-weight: 600;
     color: green;
+    background-color: #f2f2f2 !important;
 
 }
 
@@ -218,7 +237,7 @@ cart-table th,
 
 .tos-font{
     font-family: "Inter" !important;
-    letter-spacing: .75px !important;
+    letter-spacing: .25px !important;
     font-size:10px !important;
     font-weight: 400;
 }
@@ -238,7 +257,8 @@ cart-table th,
     align-items:center !important;
     text-align: center !important;
     bottom:0;
-    width:50% !important;
+    max-width:50% !important;
+    min-width: 250px !important;
     height:auto !important;
     font-size: 16px !important;
     color: #fff !important;

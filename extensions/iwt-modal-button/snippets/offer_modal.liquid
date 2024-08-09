@@ -9,15 +9,15 @@
       <div>
       <img src="{{ 'iwantthatio.png' | asset_url }}" class="iwt-logo" width="100" height="100">
       </div>
-      <h2 class="h2">Welcome to I Want That!</h2>
-      <p class="iwt-paragraph">We help buyers and seller come together to make deals on the things 
+      <h2 class="h2">Welcome to {{shop.name}}</h2>
+      <p class="iwt-paragraph">We help buyers and sellers come together to make deals on the things 
       they want to buy and sell.  No more guessing what discount to offer you.  
       Make your own best offer.  So fill out the form, give us your best shot!</p>
       <table id="iwt-cart-table" class="cart-table">
       </table>
         <form id="iwt-offer-form" class="form-container">
-          <input type="hidden" id="shopURL" name="{{ shop.url }}">
-          <input type="text" placeholder="name" id="iwt-display-name" name="consumer name" class="inputTXT">
+          <input type="hidden" id="iwt-store-url" name="{{ shop.url }}">
+          <input type="text" placeholder="name" id="iwt-consumer-name" name="consumer name" class="inputTXT">
           <input type="text" placeholder="email address" id="iwt-consumer-email" name="consumer email" class="inputTXT">
           <input type="text" placeholder="mobile number" id="iwt-consumer-mobile" name="consumer mobile" class="inputTXT">
           <input type="text" placeholder="postal code" id="iwt-consumer-postal" name="consumer postal" class="inputTXT">

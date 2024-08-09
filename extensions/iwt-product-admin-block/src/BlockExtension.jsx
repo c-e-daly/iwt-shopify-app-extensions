@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { reactExtension, useApi, AdminBlock, BlockStack, Text, Checkbox, Form } from '@shopify/ui-extensions-react/admin';
+import { reactExtension, useApi, AdminBlock, InlineStack, Text, Checkbox, Form } from '@shopify/ui-extensions-react/admin';
 
 const TARGET = 'admin.product-details.block.render';
 
@@ -147,11 +147,11 @@ function App() {
 
   return (
     <AdminBlock title="I Want That! Offer Setup">
-      <BlockStack>
-        <Text fontWeight="bold">
-          Indicate products that are eligible for offers, enabled for product page, or persistent on product pages where eligible (e.g. always visible)
-        </Text>
-        <Form>
+      <Text fontWeight="bold">
+        Indicate products that are eligible for offers, enabled for product page, or 
+        persistent on product pages where eligible (e.g. always visible)
+      </Text>        
+      <InlineStack gap="100">
           <Checkbox
             checked={eligibleIWT}
             label="Eligible for Offers"
@@ -176,8 +176,7 @@ function App() {
               updateMetaobjectField('persistent_for_offers', checked);
             }}
           />
-        </Form>
-      </BlockStack>
+      </InlineStack>
     </AdminBlock>
   );
 }

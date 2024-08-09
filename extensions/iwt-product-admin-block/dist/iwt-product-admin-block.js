@@ -18472,7 +18472,7 @@
   });
 
   // extensions/iwt-product-admin-block/src/BlockExtension.jsx
-  var import_react13 = __toESM(require_react());
+  var import_react12 = __toESM(require_react());
 
   // node_modules/@remote-ui/rpc/build/esm/memory.mjs
   function isBasicObject(value) {
@@ -19175,14 +19175,11 @@
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/AdminBlock/AdminBlock.mjs
   var AdminBlock = createRemoteComponent("AdminBlock");
 
-  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/BlockStack/BlockStack.mjs
-  var BlockStack = createRemoteComponent("BlockStack");
-
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Checkbox/Checkbox.mjs
   var Checkbox = createRemoteComponent("Checkbox");
 
-  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Form/Form.mjs
-  var Form = createRemoteComponent("Form");
+  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/InlineStack/InlineStack.mjs
+  var InlineStack = createRemoteComponent("InlineStack");
 
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Text/Text.mjs
   var Text = createRemoteComponent("Text");
@@ -19487,20 +19484,17 @@
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/AdminBlock/AdminBlock.mjs
   var AdminBlock2 = createRemoteReactComponent(AdminBlock);
 
-  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/BlockStack/BlockStack.mjs
-  var BlockStack2 = createRemoteReactComponent(BlockStack);
-
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Checkbox/Checkbox.mjs
   var Checkbox2 = createRemoteReactComponent(Checkbox);
 
-  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Form/Form.mjs
-  var Form2 = createRemoteReactComponent(Form);
+  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/InlineStack/InlineStack.mjs
+  var InlineStack2 = createRemoteReactComponent(InlineStack);
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Text/Text.mjs
   var Text2 = createRemoteReactComponent(Text);
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/hooks/api.mjs
-  var import_react12 = __toESM(require_react(), 1);
+  var import_react11 = __toESM(require_react(), 1);
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/errors.mjs
   var AdminUIExtensionError = class extends Error {
@@ -19512,7 +19506,7 @@
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/hooks/api.mjs
   function useApi(_target) {
-    const api = (0, import_react12.useContext)(ExtensionApiContext);
+    const api = (0, import_react11.useContext)(ExtensionApiContext);
     if (api == null) {
       throw new AdminUIExtensionError("No extension api found.");
     }
@@ -19525,13 +19519,13 @@
   var BlockExtension_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   function App() {
     const { i18n, data } = useApi(TARGET);
-    const [eligibleIWT, setEligibleIWT] = (0, import_react13.useState)(false);
-    const [enabledIWT, setEnabledIWT] = (0, import_react13.useState)(false);
-    const [persistentIWT, setPersistentIWT] = (0, import_react13.useState)(false);
-    const [productID, setProductID] = (0, import_react13.useState)(null);
-    const [metaobjectID, setMetaobjectID] = (0, import_react13.useState)(null);
-    const [loading, setLoading] = (0, import_react13.useState)(true);
-    (0, import_react13.useEffect)(() => {
+    const [eligibleIWT, setEligibleIWT] = (0, import_react12.useState)(false);
+    const [enabledIWT, setEnabledIWT] = (0, import_react12.useState)(false);
+    const [persistentIWT, setPersistentIWT] = (0, import_react12.useState)(false);
+    const [productID, setProductID] = (0, import_react12.useState)(null);
+    const [metaobjectID, setMetaobjectID] = (0, import_react12.useState)(null);
+    const [loading, setLoading] = (0, import_react12.useState)(true);
+    (0, import_react12.useEffect)(() => {
       const fetchData = () => __async(this, null, function* () {
         var _a;
         try {
@@ -19617,9 +19611,9 @@
     if (loading) {
       return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { children: "Loading..." });
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(AdminBlock2, { title: "I Want That! Offer Setup", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(BlockStack2, { children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(AdminBlock2, { title: "I Want That! Offer Setup", children: [
       /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { fontWeight: "bold", children: "Indicate products that are eligible for offers, enabled for product page, or persistent on product pages where eligible (e.g. always visible)" }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(Form2, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(InlineStack2, { gap: "100", children: [
         /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
           Checkbox2,
           {
@@ -19654,7 +19648,7 @@
           }
         )
       ] })
-    ] }) });
+    ] });
   }
 })();
 //# sourceMappingURL=iwt-product-admin-block.js.map
