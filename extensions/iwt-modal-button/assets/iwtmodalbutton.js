@@ -106,7 +106,7 @@ const fetchStoreToken = async (storeUrl) => {
     try {
         console.log("Sending request with payload:", JSON.stringify({ storeUrl }));
 
-        const response = await fetch('https://anmtrrtrftdsvjsnkbvf.supabase.co/functions/v1/get-authorization', {
+        const response = await fetch('https://anmtrrtrftdsvjsnkbvf.supabase.co/functions/v1/get_authorization', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
