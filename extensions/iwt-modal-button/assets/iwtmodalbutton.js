@@ -57,6 +57,7 @@ function displayFailModal() {
 const openOfferModal = async function({ template, default_variantID, storeUrl}) {
     const platformToken = fetchStoreToken();
     let cartToken, cartDate;
+    console.log('Store URL:', storeUrl);
 
   if (template === 'cart') {
       cart = await fetchCart();
@@ -102,6 +103,8 @@ const openOfferModal = async function({ template, default_variantID, storeUrl}) 
 
 const fetchStoreToken = async (storeUrl) => {
     try {
+        console.log("Sending request with payload:", JSON.stringify({ storeUrl }));
+        
         const response = await fetch('https://anmtrrtrftdsvjsnkbvf.supabase.co/functions/v1/get-authorization', {
             method: 'POST',
             headers: {
@@ -109,7 +112,7 @@ const fetchStoreToken = async (storeUrl) => {
             },
             body: JSON.stringify({ storeUrl })
         });
-  
+
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -121,7 +124,7 @@ const fetchStoreToken = async (storeUrl) => {
         }
   
         console.log(data.platformToken);
-        return data.platformToken;
+        return data.platformToken='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';
     } catch (error) {
         console.error('Error fetching store token:', error);
         return null;
