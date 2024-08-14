@@ -55,9 +55,10 @@ function displayFailModal() {
 
 ///////// OFFER BUILDING AND DATA COLLECTION //////////
 const openOfferModal = async function({ template, default_variantID, storeUrl}) {
-    const platformToken = fetchStoreToken();
-    let cartToken, cartDate;
     console.log('Store URL:', storeUrl);
+    const platformToken = fetchStoreToken(storeUrl);
+    let cartToken, cartDate;
+
 
   if (template === 'cart') {
       cart = await fetchCart();
@@ -104,7 +105,7 @@ const openOfferModal = async function({ template, default_variantID, storeUrl}) 
 const fetchStoreToken = async (storeUrl) => {
     try {
         console.log("Sending request with payload:", JSON.stringify({ storeUrl }));
-        
+
         const response = await fetch('https://anmtrrtrftdsvjsnkbvf.supabase.co/functions/v1/get-authorization', {
             method: 'POST',
             headers: {
