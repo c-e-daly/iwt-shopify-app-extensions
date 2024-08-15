@@ -4,15 +4,16 @@
 
   <div id="iwt-modal-container" class="modal-container">
     <div id="iwt-modal-content" class="modal-content">
-      <span id="iwt-modal-close-btn" class="modal-close-button">&#9447;</span>
     <div id ="iwt-modal-content-container" class="modal-content-container">
-      <div>
+      <div id="iwt-logo-container" class="iwt-logo-container">
       <img src="{{ 'iwantthatio.png' | asset_url }}" class="iwt-logo" width="100" height="100">
+     <span id="iwt-modal-close-btn" class="modal-close-button">&#9447;</span>
       </div>
-      <h2 class="h2">Welcome to {{shop.name}}</h2>
-      <p class="iwt-paragraph">We help buyers and sellers come together to make deals on the things 
-      they want to buy and sell.  No more guessing what discount to offer you.  
-      Make your own best offer.  So fill out the form, give us your best shot!</p>
+      <h2 class="h2">Wanna Make a Deal? </h2>
+      <p class="iwt-paragraph">{{shop.name}} partnered with I Want That! to help you get 
+      the things you want at the price that works for you and works for us.  Shopping should be fun
+      so fill out the form and give us your best shot!
+      </p>
       <table id="iwt-cart-table" class="cart-table">
       </table>
       <div id="iwt-modal-error" style="display:none; color: red;"></div>
@@ -24,11 +25,12 @@
           <input type="text" placeholder="postal code" id="iwt-consumer-postal" name="consumer postal" class="inputTXT">
           <input type="text" placeholder="offer amount" id="iwt-consumer-offer" name="consumer offer" class="inputTXT">      
           <div id="iwt-tos-container" class="terms">
-            <input type="checkbox" id="iwt-terms">
+            <input type="checkbox" id="iwt-tos-checkbox">
             <label for="iwttos" class="tos-font">
               Checking this box indicates your acceptance of the 
               <a href="https://iwantthat.io/terms-of-service" target="_blank">Terms Of Service</a> of I Want That! Inc
             </label>
+            <div id="iwt-tos-error" style="display:none; color: red;">Please agree to the terms and conditions.</div>
           </div>
             <div id="iwt-submit-offer-container" class="button-container">
               <button 

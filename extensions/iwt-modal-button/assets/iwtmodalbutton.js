@@ -386,8 +386,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const script = document.createElement('script');
   script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js";
-  script.onload = () => initializeSupabase();
+  script.onload = () => {
+    if (window.supabase) {
+        initializeSupabase();
+    } else {
+        console.error('Supabase libray not loaded');
+    }
+};
   document.head.appendChild(script);
+
+  let supabase;
   
   function initializeSupabase() {
       const supabaseUrl = 'https://anmtrrtrftdsvjsnkbvf.supabase.co';
@@ -395,15 +403,83 @@ document.addEventListener('DOMContentLoaded', () => {
       
       
       supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
-    setupEventListeners();
+    
+      setupEventListeners();
   }
 
   function setupEventListeners() {
         document.getElementById('submit-offer-button').addEventListener('click', submitOfferToSupabase);
   }
+
+  function validateForm() {
+    let isValid = true;
+
+    // Get form elements
+    const name = document.getElementById('iwt-consumer-name');
+    const email = document.getElementById('iwt-consumer-email');
+    const mobile = document.getElementById('iwt-consumer-mobile');
+    const postalCode = document.getElementById('iwt-consumer-postal');
+    const offer = document.getElementById('iwt-consumer-offer');
+    const tosCheckbox = document.getElementById('iwt-tos-checkbox');
+
+    // Clear previous errors
+    clearError(name);
+    clearError(email);
+    clearError(mobile);
+    clearError(postalCode);
+    clearError(offer);
+    document.getElementById('tos-error').style.display = 'none';
+
+    // Check if all fields are filled out
+    if (!name.value.trim()) {
+        showError(name, 'Please complete this field');
+        isValid = false;
+    }
+    if (!email.value.trim()) {
+        showError(email, 'Please complete this field');
+        isValid = false;
+    }
+    if (!mobile.value.trim()) {
+        showError(mobile, 'Please complete this field');
+        isValid = false;
+    }
+    if (!postalCode.value.trim()) {
+        showError(postalCode, 'Please complete this field');
+        isValid = false;
+    }
+    if (!offer.value.trim() || parseFloat(offer.value) <= 0) {
+        showError(offer, 'Offer value must be greater than zero');
+        isValid = false;
+    }
+
+    // Check if the TOS checkbox is checked
+    if (!tosCheckbox.checked) {
+        document.getElementById('tos-error').style.display = 'block';
+        isValid = false;
+    }
+
+    return isValid;
+}
+
+function showError(element, message) {
+    element.style.borderColor = 'red';
+    element.title = message;
+}
+
+function clearError(element) {
+    element.style.borderColor = '';
+    element.title = '';
+}
+
+
       async function submitOfferToSupabase(event) {
         event.preventDefault(); // Prevent default form submission
 
+// Validate form
+  if (!validateForm()) {
+    return;
+}
+// Get form data
         const name = document.getElementById('iwt-consumer-name').value;
         const email = document.getElementById('iwt-consumer-email').value;
         const mobile = document.getElementById('iwt-consumer-mobile').value;
@@ -430,11 +506,11 @@ document.addEventListener('DOMContentLoaded', () => {
         consumerMobile: mobile,
         consumerPostalCode: postalCode,
         offerAmount: offer,
-        tosChecked: tosChecked,
+        tosChecked,
         tosCheckedDate: tosCheckedDate,
         cartToken: cart.token,
-        cartDate: cartDate,
-        offerDate: offerDate,
+        cartDate,
+        offerDate,
         items: offerItems // An array of all products in the cart
     };
         
