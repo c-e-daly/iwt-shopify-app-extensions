@@ -169,78 +169,99 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
   
-  // Function to update item quantity in the cart and check inventory/back-order status
-  const updateItemQuantity = async (lineItemKey, newQuantity) => {
-      try {
-          const currentItem = cart.items.find(item => item.key === lineItemKey);
-          if (!currentItem) {
-              throw new Error('Item not found in the cart');
-          }
-  
-          console.log('Current item:', currentItem); // Log current item details
-  
-          // Attempt to add the updated quantity to the cart to check if it's valid
-          const result = await addToCart({ ID: currentItem.variant_id, quantity: newQuantity });
-  
-          if (!result.success) {
-              throw new Error(result.error || 'Failed to update quantity');
-          }
-  
-          if (result.backOrderedQuantity > 0) {
-              // Highlight the input field to indicate back-order status
-              const inputField = document.querySelector(`input[data-line-item-key="${lineItemKey}"]`);
-              if (inputField) {
-                  inputField.style.borderColor = 'orange'; // Use orange to indicate back-order
-                  inputField.title = `Only ${result.availableQuantity} in stock. ${result.backOrderedQuantity} will be back-ordered.`;
-              }
-  
-              // Optionally, display the back-order information in the modal or a specific error section
-              displayErrorInModal(`Only ${result.availableQuantity} items are available. ${result.backOrderedQuantity} items will be back-ordered.`);
-          } else {
-              // Proceed to update the cart on the server if the quantity is valid and in stock
-              const response = await fetch(`/cart/change.js`, {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({
-                      id: lineItemKey,
-                      quantity: newQuantity
-                  })
-              });
-  
-              if (!response.ok) {
-                  throw new Error(`Network response was not ok, status: ${response.status}`);
-              }
-  
-              const cartResult = await response.json();
-              console.log('Item quantity updated:', cartResult);
-              renderCartTable(cartResult); // Re-render cart table with updated cart data
-          }
-      } catch (error) {
-          console.error('Error updating item quantity:', error);
-  
-          // Highlight the input field to indicate an error
-          const inputField = document.querySelector(`input[data-line-item-key="${lineItemKey}"]`);
-          if (inputField) {
-              inputField.style.borderColor = 'red';
-              inputField.title = 'Error updating quantity. Please try again.';
-          }
-  
-          // Display error in the modal
-          displayErrorInModal('Unable to update quantity. Please try again.');
-      }
-  };
-  
-  // Function to display an error message in a specific error section in the modal
-  const displayErrorInModal = (message) => {
-      const errorSection = document.getElementById('iwt-modal-error');
-      if (errorSection) {
-          errorSection.innerText = message;
-          errorSection.style.display = 'block';
-      }
-  };
-  
+// Function to update item quantity in the cart and check inventory/back-order status
+const updateItemQuantity = async (lineItemKey, newQuantity) => {
+    try {
+        const currentItem = cart.items.find(item => item.key === lineItemKey);
+        if (!currentItem) {
+            throw new Error('Item not found in the cart');
+        }
+
+        console.log('Current item:', currentItem); // Log current item details
+
+        // Attempt to add the updated quantity to the cart to check if it's valid
+        const result = await addToCart({ ID: currentItem.variant_id, quantity: newQuantity });
+
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to update quantity');
+        }
+
+        const inputField = document.querySelector(`input[data-line-item-key="${lineItemKey}"]`);
+
+        if (result.backOrderedQuantity > 0) {
+            // Highlight the input field to indicate back-order status
+            if (inputField) {
+                inputField.style.borderColor = 'orange'; // Use orange to indicate back-order
+                inputField.title = `Only ${result.availableQuantity} in stock. ${result.backOrderedQuantity} will be back-ordered.`;
+            }
+
+            // Optionally, display the back-order information in the modal or a specific error section
+            displayErrorInModal(`Only ${result.availableQuantity} items are available. ${result.backOrderedQuantity} items will be back-ordered.`);
+        } else {
+            // Clear any existing error messages if the quantity is valid
+            if (inputField) {
+                inputField.style.borderColor = ''; // Clear the border color
+                inputField.title = ''; // Clear the tooltip
+            }
+            clearErrorInModal();
+
+            // Proceed to update the cart on the server if the quantity is valid and in stock
+            const response = await fetch(`/cart/change.js`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: lineItemKey,
+                    quantity: newQuantity
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Network response was not ok, status: ${response.status}`);
+            }
+
+            const cartResult = await response.json();
+            console.log('Item quantity updated:', cartResult);
+            renderCartTable(cartResult); // Re-render cart table with updated cart data
+        }
+    } catch (error) {
+        console.error('Error updating item quantity:', error);
+
+        // Highlight the input field to indicate an error
+        const inputField = document.querySelector(`input[data-line-item-key="${lineItemKey}"]`);
+        if (inputField) {
+            inputField.style.borderColor = 'red';
+            inputField.title = 'Error updating quantity. Please try again.';
+        }
+
+        // Display error in the modal
+        displayErrorInModal('Unable to update quantity. Please try again.');
+    }
+};
+
+// Function to clear error messages in the modal
+const clearErrorInModal = () => {
+    const errorSection = document.getElementById('iwt-modal-error');
+    if (errorSection) {
+        errorSection.style.display = 'none';
+        errorSection.innerText = '';
+    }
+};
+
+// Attach event listeners to clear the error state when the user modifies the input
+document.addEventListener('DOMContentLoaded', () => {
+    const quantityInputs = document.querySelectorAll('.iwt-input-number');
+    quantityInputs.forEach(input => {
+        input.addEventListener('input', async (event) => {
+            const lineItemKey = input.getAttribute('data-line-item-key');
+            const newQuantity = parseInt(event.target.value);
+            await updateItemQuantity(lineItemKey, newQuantity);
+        });
+    });
+});
+
+
   // Add this helper function to clear the error state when the input changes
   const clearInputErrorState = (inputField) => {
       inputField.style.borderColor = ''; // Reset the border color
@@ -382,32 +403,22 @@ document.addEventListener('DOMContentLoaded', () => {
     return `$${(cents / 100).toFixed(2)}`;
   }
   
-  // Handle the submission of the offer and process the return data
-
-  const script = document.createElement('script');
-  script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js";
-  script.onload = () => {
-    if (window.supabase) {
-        initializeSupabase();
-    } else {
-        console.error('Supabase libray not loaded');
-    }
-};
-  document.head.appendChild(script);
+  ////// Handle the submission of the offer and process the return data //////
+  const supabaseUrl = 'https://anmtrrtrftdsvjsnkbvf.supabase.co';
+  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFubXRycnRyZnRkc3Zqc25rYnZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA1MzgxODQsImV4cCI6MjAzNjExNDE4NH0.W5jWxjKYgdfB2kV4o96_VMftAMWllXXtU83hVVFYNE8';
 
   let supabase;
   
-  function initializeSupabase() {
-      const supabaseUrl = 'https://anmtrrtrftdsvjsnkbvf.supabase.co';
-      const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFubXRycnRyZnRkc3Zqc25rYnZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA1MzgxODQsImV4cCI6MjAzNjExNDE4NH0.W5jWxjKYgdfB2kV4o96_VMftAMWllXXtU83hVVFYNE8';
-      
-      
-      supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
-    
-      setupEventListeners();
-  }
+/// Load supabaase client library
+  const script = document.createElement('script');
+  script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js";
+  script.onload = () => {
+    supabase=window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    startupEventListeners();
+};
+  document.head.appendChild(script);
 
-  function setupEventListeners() {
+  function startupEventListeners() {
         document.getElementById('submit-offer-button').addEventListener('click', submitOfferToSupabase);
   }
 
@@ -428,27 +439,27 @@ document.addEventListener('DOMContentLoaded', () => {
     clearError(mobile);
     clearError(postalCode);
     clearError(offer);
-    document.getElementById('tos-error').style.display = 'none';
+    document.getElementById('iwt-tos-error').style.display = 'none';
 
     // Check if all fields are filled out
     if (!name.value.trim()) {
-        showError(name, 'Please complete this field');
+        showError(name, 'Please fill in your name');
         isValid = false;
     }
     if (!email.value.trim()) {
-        showError(email, 'Please complete this field');
+        showError(email, 'Please fill in your email');
         isValid = false;
     }
     if (!mobile.value.trim()) {
-        showError(mobile, 'Please complete this field');
+        showError(mobile, 'Please fill in your mobile number');
         isValid = false;
     }
     if (!postalCode.value.trim()) {
-        showError(postalCode, 'Please complete this field');
+        showError(postalCode, 'Please fill in your postal code');
         isValid = false;
     }
     if (!offer.value.trim() || parseFloat(offer.value) <= 0) {
-        showError(offer, 'Offer value must be greater than zero');
+        showError(offer, 'Offer price must be greater than zero');
         isValid = false;
     }
 
@@ -472,8 +483,8 @@ function clearError(element) {
 }
 
 
-      async function submitOfferToSupabase(event) {
-        event.preventDefault(); // Prevent default form submission
+async function submitOfferToSupabase(event) {
+    event.preventDefault(); // Prevent default form submission
 
 // Validate form
   if (!validateForm()) {
