@@ -402,29 +402,18 @@ document.addEventListener('DOMContentLoaded', () => {
   function formatPrice(cents) {
     return `$${(cents / 100).toFixed(2)}`;
   }
-  
+
   ////// Handle the submission of the offer and process the return data //////
-  const supabaseUrl = 'https://anmtrrtrftdsvjsnkbvf.supabase.co';
-  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFubXRycnRyZnRkc3Zqc25rYnZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjA1MzgxODQsImV4cCI6MjAzNjExNDE4NH0.W5jWxjKYgdfB2kV4o96_VMftAMWllXXtU83hVVFYNE8';
 
-  let supabase;
-  
-/// Load supabaase client library
-  const script = document.createElement('script');
-  script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js";
-  script.onload = () => {
-    supabase=window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-    startupEventListeners();
-};
-  document.head.appendChild(script);
+// Function to start event listeners
+function startupEventListeners() {
+    document.getElementById('submit-offer-button').addEventListener('click', submitOfferToSupabase);
+}
 
-  function startupEventListeners() {
-        document.getElementById('submit-offer-button').addEventListener('click', submitOfferToSupabase);
-  }
-
-  function validateForm() {
+// Function to validate the form
+function validateForm() {
     let isValid = true;
-
+    
     // Get form elements
     const name = document.getElementById('iwt-consumer-name');
     const email = document.getElementById('iwt-consumer-email');
@@ -432,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const postalCode = document.getElementById('iwt-consumer-postal');
     const offer = document.getElementById('iwt-consumer-offer');
     const tosCheckbox = document.getElementById('iwt-tos-checkbox');
-
+    
     // Clear previous errors
     clearError(name);
     clearError(email);
@@ -440,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
     clearError(postalCode);
     clearError(offer);
     document.getElementById('iwt-tos-error').style.display = 'none';
-
+    
     // Check if all fields are filled out
     if (!name.value.trim()) {
         showError(name, 'Please fill in your name');
@@ -462,47 +451,50 @@ document.addEventListener('DOMContentLoaded', () => {
         showError(offer, 'Offer price must be greater than zero');
         isValid = false;
     }
-
+    
     // Check if the TOS checkbox is checked
     if (!tosCheckbox.checked) {
-        document.getElementById('tos-error').style.display = 'block';
+        document.getElementById('iwt-tos-error').style.display = 'block';
         isValid = false;
     }
-
+    
     return isValid;
 }
 
+// Function to show an error
 function showError(element, message) {
     element.style.borderColor = 'red';
     element.title = message;
 }
 
+// Function to clear an error
 function clearError(element) {
     element.style.borderColor = '';
     element.title = '';
 }
 
-
+// Function to submit the offer data to Supabase via an Edge Function
 async function submitOfferToSupabase(event) {
     event.preventDefault(); // Prevent default form submission
 
-// Validate form
-  if (!validateForm()) {
-    return;
-}
-// Get form data
-        const name = document.getElementById('iwt-consumer-name').value;
-        const email = document.getElementById('iwt-consumer-email').value;
-        const mobile = document.getElementById('iwt-consumer-mobile').value;
-        const postalCode = document.getElementById('iwt-consumer-postal').value;
-        const offer = document.getElementById('iwt-consumer-offer').value;
-        const tosChecked = document.getElementById('iwt-tos-checkbox').checked;
-        const tosCheckedDate = new Date().toISOString();
-        const cartDate = cart.created_at;
-        const offerDate = new Date().toISOString();
-        const storeUrl = document.getElementById('iwt-store-url').value;
-  
-        // Capture multiple items including productID, variantID, quantity, and price
+    // Validate form
+    if (!validateForm()) {
+        return;
+    }
+
+    // Get form data
+    const name = document.getElementById('iwt-consumer-name').value;
+    const email = document.getElementById('iwt-consumer-email').value;
+    const mobile = document.getElementById('iwt-consumer-mobile').value;
+    const postalCode = document.getElementById('iwt-consumer-postal').value;
+    const offer = document.getElementById('iwt-consumer-offer').value;
+    const tosChecked = document.getElementById('iwt-tos-checkbox').checked;
+    const tosCheckedDate = new Date().toISOString();
+    const cartDate = cart.created_at;
+    const offerDate = new Date().toISOString();
+    const storeUrl = document.getElementById('iwt-store-url').value;
+
+    // Capture multiple items including productID, variantID, quantity, and price
     const offerItems = cart.items.map(item => ({
         productID: item.product_id,
         variantID: item.variant_id,
@@ -524,21 +516,39 @@ async function submitOfferToSupabase(event) {
         offerDate,
         items: offerItems // An array of all products in the cart
     };
-        
-    console.log("Submitted text is", offerData);
+
+    console.log("Submitted offer data:", offerData);
 
     try {
-        const { data, error } = await supabase.functions.invoke('processOffers', {
-            body: offerData,
+        const response = await fetch('https://anmtrrtrftdsvjsnkbvf.supabase.co/functions/v1/process_offers_proxy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(offerData),
         });
 
-        if (error) {
-            throw error;
+        if (!response.ok) {
+            throw new Error('Failed to submit offer');
         }
 
-        console.log('Offer submitted successfully:', data);
+        const result = await response.json();
+        console.log('Offer submitted successfully:', result);
+
+        // Handle success or failure based on the response
+        if (result.success) {
+            // Handle successful offer submission (e.g., display success modal)
+            displaySuccessModal(result.data.abandonedCheckoutUrl, result.data.discount);
+        } else {
+            // Handle failure (e.g., display error modal)
+            displayFailModal();
+        }
 
     } catch (error) {
         console.error('Error when submitting offer:', error);
+        alert('There was an issue submitting your offer. Please try again.');
     }
 }
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
