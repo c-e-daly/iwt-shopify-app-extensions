@@ -51,10 +51,14 @@ document.addEventListener('DOMContentLoaded', () => {
     failModal.style.display = 'block';
   }
   
+let storeUrlGlobal;
+
   ///////// OFFER BUILDING AND DATA COLLECTION //////////
   const openOfferModal = async function({ template, default_variantID, storeUrl}) {
       console.log('Store URL:', storeUrl);
       let cartToken, cartDate;
+
+        storeUrlGlobal = storeUrl;
   
     if (template === 'cart') {
         cart = await fetchCart();
@@ -477,6 +481,7 @@ function clearError(element) {
 async function submitOfferToSupabase(event) {
     event.preventDefault(); // Prevent default form submission
 
+
     // Validate form
     if (!validateForm()) {
         return;
@@ -492,7 +497,7 @@ async function submitOfferToSupabase(event) {
     const tosCheckedDate = new Date().toISOString();
     const cartDate = cart.created_at;
     const offerDate = new Date().toISOString();
-    const storeUrl = document.getElementById('iwt-store-url').value;
+    /*const storeUrl = document.getElementById('iwt-store-url').value;*/
 
     // Capture multiple items including productID, variantID, quantity, and price
     const offerItems = cart.items.map(item => ({
@@ -503,7 +508,7 @@ async function submitOfferToSupabase(event) {
     }));
 
     const offerData = {
-        storeUrl: storeUrl,
+        storeUrl: storeUrlGlobal,  //use the global variable
         consumerName: name,
         consumerEmail: email,
         consumerMobile: mobile,
