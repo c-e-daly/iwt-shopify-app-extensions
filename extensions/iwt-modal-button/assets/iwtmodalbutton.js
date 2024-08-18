@@ -495,8 +495,8 @@ async function submitOfferToSupabase(event) {
     const offer = document.getElementById('iwt-consumer-offer').value;
     const tosChecked = document.getElementById('iwt-tos-checkbox').checked;
     const tosCheckedDate = new Date().toISOString();
-    const cartDate = cart.created_at;
-    const offerDate = new Date().toISOString();
+    const cartCreateDate = cart.created_at;
+    const offerCreateDate = new Date().toISOString();
     /*const storeUrl = document.getElementById('iwt-store-url').value;*/
 
     // Capture multiple items including productID, variantID, quantity, and price
@@ -506,6 +506,15 @@ async function submitOfferToSupabase(event) {
         quantity: item.quantity,
         price: item.price // Assuming price is in cents (adjust formatting as needed)
     }));
+
+    const cartItems = cartItemsArray.length;
+
+    // Calculate cartUnits as the total quantity of units across all products
+    const cartUnits = cartItemsArray.reduce((totalUnits, item) => {
+        return totalUnits + item.quantity;
+    }, 0);
+
+
 
     const offerData = {
         storeUrl: storeUrlGlobal,  //use the global variable
@@ -517,9 +526,11 @@ async function submitOfferToSupabase(event) {
         tosChecked,
         tosCheckedDate: tosCheckedDate,
         cartToken: cart.token,
-        cartDate,
-        offerDate,
-        items: offerItems // An array of all products in the cart
+        cartCreateDate,
+        offerCreateDate,
+        items: offerItems, // An array of all products in the cart
+        cartItems: cartItems, // Number of distinct products
+        cartUnits: cartUnits // Total number of units
     };
 
     console.log("Submitted offer data:", offerData);
