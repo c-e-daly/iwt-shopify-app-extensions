@@ -414,6 +414,9 @@ function startupEventListeners() {
     document.getElementById('submit-offer-button').addEventListener('click', submitOfferToSupabase);
 }
 
+//Function to count the number of items in the cart
+
+
 // Function to validate the form
 function validateForm() {
     let isValid = true;
@@ -477,7 +480,8 @@ function clearError(element) {
     element.title = '';
 }
 
-// Function to submit the offer data to Supabase via an Edge Function
+
+/////////// Function to submit the offer data to Supabase via an Edge Function ///////////
 async function submitOfferToSupabase(event) {
     event.preventDefault(); // Prevent default form submission
 
@@ -507,14 +511,13 @@ async function submitOfferToSupabase(event) {
         price: item.price // Assuming price is in cents (adjust formatting as needed)
     }));
 
-    const cartItems = cartItemsArray.length;
+    // Calculate cartItems as the number of distinct SKUs
+        const cartItems = new Set(cart.items.map(item => item.sku)).size;
 
     // Calculate cartUnits as the total quantity of units across all products
-    const cartUnits = cartItemsArray.reduce((totalUnits, item) => {
+    const cartUnits = cart.items.reduce((totalUnits, item) => {
         return totalUnits + item.quantity;
     }, 0);
-
-
 
     const offerData = {
         storeUrl: storeUrlGlobal,  //use the global variable
