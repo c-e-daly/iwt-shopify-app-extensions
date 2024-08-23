@@ -477,6 +477,32 @@ function clearError(element) {
     element.title = '';
 }
 
+// Function to display success or failure message within the modal
+function handleOfferResponse(isAccepted, discount, storeUrl) {
+    const offerModal = document.getElementById('iwt-modal-container');
+    const successBlock = document.getElementById('iwt-offer-success-block');
+    const failBlock = document.getElementById('iwt-offer-fail-block');
+    const checkoutLink = document.getElementById('iwt-checkout-link');
+    const acceptedAmountElement = document.getElementById('iwt-accepted-amount');
+
+    // Hide both blocks initially
+    successBlock.style.display = 'none';
+    failBlock.style.display = 'none';
+
+    if (isAccepted) {
+        // Display success block with the accepted offer amount and checkout link
+        successBlock.style.display = 'block';
+        acceptedAmountElement.innerText = `Your accepted offer: ${formatPrice(discount)}`;
+        checkoutLink.href = `${storeUrl}/checkouts`;
+    } else {
+        // Display fail block with a message
+        failBlock.style.display = 'block';
+    }
+
+    // Ensure the offer modal stays open
+    offerModal.style.display = 'block';
+}
+
 /////////// Function to submit the offer data to the API ///////////
 async function submitOfferToAPI(event) {
     event.preventDefault(); // Prevent default form submission
@@ -548,12 +574,12 @@ async function submitOfferToAPI(event) {
     })
     .then(response => {
         console.log(response);
-        if (response.response.hasOwnProperty("offerAccepted") && response.response.offerAccepted == "Yes") {
+        if (response.response.hasOwnProperty("offerAccepted") && response.response.offerAccepted === "Yes") {
             console.log("Offer is accepted!");
-            displaySuccessModal(response.response.abandonedCheckoutUrl, response.response.discount);
+            handleOfferResponse(true, response.response.acceptedOfferAmount, storeUrlGlobal);
         } else {
             console.log("Offer is rejected :(");
-            displayFailModal();
+            handleOfferResponse(false, null, storeUrlGlobal);
         }
     })
     .catch(error => {
