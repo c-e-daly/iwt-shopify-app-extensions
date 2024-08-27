@@ -95,33 +95,11 @@ const openOfferModal = async function({ template, default_variantID, storeUrl}) 
         renderCartTable(cart);
     }
   
-    // Sync form data with the latest cart data
-    syncFormDataWithCart();
-  
     const modalContainer = document.getElementById('iwt-modal-container');
     modalContainer.style.display = 'block';
 };
   
 ////////// HELPER FUNCTIONS /////////
-// Function to sync form data with the latest cart data
-function syncFormDataWithCart() {
-    const quantityInput = document.getElementById('iwt-consumer-quantity');
-    if (quantityInput) {
-        const totalQuantity = cart.items.reduce((total, item) => total + item.quantity, 0);
-        quantityInput.value = totalQuantity;
-    }
-  
-    const subtotalInput = document.getElementById('iwt-consumer-subtotal');
-    if (subtotalInput) {
-        subtotalInput.value = cart.total_price;
-    }
-  
-    const cartDateInput = document.getElementById('iwt-consumer-cart-date');
-    if (cartDateInput) {
-        cartDateInput.value = cart.created_at;
-    }
-}
-  
 // Function to get the variant ID from the URL
 function getVariantFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -375,7 +353,7 @@ const renderCartTable = function(cart, offerAcceptedPrice = null) {
                         <div style="font-size: 0.8em; color: #666;">SKU: ${item.sku || 'N/A'}</div>
                     </td>`;
             } else if (key === 'quantity') {
-                tableContent += `<td><input type="number" class="iwt-input-number" value="${item[key]}" min="1" onchange="updateItemQuantity('${item.key}', this.value)" data-line-item-key="${item.key}"></td>`;
+                tableContent += `<td><input type="number" class="iwt-input-number" value="${item[key]}" min="1" onchange="updateItemQuantity('${item.key}', this.value)" data-line-item-key="${item.key}" /></td>`;
             } else {
                 const value = key === 'price' ? formatPrice(item[key]) : item[key];
                 tableContent += `<td>${value || ''}</td>`;
@@ -532,9 +510,6 @@ async function submitOfferToAPI(event) {
 
     // Caluclate the discount rate on submitted offer
     const offerDiscountRate = (cart.total_price - offer) / cart.total_price;
-    console.log("Cart Total Price:", cart.total_price);
-    console.log("Cart Price from Cart:", cart.total_price);
-    console.log("Cart Create Date:", cart.created_at);
 
     // Calculate cartUnits as the total quantity of units across all products
     const cartUnits = cart.items.reduce((totalUnits, item) => {
