@@ -508,6 +508,9 @@ async function submitOfferToAPI(event) {
     // Calculate cartItems as the number of distinct SKUs
     const cartItems = new Set(cart.items.map(item => item.sku)).size;
 
+    // Caluclate the discount rate on submitted offer
+    const offerDiscountRate = (cart.total_price - offer) / cart.total_price;
+
     // Calculate cartUnits as the total quantity of units across all products
     const cartUnits = cart.items.reduce((totalUnits, item) => {
         return totalUnits + item.quantity;
@@ -520,11 +523,12 @@ async function submitOfferToAPI(event) {
         consumerMobile: mobile,
         consumerPostalCode: postalCode,
         offerAmount: offer,
-        tosChecked,
+        offerDiscountRate: offerDiscountRate,
+        tosChecked: tosChecked,
         tosCheckedDate: tosCheckedDate,
         cartToken: cart.token,
-        cartCreateDate,
-        offerCreateDate,
+        cartCreateDate: cartCreateDate,
+        offerCreateDate: offerCreateDate,
         items: offerItems, // An array of all products in the cart
         cartItems: cartItems, // Number of distinct products
         cartUnits: cartUnits // Total number of units
@@ -532,7 +536,7 @@ async function submitOfferToAPI(event) {
 
     console.log("Submitted offer data:", offerData);
 
-    fetch('https://app.iwantthat.io/api/1.1/wf/offer-evaluation', {
+    fetch('https://iwantthat.bubbleapps.io/version-test/api/1.1/wf/cart-offer-evaluation/initialize', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
