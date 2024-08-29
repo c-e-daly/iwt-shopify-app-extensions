@@ -60,7 +60,7 @@ const openOfferModal = async function({ template, default_variantID, storeUrl}) 
 
     storeUrlGlobal = storeUrl;
   
-    if (template === 'cart') {
+    if (template === 'cart' || template === 'checkout') {
         cart = await fetchCart();
         console.log('Cart:', cart);
         cartToken = cart.token;
@@ -530,7 +530,7 @@ async function submitOfferToAPI(event) {
         tosChecked: document.getElementById('iwt-tos-checkbox').checked,
         tosCheckedDate: new Date().toISOString(),
         cartToken: cart.token,
-        cartCreateDate: cart.created_at,
+        cartCreateDate: cart.createdAt,
         offerCreateDate: new Date().toISOString(),
         items: cart.items.map(item => ({
             productID: item.product_id,
