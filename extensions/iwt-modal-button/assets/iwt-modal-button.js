@@ -64,7 +64,7 @@ const openOfferModal = async function({ template, default_variantID, storeUrl}) 
         cart = await fetchCart();
         console.log('Cart:', cart);
         cartToken = cart.token;
-        cartDate = cart.created_at;
+        cartDate = cart.createdAt;
         console.log(`Cart Token: ${cartToken} || Cart Date: ${cartDate}`);
         renderCartTable(cart);
   
@@ -90,7 +90,7 @@ const openOfferModal = async function({ template, default_variantID, storeUrl}) 
         cart = await fetchCart();
         console.log('Cart:', cart);
         cartToken = cart.token;
-        cartDate = cart.created_at;
+        cartDate = cart.createdAt;
         console.log(`Cart Token: ${cartToken} || Cart Date: ${cartDate}`);
         renderCartTable(cart);
     }
@@ -188,6 +188,7 @@ const fetchCart = async function() {
         }
         const cart = await response.json();
         console.log('Cart details:', cart);
+        console.log('Cart date:', cart.createdAt);
         return cart;
     } catch (error) {
         console.error('Error fetching cart:', error);
@@ -500,67 +501,51 @@ function clearError(element) {
 }
 
 /////////// Function to submit the offer data to the API ///////////
+
 async function submitOfferToAPI(event) {
     event.preventDefault(); // Prevent default form submission
 
     // Validate form
     if (!validateForm()) {
-        return;
+    return;
     }
 
-    // Get form data
-    const name = document.getElementById('iwt-consumer-name').value;
-    const email = document.getElementById('iwt-consumer-email').value;
-    const mobile = document.getElementById('iwt-consumer-mobile').value;
-    const postalCode = document.getElementById('iwt-consumer-postal').value;
-    const offer = document.getElementById('iwt-consumer-offer').value;
-    const tosChecked = document.getElementById('iwt-tos-checkbox').checked;
-    const tosCheckedDate = new Date().toISOString();
-    const cartCreateDate = cart.created_at;
-    const offerCreateDate = new Date().toISOString();
+    // Fetch the latest cart data to ensure offerData is up-to-date
+    cart = await fetchCart();
 
-    // Capture multiple items including productID, variantID, quantity, and price
-    const offerItems = cart.items.map(item => ({
-        productID: item.product_id,
-        variantID: item.variant_id,
-        quantity: item.quantity,
-        price: item.price // Assuming price is in cents (adjust formatting as needed)
-    }));
+    const offerAmountCents = document.getElementById('iwt-consumer-offer').value * 100; // Convert to cents
+    const cartTotalCents = cart.total_price; // Already in cents
 
-    // Calculate cartItems as the number of distinct SKUs
-    const cartItems = new Set(cart.items.map(item => item.sku)).size;
+    const offerDiscountRate = ((cartTotalCents - offerAmountCents) / cartTotalCents).toFixed(4); // Perform calculation in cents
 
-    // Caluclate the discount rate on submitted offer
-    const offerDiscountRate = (cart.total_price - offer) / cart.total_price;
-    console.log("Cart Total Price:", cart.total_price);
-    console.log("Cart Price from Cart:", cart.total_price);
-    console.log("Cart Create Date:", cart.created_at);
-
-    // Calculate cartUnits as the total quantity of units across all products
-    const cartUnits = cart.items.reduce((totalUnits, item) => {
-        return totalUnits + item.quantity;
-    }, 0);
-
+    // Rebuild the offerData object using the latest data from the cart and form
     const offerData = {
-        storeUrl: storeUrlGlobal,  // use the global variable
-        consumerName: name,
-        consumerEmail: email,
-        consumerMobile: mobile,
-        consumerPostalCode: postalCode,
-        offerAmount: offer,
+        storeUrl: storeUrlGlobal,
+        consumerName: document.getElementById('iwt-consumer-name').value,
+        consumerEmail: document.getElementById('iwt-consumer-email').value,
+        consumerMobile: document.getElementById('iwt-consumer-mobile').value,
+        consumerPostalCode: document.getElementById('iwt-consumer-postal').value,
+        offerAmount: offerAmountCents,
         offerDiscountRate: offerDiscountRate,
-        tosChecked: tosChecked,
-        tosCheckedDate: tosCheckedDate,
+        tosChecked: document.getElementById('iwt-tos-checkbox').checked,
+        tosCheckedDate: new Date().toISOString(),
         cartToken: cart.token,
-        cartCreateDate: cartCreateDate,
-        offerCreateDate: offerCreateDate,
-        items: offerItems, // An array of all products in the cart
-        cartItems: cartItems, // Number of distinct products
-        cartUnits: cartUnits // Total number of units
+        cartCreateDate: cart.created_at,
+        offerCreateDate: new Date().toISOString(),
+        items: cart.items.map(item => ({
+            productID: item.product_id,
+            variantID: item.variant_id,
+            quantity: item.quantity,
+            price: formatPrice(item.price),
+        })),
+        cartItems: new Set(cart.items.map(item => item.sku)).size,
+        cartUnits: cart.items.reduce((totalUnits, item) => totalUnits + item.quantity, 0),
+        cartTotalPrice: cartTotalCents
     };
 
-    console.log("Submitted offer data:", offerData);
+    console.log("Submitting offer with the following data:", offerData);
 
+    // Submit the offerData to the API
     fetch('https://iwantthat.bubbleapps.io/version-test/api/1.1/wf/cart-offer-evaluation/initialize', {
         method: 'POST',
         headers: {
@@ -571,7 +556,7 @@ async function submitOfferToAPI(event) {
     .then(response => {
         if (response.ok) return response.json();
         else {
-            console.log("Error when submitting offer.", response);
+            console.error("Error when submitting offer:", response);
             throw new Error("Error when sending request: " + response.status);
         }
     })
