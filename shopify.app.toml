@@ -30,8 +30,3 @@ api_version = "2024-04"
 
 [pos]
 embedded = false
-
-[extension]
-type = "theme"
-url = "/views/installation.html"
-

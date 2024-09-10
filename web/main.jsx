@@ -5,12 +5,13 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./components/App";
 
+
 const root = document.getElementById("root");
 if (!root) throw new Error("#root element not found for booting react app");
 
 ReactDOM.createRoot(root).render(
   <React.StrictMode>
-    <AppProvider i18n={enTranslations}>
+    <AppProvider i18n={enTranslations} forceTheme={true}>
       <App />
     </AppProvider>
   </React.StrictMode>

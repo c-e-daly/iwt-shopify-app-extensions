@@ -6,14 +6,14 @@ export default function () {
 
   return (
     <Page
-      title="Templates"
+      title="Welcome to I Want That!"
       backAction={{
         content: "Shop Information",
         onAction: () => navigate("/"),
       }}
     >
       <Text variant="bodyMd" as="p">
-        How to Create Templates to Control Where and How Offers are Displayed
+        Setting up the Application to receive and process offers
       </Text>
     </Page>
   );
