@@ -3,7 +3,7 @@
 client_id = "61b36a57ba82c920e1c9ca04d6595cad"
 name = "development"
 handle = "development-43"
-application_url = "https://iwt-shopify--development.gadget.app/api/shopify/install-or-render"
+application_url = "https://app.iwantthat.io/authorize"
 embedded = true
 
 [build]
@@ -12,15 +12,23 @@ include_config_on_deploy = true
 
 [auth]
 redirect_urls = [
-  "https://iwt-shopify--development.gadget.app/api/connections/auth/shopify/callback"
+  "https://app.iwantthat.io/version-test/oauth2callback",
+  "https://app.iwantthat.io/oauth2callback"
 ]
 
 [webhooks]
 api_version = "2024-04"
+[[webhooks.subscriptions]]
+  uri = "https://app.iwantthat.io/api/1.1/wf/gdpr-customer-data-request"
+  compliance_topics = ["customers/data_request"]
 
   [[webhooks.subscriptions]]
-  uri = "https://iwt-shopify-app--development.gadget.app/api/webhooks/shopify"
-  compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+  uri = "https://app.iwantthat.io/api/1.1/wf/gdpr-customer-data-redact"
+  compliance_topics = ["customers/redact"]
+
+  [[webhooks.subscriptions]]
+  uri = "https://app.iwantthat.io/api/1.1/wf/gdpr-shop-data-redact"
+  compliance_topics = ["shop/redact"]
 
 [pos]
 embedded = false

@@ -68,7 +68,7 @@ const openOfferModal = async function({ template, default_variantID, storeUrl}) 
         console.log(`Cart Token: ${cartToken} || Cart Date: ${cartDate}`);
         renderCartTable(cart);
   
-    } else if (template === 'product') {
+    } else if (template === 'product' || template === 'iwantthat' || template === 'iwtclearance') {
         let ID = default_variantID; // Set ID to default_variantID by default
   
         const urlVariantID = getVariantFromURL(); // Attempt to get the variant ID from the URL
@@ -515,7 +515,6 @@ async function submitOfferToAPI(event) {
 
     const offerAmountCents = document.getElementById('iwt-consumer-offer').value * 100; // Convert to cents
     const cartTotalCents = cart.total_price; // Already in cents
-
     const offerDiscountRate = ((cartTotalCents - offerAmountCents) / cartTotalCents).toFixed(4); // Perform calculation in cents
 
     // Rebuild the offerData object using the latest data from the cart and form
@@ -540,7 +539,8 @@ async function submitOfferToAPI(event) {
         })),
         cartItems: new Set(cart.items.map(item => item.sku)).size,
         cartUnits: cart.items.reduce((totalUnits, item) => totalUnits + item.quantity, 0),
-        cartTotalPrice: cartTotalCents
+        cartTotalPrice: cartTotalCents,
+        temaplate: template
     };
 
     console.log("Submitting offer with the following data:", offerData);
