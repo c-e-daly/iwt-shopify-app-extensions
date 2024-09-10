@@ -3,7 +3,7 @@
 client_id = "61b36a57ba82c920e1c9ca04d6595cad"
 name = "development"
 handle = "development-43"
-application_url = "https://app.iwantthat.io/authorize"
+application_url = "https://app.iwantthat.io/version-test/authorize"
 embedded = true
 
 [build]
@@ -11,24 +11,22 @@ dev_store_url = "iwanttthat.myshopify.com"
 include_config_on_deploy = true
 
 [auth]
-redirect_urls = [
-  "https://app.iwantthat.io/version-test/oauth2callback",
-  "https://app.iwantthat.io/oauth2callback"
-]
+redirect_urls = [ "https://app.iwantthat.io/version-test/oauth2callback" ]
 
 [webhooks]
 api_version = "2024-04"
-[[webhooks.subscriptions]]
-  uri = "https://app.iwantthat.io/api/1.1/wf/gdpr-customer-data-request"
-  compliance_topics = ["customers/data_request"]
 
   [[webhooks.subscriptions]]
-  uri = "https://app.iwantthat.io/api/1.1/wf/gdpr-customer-data-redact"
-  compliance_topics = ["customers/redact"]
+  uri = "https://app.iwantthat.io/version-test/api/1.1/wf/gdpr-customer-data-redact"
+  compliance_topics = [ "customers/redact" ]
 
   [[webhooks.subscriptions]]
-  uri = "https://app.iwantthat.io/api/1.1/wf/gdpr-shop-data-redact"
-  compliance_topics = ["shop/redact"]
+  uri = "https://app.iwantthat.io/version-test/api/1.1/wf/gdpr-customer-data-request"
+  compliance_topics = [ "customers/data_request" ]
+
+  [[webhooks.subscriptions]]
+  uri = "https://app.iwantthat.io/version-test/api/1.1/wf/gdpr-shop-data-redact"
+  compliance_topics = [ "shop/redact" ]
 
 [pos]
 embedded = false

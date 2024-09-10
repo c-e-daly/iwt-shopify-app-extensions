@@ -1,6 +1,6 @@
 {
-  "name": "iwt-shopify-app-extensions",
-  "version": "0.1.0",
+  "name": "iwt-shopify-app",
+  "version": "1.0.0",
   "description": "IWT Shopify App Extensions",
   "license": "UNLICENSED",
   "private": true,
@@ -65,5 +65,10 @@
   "bugs": {
     "url": "https://github.com/c-e-daly/iwt-shopify-app-extensions/issues"
   },
-  "homepage": "https://github.com/c-e-daly/iwt-shopify-app-extensions#readme"
+  "homepage": "https://github.com/c-e-daly/iwt-shopify-app-extensions#readme",
+  "keywords": [
+    "modal",
+    "offer",
+    "window"
+  ]
 }
