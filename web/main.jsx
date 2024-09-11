@@ -8,20 +8,24 @@ import translations from '@shopify/polaris/locales/en.json'; // Default to Engli
 import createApp from '@shopify/app-bridge';
 import { Provider as AppBridgeProvider } from '@shopify/app-bridge-react';
 
+const urlParams = new URLSearchParams(window.location.search);
+const shopOrigin = urlParams.get('shop');
+
+
 const Main = () => {
   const [i18n] = useI18n({
     id: 'Polaris',
     fallback: translations,
     translations(locale) {
       return import(
-        /* webpackChunkName: "Polaris-i18n", webpackMode: "lazy-once" */ `@shopify/polaris/locales/${locale}.json`
+        /* webpackChunkName: "Polaris-i18n", webpackMode: "lazy-once" */ `@shopify/polaris/locales/en-US.json`
       ).then((dictionary) => dictionary && dictionary.default);
     },
   });
 
   const appBridgeConfig = {
-    apiKey: 'YOUR_API_KEY', // Replace with your actual API key
-    shopOrigin: 'YOUR_SHOP_ORIGIN', // Replace with your actual shop origin
+    apiKey: process.env.SHOPIFY_API_KEY, // Replace with your actual API key
+    shopOrigin: shopOrigin, // Replace with your actual shop origin
     forceRedirect: true,
   };
 
