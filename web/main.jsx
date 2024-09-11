@@ -18,7 +18,7 @@ const Main = () => {
     fallback: translations,
     translations(locale) {
       return import(
-        /* webpackChunkName: "Polaris-i18n", webpackMode: "lazy-once" */ `@shopify/polaris/locales/en-US.json`
+        /* webpackChunkName: "Polaris-i18n", webpackMode: "lazy-once" */ `@shopify/polaris/locales/${locale}.json`
       ).then((dictionary) => dictionary && dictionary.default);
     },
   });
