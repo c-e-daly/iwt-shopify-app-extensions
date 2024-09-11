@@ -1,0 +1,11 @@
+{
+    "Polaris": {
+      "Common": {
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "App": {
+        "title": "My App"
+      }
+    }
+  }
