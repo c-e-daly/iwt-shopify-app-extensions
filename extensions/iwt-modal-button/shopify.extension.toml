@@ -11,3 +11,4 @@ type = "theme"
 [extensions.capabilities]
   api_access = true
 
+scopes="write_themes,read_themes,read_locations,read_inventory,read_product_listings,write_discounts_allocator_functions,read_discounts_allocator_functions,read_checkouts,read_discounts,read_price_rules,read_orders,read_all_orders,write_products,read_products,read_customers"
