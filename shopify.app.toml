@@ -28,7 +28,7 @@ api_version = "2024-04"
   uri = "https://app.iwantthat.io/version-test/api/1.1/wf/gdpr-shop-data-redact"
   compliance_topics = [ "shop/redact" ]
 
-[scopes]
+[access_scopes]
 scopes="write_themes,read_themes,read_locations,read_inventory,read_product_listings,write_discounts_allocator_functions,read_discounts_allocator_functions,read_checkouts,read_discounts,read_price_rules,read_orders,read_all_orders,write_metaobjects,read_metaobjects,write_metaobject_definitions,read_metaobject_definitions,write_products,read_products,write_customers,read_customers"
 
 [pos]

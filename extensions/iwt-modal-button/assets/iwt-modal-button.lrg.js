@@ -519,7 +519,7 @@ async function submitOfferToAPI(event) {
 
     // Rebuild the offerData object using the latest data from the cart and form
     const offerData = {
-        storeUrl: storeUrlGlobal,
+        storeUrl: storeUrlGlobal.replace(/^https?:\/\//, ''),
         consumerName: document.getElementById('iwt-consumer-name').value,
         consumerEmail: document.getElementById('iwt-consumer-email').value,
         consumerMobile: document.getElementById('iwt-consumer-mobile').value,
@@ -546,7 +546,7 @@ async function submitOfferToAPI(event) {
     console.log("Submitting offer with the following data:", offerData);
 
     // Submit the offerData to the API
-    fetch('https://iwantthat.bubbleapps.io/version-test/api/1.1/wf/cart-offer-evaluation/initialize', {
+    fetch('https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
