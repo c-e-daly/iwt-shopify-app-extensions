@@ -55,7 +55,7 @@ let storeUrlGlobal;
 
 ///////// OFFER BUILDING AND DATA COLLECTION //////////
 const openOfferModal = async function({ template, default_variantID, storeUrl}) {
-    console.log('Store URL:', storeUrl);
+    console.log('Store URL:', storeUrl, template);
     let cartToken, cartDate;
 
     storeUrlGlobal = storeUrl;
@@ -68,7 +68,7 @@ const openOfferModal = async function({ template, default_variantID, storeUrl}) 
         console.log(`Cart Token: ${cartToken} || Cart Date: ${cartDate}`);
         renderCartTable(cart);
   
-    } else if (template === 'product' || template === 'iwantthat' || template === 'iwtclearance') {
+    } else if (template === 'product' || template === 'product.iwantthat' || template === 'product.iwtclearance') {
         let ID = default_variantID; // Set ID to default_variantID by default
   
         const urlVariantID = getVariantFromURL(); // Attempt to get the variant ID from the URL
@@ -537,7 +537,7 @@ async function submitOfferToAPI(event) {
             variantID: item.variant_id,
             sku: item.sku,
             quantity: item.quantity,
-            price: formatPrice(item.price),
+            price: item.price,
         })),
         cartItems: new Set(cart.items.map(item => item.sku)).size,
         cartUnits: cart.items.reduce((totalUnits, item) => totalUnits + item.quantity, 0),
