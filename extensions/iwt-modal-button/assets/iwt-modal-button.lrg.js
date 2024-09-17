@@ -534,6 +534,7 @@ async function submitOfferToAPI(event) {
         items: cart.items.map(item => ({
             productID: item.product_id,
             variantID: item.variant_id,
+            sku: item.sku,
             quantity: item.quantity,
             price: formatPrice(item.price),
         })),
