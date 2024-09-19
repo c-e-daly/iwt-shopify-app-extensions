@@ -1,7 +1,6 @@
-
-
 api_version = "2024-04"
 
+# Existing theme extension (App Block)
 [[extensions]]
 name = "iwt-modal-button"
 description = "Make an Offer Button"
