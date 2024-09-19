@@ -4,7 +4,7 @@ client_id = "61b36a57ba82c920e1c9ca04d6595cad"
 name = "development"
 handle = "development-43"
 application_url = "https://app.iwantthat.io/version-test/authorize"
-embedded = true
+embedded = false
 
 [build]
 dev_store_url = "iwanttthat.myshopify.com"
