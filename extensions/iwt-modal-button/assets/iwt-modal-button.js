@@ -586,20 +586,65 @@ async function submitOfferToAPI(event) {
             throw new Error("Error when sending request: " + response.status);
         }
     })
+
     .then(response => {
         console.log(response);
-        if (response.response.hasOwnProperty("offerAccepted") && response.response.offerAccepted == "Yes") {
-            console.log("Offer is accepted!");
-            displaySuccessModal(response.response.abandonedCheckoutUrl, response.response.discount);
+        if (response.response.hasOwnProperty("offerStatus")) {
+            if (response.response.offerStatus === "Accepted") {
+                console.log("Offer is accepted!");
+                displaySuccessModal(response.response.checkoutUrl, response.response.offerExpiryMinutes, response.response.offerAmount, response.response.couponCode);
+            } else if (response.response.offerStatus === "Declined") {
+                console.log("Your offer has been declined. You can refresh your browser to make another offer.");
+                displayFailModal(response.response.offerAmount);
+            } else if (response.response.offerStatus === "Pending") {
+                console.error("This Offer is Pending Review:", response.response.error);
+                displayPendingModal(response.response.offerAmount, response.response.offerStatus);
+            }
         } else {
-            console.log("Offer is rejected :(");
-            displayFailModal();
+            console.error("Unexpected response format:", response);
+            alert('Unexpected response. Please try again later.');
         }
     })
     .catch(error => {
         console.error('Error when submitting offer:', error);
         alert('There was an issue submitting your offer. Please try again.');
     });
+}
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '') {
+    // Hide the offer form
+    document.getElementById('iwt-offer-form').style.display = 'none';
+
+    // Show the response section
+    let responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'block';
+
+    let responseMessage = '';
+
+    // Determine content based on offer status
+    if (offerStatus === 'Accepted') {
+        responseMessage = `<p>Your offer of $${offerAmount} has been accepted! Use the code <strong>${couponCode}</strong> at checkout. Please complete your purchase within ${expiryMinutes} minutes.</p>
+                           <a href="${checkoutUrl}" class="iwt-checkout-button">Proceed to Checkout</a>`;
+    } else if (offerStatus === 'Declined') {
+        responseMessage = `<p>Your offer of $${offerAmount} has been declined. Please try making another offer.</p>
+                           <button onclick="retryOffer()">Make Another Offer</button>`;
+    } else if (offerStatus === 'Pending') {
+        responseMessage = `<p>Your offer of $${offerAmount} has been received and is currently under review.  
+                            You will receive an update soon. Thank you for your patience!</p>`;
+    } else {
+        responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+    }
+
+    // Populate the response section with the message
+    responseSection.innerHTML = responseMessage;
+}
+
+
+function retryOffer() {
+    // Reset form and hide response section
+    document.getElementById('iwt-offer-form').reset();
+    document.getElementById('iwt-offer-form').style.display = 'block';
+    document.getElementById('iwt-modal-offer-response').style.display = 'none';
 }
 
 // Initialize event listeners when the DOM is fully loaded
