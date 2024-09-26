@@ -635,9 +635,10 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
     if (offerStatus === 'Accepted') {
         responseMessage = `<p>Your offer of $${offerAmount} has been accepted! Use the code <strong>${couponCode}</strong> at checkout. Please complete your purchase within ${expiryMinutes} minutes.</p>
                            <a href="${checkoutUrl}" class="iwt-checkout-button">Proceed to Checkout</a>`;
+        const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
         const checkoutButton = document.getElementById('checkout-button');
         checkoutButton.href = checkoutUrl;
-        checkoutButton.style.display = 'inline-block';
+        checkoutButtonContainer.style.display = 'block';
 
     } else if (offerStatus === 'Declined') {
         responseMessage = `<p>Your offer of $${offerAmount} has been declined. Please try making another offer.</p>
