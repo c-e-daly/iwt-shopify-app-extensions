@@ -1,3 +1,17 @@
+/* Add these styles to your CSS file */
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.fade-in {
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.hidden {
+    display: none;
+}
 
 
 .modal-container{
@@ -309,3 +323,50 @@ cart-table th,
         cursor: pointer !important;
         text-align: center !important
     }
+
+    /* Add this to your CSS file */
+.modal-offer-response {
+    text-align: center;
+    padding: 20px;
+    transition: opacity 0.5s ease-in-out;
+}
+
+#woo-hoo-image {
+    width: 150px;
+    margin-bottom: 20px;
+}
+
+.response-message-container {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+}
+
+
+.iwt-checkout-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #28a745; /* Green */
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+}
+
+.iwt-checkout-button:hover {
+    background-color: #218838; /* Darker green on hover */
+}
+
+.retry-offer-button {
+    padding: 10px 20px;
+    background-color: #007bff; /* Blue */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.retry-offer-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}

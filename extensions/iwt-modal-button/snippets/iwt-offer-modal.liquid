@@ -45,7 +45,13 @@
 
             <!-- Single Response Section -->
             <div id="iwt-modal-offer-response" class="modal-offer-response" style="display: none;">
-                <!-- Response message will be populated dynamically -->
+                <img src="{{ 'woo-hoo.png' | asset_url }}" id="woo-hoo-image" class="woo-hoo-image" width="300" height="150" style="display: none;"/>
+                <div id="response-message-container" class="response-message-container">
+                    <!-- Response message will be populated dynamically -->
+                </div>
+                <a id="checkout-button" href="" class="iwt-checkout-button" style="display: none;">
+                    Proceed to Checkout
+                </a>
             </div>
         </div>
     </div>

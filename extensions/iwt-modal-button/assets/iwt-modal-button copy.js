@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeModalButton) {
         closeModalButton.addEventListener('click', (event) => {
             event.stopPropagation(); // Prevent event bubbling to the container
-            closeModal();
+            modalContainer.style.display = 'none';
             console.log('Modal closed with button click.');
         });
     }
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close the modal on clicking outside the modal content
     modalContainer.addEventListener('click', (event) => {
         if (event.target === modalContainer) {
-            closeModal();
+            modalContainer.style.display = 'none';
             console.log('Modal closed by clicking outside the modal content.');
         }
     });
@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+  
 ///////// GLOBAL VARIABLES //////////
 let cart; // Global variable to store cart data
   
@@ -53,28 +54,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     cart = await fetchCart(); // Fetch cart data on page load
     // Other initialization code
 });
-
-// Function to clear and reset the modal data
-function resetModalData() {
-    document.getElementById('iwt-cart-table').innerHTML = '';
-    const quantityInput = document.getElementById('iwt-consumer-quantity');
-    if (quantityInput) {
-        quantityInput.value = 1;
+  
+// Function to display success modal
+function displaySuccessModal(abandonedCheckoutUrl, discount) {
+    const successModal = document.getElementById('iwt-offer-success');
+    const successMessage = document.getElementById('success-message');
+  
+    if (discount > 20) {
+        successMessage.innerText = "You made a GREAT deal!";
+    } else {
+        successMessage.innerText = "You made a good deal.";
     }
-    const subtotalInput = document.getElementById('iwt-consumer-subtotal');
-    if (subtotalInput) {
-        subtotalInput.value = 0;
-    }
+  
+    document.getElementById('abandonedCheckoutUrl').href = abandonedCheckoutUrl;
+    successModal.style.display = 'block';
 }
-
-// Function to close the modal and reset its content
-function closeModal() {
-    const modalContainer = document.getElementById('iwt-modal-container');
-    if (modalContainer) {
-        modalContainer.style.display = 'none';
-    }
-    resetModalData();
+  
+// Function to display fail modal
+function displayFailModal() {
+    const failModal = document.getElementById('iwt-offer-decline');
+    failModal.style.display = 'block';
 }
+  
+let storeUrlGlobal;
 
 ///////// OFFER BUILDING AND DATA COLLECTION //////////
 const openOfferModal = async function({ template, default_variantID, storeUrl}) {
@@ -83,9 +85,6 @@ const openOfferModal = async function({ template, default_variantID, storeUrl}) 
 
     storeUrlGlobal = storeUrl;
   
-// Reset modal data before opening
-resetModalData();
-
     if (template === 'cart' || template === 'checkout') {
         cart = await fetchCart();
         console.log('Cart:', cart);
@@ -591,54 +590,41 @@ async function submitOfferToAPI(event) {
     .then(response => {
         console.log(response);
         if (response.response.hasOwnProperty("offerStatus")) {
-            displayOfferResponse(
-                response.response.offerStatus,
-                response.response.offerAmount,
-                response.response.checkoutUrl,
-                response.response.offerExpiryMinutes,
-                response.response.couponCode
-            );
+            if (response.response.offerStatus === "Accepted") {
+                console.log("Offer is accepted!");
+                displaySuccessModal(response.response.checkoutUrl, response.response.offerExpiryMinutes, response.response.offerAmount, response.response.couponCode);
+            } else if (response.response.offerStatus === "Declined") {
+                console.log("Your offer has been declined. You can refresh your browser to make another offer.");
+                displayFailModal(response.response.offerAmount);
+            } else if (response.response.offerStatus === "Pending") {
+                console.error("This Offer is Pending Review:", response.response.error);
+                displayPendingModal(response.response.offerAmount, response.response.offerStatus);
+            }
         } else {
             console.error("Unexpected response format:", response);
             alert('Unexpected response. Please try again later.');
         }
     })
     .catch(error => {
-        console.error("Error when submitting offer:", error);
-        alert('Error when submitting offer. Please try again later.');
-    });    
-
-
+        console.error('Error when submitting offer:', error);
+        alert('There was an issue submitting your offer. Please try again.');
+    });
 }
 
 function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '') {
+    // Hide the offer form
+    document.getElementById('iwt-offer-form').style.display = 'none';
 
-    document.getElementById('iwt-offer-form').classList.add('fade-out');
-    document.getElementById('iwt-cart-table').classList.add('fade-out');
+    // Show the response section
+    let responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'block';
 
-    setTimeout(() => {
-        document.getElementById('iwt-offer-form').style.display = 'none';
-        document.getElementById('iwt-cart-table').style.display = 'none';
-
-        // Show the response section with fade-in animation
-        const responseSection = document.getElementById('iwt-modal-offer-response');
-        responseSection.style.display = 'block';
-        responseSection.classList.add('fade-in');
-
-        // Display "Woo-hoo!" image
-        const wooHooImage = document.getElementById('woo-hoo-image');
-        wooHooImage.style.display = 'block';
-    
- 
     let responseMessage = '';
 
+    // Determine content based on offer status
     if (offerStatus === 'Accepted') {
         responseMessage = `<p>Your offer of $${offerAmount} has been accepted! Use the code <strong>${couponCode}</strong> at checkout. Please complete your purchase within ${expiryMinutes} minutes.</p>
                            <a href="${checkoutUrl}" class="iwt-checkout-button">Proceed to Checkout</a>`;
-        const checkoutButton = document.getElementById('checkout-button');
-        checkoutButton.href = checkoutUrl;
-        checkoutButton.style.display = 'inline-block';
-
     } else if (offerStatus === 'Declined') {
         responseMessage = `<p>Your offer of $${offerAmount} has been declined. Please try making another offer.</p>
                            <button onclick="retryOffer()">Make Another Offer</button>`;
@@ -649,9 +635,8 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
         responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
     }
 
-    const responseMessageContainer = document.getElementById('response-message-container');
-        responseMessageContainer.innerHTML = responseMessage;
-    }, 500);
+    // Populate the response section with the message
+    responseSection.innerHTML = responseMessage;
 }
 
 
