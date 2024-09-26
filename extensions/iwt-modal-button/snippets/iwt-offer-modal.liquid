@@ -46,12 +46,14 @@
             <!-- Single Response Section -->
 
             <div id="iwt-modal-offer-response" class="modal-offer-response" style="display: none;">
-                <img src="{{ 'Woo-Hoo.png' | asset_url }}" id="woo-hoo-image" class="woo-hoo-image" width="350" height="110" style="display: none;"/>
+            <div id="iwt-response-logo-container" class="woo-hoo-logo">
+                <img src="{{ 'Woo-Hoo.png' | asset_url }}" id="woo-hoo-image" class="woo-hoo-image" width="300" height="107" style="display: none;"/>
+            </div>
                 <div id="response-message-container" class="response-message-container">
                     <!-- Response message will be populated dynamically -->
                 </div>
                 <div id="iwt-checkout-button-container" class="button-container" style="display: none;">
-                    <a id="checkout-button" href="" class="iwt-submit-offer iwt-checkout-button">
+                    <a id="checkout-button" href="" class="iwt-submit-offer">
                         Proceed to Checkout
                         <img src="{{ 'iwtlogoicon.png' | asset_url }}" class="iwt-logo-icon" width="30" height="30"> 
                     </a>

@@ -625,20 +625,25 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
         responseSection.style.display = 'block';
         responseSection.classList.add('fade-in');
 
-        // Display "Woo-hoo!" image
         const wooHooImage = document.getElementById('woo-hoo-image');
-        wooHooImage.style.display = 'block';
-    
+        if (offerStatus === 'Accepted') {
+            wooHooImage.style.display = 'block';
+        } else {
+            wooHooImage.style.display = 'none';
+        }
  
     let responseMessage = '';
 
     if (offerStatus === 'Accepted') {
-        responseMessage = `<p>Your offer of $${offerAmount} has been accepted! Use the code <strong>${couponCode}</strong> at checkout. Please complete your purchase within ${expiryMinutes} minutes.</p>
-                           <a href="${checkoutUrl}" class="iwt-checkout-button">Proceed to Checkout</a>`;
+        responseMessage = `<p>Your offer of $${offerAmount} has been accepted! 
+        Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+        Thanks for shopping ${store}`;
         const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
         const checkoutButton = document.getElementById('checkout-button');
-        checkoutButton.href = checkoutUrl;
-        checkoutButtonContainer.style.display = 'block';
+        if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+            checkoutButton.href = checkoutUrl;
+            checkoutButtonContainer.style.display = 'block'; // Ensure it's displayed only once
+        }
 
     } else if (offerStatus === 'Declined') {
         responseMessage = `<p>Your offer of $${offerAmount} has been declined. Please try making another offer.</p>
@@ -655,13 +660,26 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
     }, 500);
 }
 
-
 function retryOffer() {
-    // Reset form and hide response section
-    document.getElementById('iwt-offer-form').reset();
-    document.getElementById('iwt-offer-form').style.display = 'block';
-    document.getElementById('iwt-modal-offer-response').style.display = 'none';
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the form and table with fade-in animation
+    const offerForm = document.getElementById('iwt-offer-form');
+    const cartTable = document.getElementById('iwt-cart-table');
+
+    offerForm.classList.remove('fade-out');
+    cartTable.classList.remove('fade-out');
+
+    offerForm.style.display = 'block';
+    cartTable.style.display = 'block';
+
+    offerForm.classList.add('fade-in');
+    cartTable.classList.add('fade-in');
 }
+
+
 
 // Initialize event listeners when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', startupEventListeners);
