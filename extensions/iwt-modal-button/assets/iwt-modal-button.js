@@ -611,14 +611,14 @@ async function submitOfferToAPI(event) {
 
 }
 
-function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '') {
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
 
-    document.getElementById('iwt-offer-form').classList.add('fade-out');
-    document.getElementById('iwt-cart-table').classList.add('fade-out');
+    const modalContentContainer = document.querySelector('.modal-content');
+    modalContentContainer.classList.add('fade-out');
+
 
     setTimeout(() => {
-        document.getElementById('iwt-offer-form').style.display = 'none';
-        document.getElementById('iwt-cart-table').style.display = 'none';
+        modalContentContainer.style.display = 'none';
 
         // Show the response section with fade-in animation
         const responseSection = document.getElementById('iwt-modal-offer-response');
@@ -637,7 +637,7 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
     if (offerStatus === 'Accepted') {
         responseMessage = `<p>Your offer of $${offerAmount} has been accepted! 
         Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
-        Thanks for shopping ${store}`;
+        Thanks for shopping ${storeBrand}`;
         const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
         const checkoutButton = document.getElementById('checkout-button');
         if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
@@ -646,11 +646,11 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
         }
 
     } else if (offerStatus === 'Declined') {
-        responseMessage = `<p>Your offer of $${offerAmount} has been declined. Please try making another offer.</p>
-                           <button onclick="retryOffer()">Make Another Offer</button>`;
+        responseMessage = `<p>Unfortunately, we canot make $ ${offerAmount} that work. You can update your offer by selecting the button below.</p>
+                           <button classe="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
     } else if (offerStatus === 'Pending') {
         responseMessage = `<p>Your offer of $${offerAmount} has been received and is currently under review.  
-                            You will receive an update soon. Thank you for your patience!</p>`;
+                            Our customer service team will get back to your shortly. Have a great day!</p>`;
     } else {
         responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
     }
@@ -665,21 +665,12 @@ function retryOffer() {
     const responseSection = document.getElementById('iwt-modal-offer-response');
     responseSection.style.display = 'none';
 
-    // Show the form and table with fade-in animation
-    const offerForm = document.getElementById('iwt-offer-form');
-    const cartTable = document.getElementById('iwt-cart-table');
-
-    offerForm.classList.remove('fade-out');
-    cartTable.classList.remove('fade-out');
-
-    offerForm.style.display = 'block';
-    cartTable.style.display = 'block';
-
-    offerForm.classList.add('fade-in');
-    cartTable.classList.add('fade-in');
+    // Show the modal content container with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'block';
+    modalContentContainer.classList.add('fade-in');
 }
-
-
 
 // Initialize event listeners when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', startupEventListeners);

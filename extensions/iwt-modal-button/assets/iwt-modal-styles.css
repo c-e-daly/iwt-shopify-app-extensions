@@ -367,16 +367,29 @@ cart-table th,
     background-color: #218838; /* Darker green on hover */
 }
 
-.retry-offer-button {
+
+.iwt-retry-offer-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 10px 20px;
-    background-color: #007bff; /* Blue */
+    background-color: #0442bf; /* Use the same green color as Submit button */
     color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    font-size: 1em;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin-top: 20px; /* Add margin for spacing */
 }
 
-.retry-offer-button:hover {
-    background-color: #0056b3; /* Darker blue on hover */
+.iwt-retry-offer-button:hover {
+    background-color: #80bf9b;
+    transform: scale(1.05);
+}
+
+.iwt-retry-offer-button:active {
+    background-color: #80bf9b;
+    transform: scale(1);
 }
