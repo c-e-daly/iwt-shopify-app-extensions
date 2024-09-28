@@ -613,7 +613,7 @@ async function submitOfferToAPI(event) {
 
 function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
 
-    const modalContentContainer = document.querySelector('.modal-content');
+    const modalContentContainer = document.querySelector('.modal-content-container');
     modalContentContainer.classList.add('fade-out');
 
 
@@ -666,7 +666,7 @@ function retryOffer() {
     responseSection.style.display = 'none';
 
     // Show the modal content container with fade-in animation
-    const modalContentContainer = document.querySelector('.modal-content');
+    const modalContentContainer = document.querySelector('.modal-content-container');
     modalContentContainer.classList.remove('fade-out');
     modalContentContainer.style.display = 'block';
     modalContentContainer.classList.add('fade-in');
