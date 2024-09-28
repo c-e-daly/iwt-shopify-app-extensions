@@ -564,6 +564,7 @@ async function submitOfferToAPI(event) {
             sku: item.sku,
             quantity: item.quantity,
             price: item.price,
+            cartToken: cart.token
         })),
         cartItems: new Set(cart.items.map(item => item.sku)).size,
         cartUnits: cart.items.reduce((totalUnits, item) => totalUnits + item.quantity, 0),
