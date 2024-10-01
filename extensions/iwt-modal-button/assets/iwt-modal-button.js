@@ -626,16 +626,17 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
         responseSection.style.display = 'flex';
         responseSection.classList.add('fade-in');
 
-        const wooHooImage = document.getElementById('woo-hoo-image');
-        if (offerStatus === 'Accepted') {
-            wooHooImage.style.display = 'flex';
-        } else {
-            wooHooImage.style.display = 'none';
-        }
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
  
     let responseMessage = '';
 
     if (offerStatus === 'Accepted') {
+        wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+        whoopsContainer.style.display = 'none'; // Hide Whoops container
+        pendingContainer.style.display = 'none'; // Hide Whoops container
+
         responseMessage = `<p>Your offer of $${offerAmount} has been accepted! 
         Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
         Thanks for shopping ${storeBrand}`;
@@ -647,9 +648,17 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
         }
 
     } else if (offerStatus === 'Declined') {
+        wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+        whoopsContainer.style.display = 'flex'; // Show Whoops container
+        pendingContainer.style.display = 'none'; // Hide Whoops container
+
         responseMessage = `<p>Unfortunately, we canot make $${(offerAmount / 100).toFixed(2)} that work. If you would like to submit a new offer, just select the button below.</p>
                            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
     } else if (offerStatus === 'Pending Review') {
+        wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+        whoopsContainer.style.display = 'none'; // Show Whoops container
+        pendingContainer.style.display = 'flex'; // Hide Whoops container
+
         responseMessage = `<p>Your offer of $${(offerAmount / 100).toFixed(2)} has been received and is currently under review.  
                             Our customer service team will get back to your shortly. Have a great day!</p>`;
     } else {
