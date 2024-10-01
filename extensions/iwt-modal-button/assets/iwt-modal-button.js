@@ -614,62 +614,67 @@ async function submitOfferToAPI(event) {
 }
 
 function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
-
     const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
     modalContentContainer.classList.add('fade-out');
 
-
     setTimeout(() => {
-        modalContentContainer.style.display = 'none';
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
 
         // Show the response section with fade-in animation
         const responseSection = document.getElementById('iwt-modal-offer-response');
         responseSection.style.display = 'flex';
         responseSection.classList.add('fade-in');
 
+        // Containers for different offer statuses
         const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
         const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
         const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
- 
-    let responseMessage = '';
 
-    if (offerStatus === 'Accepted') {
-        wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
-        whoopsContainer.style.display = 'none'; // Hide Whoops container
-        pendingContainer.style.display = 'none'; // Hide Whoops container
+        let responseMessage = '';
 
-        responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${offerAmount} has been accepted! 
-        Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
-        Thanks for shopping ${storeBrand}`;
-        const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
-        const checkoutButton = document.getElementById('checkout-button');
-        if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
-            checkoutButton.href = checkoutUrl;
-            checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
         }
 
-    } else if (offerStatus === 'Declined') {
-        wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
-        whoopsContainer.style.display = 'flex'; // Show Whoops container
-        pendingContainer.style.display = 'none'; // Hide Whoops container
-
-        responseMessage = `<p>Hey thanks for the offer but unfortunately we can not make $${(offerAmount / 100).toFixed(2)} that work. 
-        If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
-                           <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
-    } else if (offerStatus === 'Pending Review') {
-        wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
-        whoopsContainer.style.display = 'none'; // Show Whoops container
-        pendingContainer.style.display = 'flex'; // Hide Whoops container
-
-        responseMessage = `<p>Hey thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  We are currently reviewing the offer and  
-                            our customer service team will get back to your shortly. Have a great day and thanks for shoppinf ${storeBrand}!</p>`;
-    } else {
-        responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
-    }
-
-    const responseMessageContainer = document.getElementById('response-message-container');
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
         responseMessageContainer.innerHTML = responseMessage;
-    }, 500);
+        
+    }, 500); // Timeout to match the duration of fade-out animation
 }
 
 function retryOffer() {
@@ -677,7 +682,4589 @@ function retryOffer() {
     const responseSection = document.getElementById('iwt-modal-offer-response');
     responseSection.style.display = 'none';
 
-    // Show the modal content container with fade-in animation
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
+}
+
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
+
+    setTimeout(() => {
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
+        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
+        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
+        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+        if (offerStatus === 'Accepted') {
+            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
+            Thanks for shopping ${storeBrand}`;
+            
+            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
+            const checkoutButton = document.getElementById('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
+            }
+
+        } else if (offerStatus === 'Declined') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
+
+            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'flex'; // Show Pending container
+
+            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
+        
+    }, 500); // Timeout to match the duration of fade-out animation
+}
+
+function retryOffer() {
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
     const modalContentContainer = document.querySelector('.modal-content-container');
     modalContentContainer.classList.remove('fade-out');
     modalContentContainer.style.display = 'flex';
