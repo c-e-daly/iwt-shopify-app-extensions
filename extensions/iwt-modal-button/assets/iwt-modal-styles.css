@@ -395,7 +395,7 @@ cart-table th,
         transform: scale(1);
     }
     
-    .woo-hoo-logo {
+    .woo-hoo-logo, .whoops-logo, .pending-logo{
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -404,7 +404,7 @@ cart-table th,
         margin-bottom: 20px; 
     }
     
-    #woo-hoo-image {
+    #woo-hoo-image, #whoops-image, #pending-image {
         width: 300px !important;
         height: 106px !important;
         margin-bottom: 20px;
