@@ -623,12 +623,12 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
 
         // Show the response section with fade-in animation
         const responseSection = document.getElementById('iwt-modal-offer-response');
-        responseSection.style.display = 'block';
+        responseSection.style.display = 'flex';
         responseSection.classList.add('fade-in');
 
         const wooHooImage = document.getElementById('woo-hoo-image');
         if (offerStatus === 'Accepted') {
-            wooHooImage.style.display = 'block';
+            wooHooImage.style.display = 'flex';
         } else {
             wooHooImage.style.display = 'none';
         }
@@ -643,14 +643,14 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
         const checkoutButton = document.getElementById('checkout-button');
         if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
             checkoutButton.href = checkoutUrl;
-            checkoutButtonContainer.style.display = 'block'; // Ensure it's displayed only once
+            checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
         }
 
     } else if (offerStatus === 'Declined') {
-        responseMessage = `<p>Unfortunately, we canot make $ ${offerAmount} that work. You can update your offer by selecting the button below.</p>
-                           <button classe="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
-    } else if (offerStatus === 'Pending') {
-        responseMessage = `<p>Your offer of $${offerAmount} has been received and is currently under review.  
+        responseMessage = `<p>Unfortunately, we canot make $${(offerAmount / 100).toFixed(2)} that work. If you would like to submit a new offer, just select the button below.</p>
+                           <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+    } else if (offerStatus === 'Pending Review') {
+        responseMessage = `<p>Your offer of $${(offerAmount / 100).toFixed(2)} has been received and is currently under review.  
                             Our customer service team will get back to your shortly. Have a great day!</p>`;
     } else {
         responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
@@ -669,7 +669,7 @@ function retryOffer() {
     // Show the modal content container with fade-in animation
     const modalContentContainer = document.querySelector('.modal-content-container');
     modalContentContainer.classList.remove('fade-out');
-    modalContentContainer.style.display = 'block';
+    modalContentContainer.style.display = 'flex';
     modalContentContainer.classList.add('fade-in');
 }
 

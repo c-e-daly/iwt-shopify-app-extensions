@@ -280,7 +280,7 @@ cart-table th,
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: center;
+    justify-content: center !important;
     gap: 10px;
     width: 100%;
 }
@@ -356,7 +356,7 @@ cart-table th,
     .iwt-checkout-button, .iwt-retry-offer-button {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
+        justify-content: center !important;
         padding: 12px 24px;
         margin: 10px 0; 
         width: 80%; 
