@@ -635,7 +635,7 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
         let responseMessage = '';
 
         if (offerStatus === 'Accepted') {
-            wooHooContainer.style.display = 'flex'; // Show Woo-Hoo container
+            wooHooContainer.style.display = 'block'; // Show Woo-Hoo container
             whoopsContainer.style.display = 'none'; // Hide Whoops container
             pendingContainer.style.display = 'none'; // Hide Pending container
 
@@ -652,7 +652,7 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
 
         } else if (offerStatus === 'Declined') {
             wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
-            whoopsContainer.style.display = 'flex'; // Show Whoops container
+            whoopsContainer.style.display = 'block'; // Show Whoops container
             pendingContainer.style.display = 'none'; // Hide Pending container
 
             responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
@@ -662,7 +662,7 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
         } else if (offerStatus === 'Pending Review') {
             wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
             whoopsContainer.style.display = 'none'; // Hide Whoops container
-            pendingContainer.style.display = 'flex'; // Show Pending container
+            pendingContainer.style.display = 'block'; // Show Pending container
 
             responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
             We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
