@@ -334,7 +334,6 @@ cart-table th,
         margin: 5% auto;
         width: 100%;
         max-width: 100%;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         opacity: 1;
         transition: opacity 0.5s ease-in-out;
         box-sizing: border-box;

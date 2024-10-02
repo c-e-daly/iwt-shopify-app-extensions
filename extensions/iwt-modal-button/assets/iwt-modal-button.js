@@ -80,7 +80,7 @@ function closeModal() {
 const openOfferModal = async function({ brand, template, default_variantID, storeUrl}) {
     console.log('Store URL:', storeUrl, template);
     let cartToken, cartDate;
-    let storeBrand = brand;
+    let storeBrand = brand || "our store";
 
     storeUrlGlobal = storeUrl;
   
