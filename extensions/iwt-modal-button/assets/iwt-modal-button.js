@@ -639,7 +639,7 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
             whoopsContainer.style.display = 'none'; // Hide Whoops container
             pendingContainer.style.display = 'none'; // Hide Pending container
 
-            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been accepted! 
+            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${offerAmount} has been accepted! 
             Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
             Thanks for shopping ${storeBrand}`;
             

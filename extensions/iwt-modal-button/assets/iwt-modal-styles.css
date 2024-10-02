@@ -332,14 +332,12 @@ cart-table th,
         background-color: #fefefe;
         padding: 20px;
         margin: 5% auto;
-        border: 2px solid #0442bf;
-        border-radius: 15px;
-        width: 50%;
-        max-width: 650px;
-        min-width: 438px;
+        width: 100%;
+        max-width: 100%;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         opacity: 1;
         transition: opacity 0.5s ease-in-out;
+        box-sizing: border-box;
     }
     
     .response-message-container {
@@ -349,7 +347,6 @@ cart-table th,
         color: #3e3e3e;
         text-align: center;
         margin-bottom: 20px;
-        padding: 10px 20px;
         word-wrap: break-word;
     }
 
