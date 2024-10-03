@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 ///////// GLOBAL VARIABLES //////////
 let cart; // Global variable to store cart data
+let storeBrandName; // Global variable to store the store brand name
   
 document.addEventListener('DOMContentLoaded', async () => {
     cart = await fetchCart(); // Fetch cart data on page load
@@ -80,7 +81,7 @@ function closeModal() {
 const openOfferModal = async function({ brand, template, default_variantID, storeUrl}) {
     console.log('Store URL:', storeUrl, template);
     let cartToken, cartDate;
-    let storeBrand = brand || "our store";
+    let storeBrandName = brand || "our store";
 
     storeUrlGlobal = storeUrl;
   
@@ -598,7 +599,9 @@ async function submitOfferToAPI(event) {
                 response.response.offerAmount,
                 response.response.checkoutUrl,
                 response.response.offerExpiryMinutes,
-                response.response.couponCode
+                response.response.couponCode,
+                response.response.storeBrand,
+                response.response.firstName
             );
         } else {
             console.error("Unexpected response format:", response);
@@ -639,9 +642,9 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
             whoopsContainer.style.display = 'none'; // Hide Whoops container
             pendingContainer.style.display = 'none'; // Hide Pending container
 
-            responseMessage = `<p>You just made a Great Deal using I Want That!  Your offer of $${offerAmount} has been accepted! 
-            Proceed to Checkout to claim your deal! Your deal will expire in ${expiryMinutes} minutes if you do not claim it.</p>
-            Thanks for shopping ${storeBrand}`;
+            responseMessage = `<p class="iwt-paragraph">You just made a Great Deal using I Want That!</br>Your offer of $${offerAmount} has been accepted, please 
+            proceed to Checkout to claim your deal.</br>Your accepted offer will expire in ${expiryMinutes} minutes if you don't claim it.</br>
+            Thanks for shopping ${storeBrand}</p>`;
             
             const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
             const checkoutButton = document.getElementById('checkout-button');
@@ -655,7 +658,7 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
             whoopsContainer.style.display = 'block'; // Show Whoops container
             pendingContainer.style.display = 'none'; // Hide Pending container
 
-            responseMessage = `<p>Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
+            responseMessage = `<p class="iwt-paragraph">Hey thanks for the offer but unfortunately we cannot make $${(offerAmount / 100).toFixed(2)} work. 
             If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
             <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
 
@@ -664,10 +667,10 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
             whoopsContainer.style.display = 'none'; // Hide Whoops container
             pendingContainer.style.display = 'block'; // Show Pending container
 
-            responseMessage = `<p>Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
+            responseMessage = `<p class="iwt-paragraph">Hey, thanks for your offer of $${(offerAmount / 100).toFixed(2)} for your cart.  
             We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
         } else {
-            responseMessage = `<p>Unexpected status: ${offerStatus}. Please try again later.</p>`;
+            responseMessage = `<p class="iwt-paragraph">Unexpected status: ${offerStatus}. Please try again later.</p>`;
         }
 
         // Set the response message

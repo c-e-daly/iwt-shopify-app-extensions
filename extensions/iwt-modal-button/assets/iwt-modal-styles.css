@@ -63,9 +63,14 @@
     flex-direction: row;
     align-items: center;
     vertical-align: middle;
-    justify-content: space-around;
+    justify-content: space-between;
     gap: 60px;
     width: 100%;
+}
+
+.iwt-logo{
+    margin-top:25px;
+    margin-left:25px;
 }
 
 .h2{
@@ -81,7 +86,7 @@
     font-weight: 400 !important;
     color: #3e3e3e !important;
     line-height: 1.5em !important;
-    letter-spacing: -.25px !important;
+    letter-spacing: -.5px !important;
     padding: 0px 10px 0px 10px !important;
 }
 
@@ -302,6 +307,10 @@ cart-table th,
     transition: all ease .5s;
     padding:14px 20px 14px 20px !important;
     }
+
+    .iwt-submit-offer a{
+        text-decoration: none !important;
+    }
     
     .iwt-submit-offer:hover {
         background-color: #FFFFFF !important;
@@ -401,6 +410,9 @@ cart-table th,
     }
     
     #woo-hoo-image, #whoops-image, #pending-image {
+        display:flex !important;
+        flex-direction: row;
+        justify-content:center;
         width: 300px !important;
         height: 106px !important;
         margin-bottom: 20px;
