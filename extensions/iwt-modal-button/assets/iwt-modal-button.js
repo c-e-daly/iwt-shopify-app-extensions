@@ -576,7 +576,7 @@ async function submitOfferToAPI(event) {
     console.log("Submitting offer with the following data:", offerData);
 
     // Submit the offerData to the API
-    fetch('https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation/', {
+    fetch('https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
