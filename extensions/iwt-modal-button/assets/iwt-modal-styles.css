@@ -308,15 +308,15 @@ cart-table th,
     padding:14px 20px 14px 20px !important;
     }
 
-    .iwt-submit-offer a{
+    a{
         text-decoration: none !important;
     }
     
     .iwt-submit-offer:hover {
-        background-color: #FFFFFF !important;
-        color: #0442bf !important;
-        border-color: #0442bf !important;
-        border: solid 2px #0442bf !important;
+        background-color: #0442bf !important;
+        color: #fff !important;
+        border-color: grey !important;
+        border: solid 2px grey !important;
     }
     
     .iwt-logo-icon{

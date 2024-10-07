@@ -642,9 +642,9 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
             whoopsContainer.style.display = 'none'; // Hide Whoops container
             pendingContainer.style.display = 'none'; // Hide Pending container
 
-            responseMessage = `<p class="iwt-paragraph">You just made a Great Deal using I Want That!</br>Your offer of $${offerAmount} has been accepted, please 
-            proceed to Checkout to claim your deal.</br>Your accepted offer will expire in ${expiryMinutes} minutes if you don't claim it.</br>
-            Thanks for shopping ${storeBrand}</p>`;
+            responseMessage = `<p class="iwt-paragraph">You just made a Great Deal using I Want That!  Your offer of $${offerAmount} has been <strong>accepted</strong>.  Your deal will expire
+            in ${expiryMinutes} minutes.  Click on the button below and go claim it.</p>
+            <p class='iwt-paragraph">Thanks for shopping ${storeBrand}</p>`;
             
             const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
             const checkoutButton = document.getElementById('checkout-button');
