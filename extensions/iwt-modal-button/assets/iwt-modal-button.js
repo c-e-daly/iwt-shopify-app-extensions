@@ -577,11 +577,13 @@ function showError(element, message) {
     element.style.borderColor = 'red';
     element.style.borderWidth = '2px';
 
+    // Remove existing custom tooltips if present
     const existingTooltip = element.parentElement.querySelector('.custom-tooltip');
     if (existingTooltip) {
         existingTooltip.remove();
     }
 
+    // Create a new tooltip element
     const tooltip = document.createElement('div');
     tooltip.className = 'custom-tooltip';
     tooltip.style.position = 'absolute';
@@ -593,8 +595,27 @@ function showError(element, message) {
     tooltip.style.marginTop = '5px';
     tooltip.innerText = message;
 
-    element.parentElement.appendChild(tooltip);
+    // Append the tooltip
+    document.body.appendChild(tooltip);
+
+    // Calculate the position of the input element
+    const rect = element.getBoundingClientRect();
+    tooltip.style.left = `${rect.left + window.scrollX}px`;
+    tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`; // 5px below the field
 }
+
+// Function to clear the custom tooltip
+function clearError(element) {
+    element.style.borderColor = '';
+    element.style.borderWidth = '';
+
+    // Remove any existing tooltips
+    const tooltip = document.body.querySelector('.custom-tooltip');
+    if (tooltip) {
+        tooltip.remove();
+    }
+}
+
 
 // Function to clear errors and tooltips
 function clearError(element) {
