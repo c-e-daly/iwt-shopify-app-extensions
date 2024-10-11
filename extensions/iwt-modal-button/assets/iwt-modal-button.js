@@ -497,7 +497,7 @@ function validateForm() {
     const postalCode = document.getElementById('iwt-consumer-postal');
     const offer = document.getElementById('iwt-consumer-offer');
     const tosCheckbox = document.getElementById('iwt-tos-checkbox');
-    const cartTotalElement = document.getElementById('cart-total');
+    const cartTotalElement = document.getElementById('iwt-cart-total');
 
     let cartTotal = 0;
 
