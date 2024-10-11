@@ -559,6 +559,19 @@ function validateForm() {
     return isValid;
 }
 
+// Function to validate email format
+function validateEmail(email) {
+    const emailPattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+    return emailPattern.test(email);
+}
+
+// Function to validate phone number format
+function validatePhone(phone) {
+    const phonePattern = /^[0-9]{10}$/; // Adjust the regex as needed for your phone format
+    return phonePattern.test(phone);
+}
+
+
 // Function to show an error with a custom tooltip
 function showError(element, message) {
     element.style.borderColor = 'red';
