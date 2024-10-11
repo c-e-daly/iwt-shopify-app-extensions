@@ -431,7 +431,7 @@ const renderCartTable = function(cart, offerAcceptedPrice = null) {
       <tfoot>
         <tr style="background-color: #0442b4; color: #fff;">
           <td colspan="${allowedKeys.length}">Subtotal</td>
-          <td>${formatPrice(subtotal)}</td>
+          <td id="iwt-cart-total">${formatPrice(subtotal)}</td>
         </tr>
     `;
   
@@ -459,10 +459,171 @@ function formatPrice(cents) {
 }
 
 ////// Handle the submission of the offer and process the return data //////
+// Function to start event listeners
+function startupEventListeners() {
+    const submitButton = document.getElementById('submit-offer-button');
+    const form = document.getElementById('iwt-offer-form');
 
+    if (submitButton && form) {
+        console.log('Event listener attached to submit button'); // Debugging log
+
+        // Only use the button click event, as it's already handling form submission
+        submitButton.addEventListener('click', async function(event) {
+            event.preventDefault(); // Prevent the form from submitting the traditional way
+
+            console.log('Submit button clicked. Starting validation.');
+
+            if (validateForm()) {
+                console.log('Form is valid. Proceeding with submission...');
+                await submitOfferToAPI(event); // Call the API submission function
+            } else {
+                console.log('Form is invalid. Submission prevented.');
+            }
+        });
+    } else {
+        console.log('Submit button or form element not found.');
+    }
+}
+
+// Function to validate the form (as you have already defined
+
+function validateForm() {
+    let isValid = true;
+
+    // Get form elements
+    const name = document.getElementById('iwt-consumer-name');
+    const email = document.getElementById('iwt-consumer-email');
+    const mobile = document.getElementById('iwt-consumer-mobile');
+    const postalCode = document.getElementById('iwt-consumer-postal');
+    const offer = document.getElementById('iwt-consumer-offer');
+    const tosCheckbox = document.getElementById('iwt-tos-checkbox');
+    const cartTotalElement = document.getElementById('cart-total');
+
+    let cartTotal = 0;
+
+    if (cartTotalElement && cartTotalElement.textContent) {
+        cartTotal = parseFloat(cartTotalElement.textContent.replace(/[^\d.-]/g, ''));
+        if (isNaN(cartTotal)) {
+            console.error("Cart total is not a valid number");
+            cartTotal = 0; // Set a default fallback value
+        }
+    } else {
+        console.error("Cart total element not found or has invalid content");
+        cartTotal = 0; // Set a default fallback value
+    }
+
+    // Clear previous errors
+    clearError(name);
+    clearError(email);
+    clearError(mobile);
+    clearError(postalCode);
+    clearError(offer);
+    document.getElementById('iwt-tos-error').style.display = 'none';
+
+    // Validation logic
+    if (!name.value.trim()) {
+        showError(name, 'Please fill in your name');
+        isValid = false;
+    }
+    if (!email.value.trim()) {
+        showError(email, 'Please fill in your email');
+        isValid = false;
+    } else if (!validateEmail(email.value)) {
+        showError(email, 'Please enter a valid email');
+        isValid = false;
+    }
+    if (!mobile.value.trim()) {
+        showError(mobile, 'Please fill in your mobile number');
+        isValid = false;
+    } else if (!validatePhone(mobile.value)) {
+        showError(mobile, 'Please enter a valid phone number');
+        isValid = false;
+    }
+    if (!postalCode.value.trim()) {
+        showError(postalCode, 'Please fill in your postal code');
+        isValid = false;
+    }
+    if (!offer.value.trim() || parseFloat(offer.value) <= 0) {
+        showError(offer, 'Offer price must be greater than zero');
+        isValid = false;
+    } else if (parseFloat(offer.value) > cartTotal) {
+        showError(offer, 'Offer price cannot exceed the cart total');
+        isValid = false;
+    }
+
+    if (!tosCheckbox.checked) {
+        document.getElementById('iwt-tos-error').style.display = 'block';
+        isValid = false;
+    }
+
+    return isValid;
+}
+
+// Function to show an error with a custom tooltip
+function showError(element, message) {
+    element.style.borderColor = 'red';
+    element.style.borderWidth = '2px';
+
+    const existingTooltip = element.parentElement.querySelector('.custom-tooltip');
+    if (existingTooltip) {
+        existingTooltip.remove();
+    }
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'custom-tooltip';
+    tooltip.style.position = 'absolute';
+    tooltip.style.backgroundColor = '#f8d7da';
+    tooltip.style.color = '#721c24';
+    tooltip.style.padding = '5px';
+    tooltip.style.borderRadius = '3px';
+    tooltip.style.fontSize = '12px';
+    tooltip.style.marginTop = '5px';
+    tooltip.innerText = message;
+
+    element.parentElement.appendChild(tooltip);
+}
+
+// Function to clear errors and tooltips
+function clearError(element) {
+    element.style.borderColor = '';
+    element.style.borderWidth = '';
+
+    const tooltip = element.parentElement.querySelector('.custom-tooltip');
+    if (tooltip) {
+        tooltip.remove();
+    }
+}
+
+
+
+// Call the startupEventListeners function when the DOM is ready
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+
+/*
 // Function to start event listeners
 function startupEventListeners() {
     document.getElementById('submit-offer-button').addEventListener('click', submitOfferToAPI);
+    const form = document.getElementById('iwt-offer-form'); // Correct form ID
+
+    if (form) {
+        console.log('Event listener attached to form'); // Debugging log
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent actual submission for debugging
+            console.log('Form submission event detected.');
+
+            if (validateForm()) {
+                console.log('Form is valid. Proceeding with submission...');
+                // You can add actual submission logic here (AJAX, or form.submit())
+            } else {
+                console.log('Form is invalid. Submission prevented.');
+            }
+        });
+    } else {
+        console.log('Form element not found.');
+    }
+
 }
 
 // Function to validate the form
@@ -476,6 +637,8 @@ function validateForm() {
     const postalCode = document.getElementById('iwt-consumer-postal');
     const offer = document.getElementById('iwt-consumer-offer');
     const tosCheckbox = document.getElementById('iwt-tos-checkbox');
+    const cartTotal = parseFloat(document.getElementById('cart-total').textContent.replace(/[^\d.-]/g, '')); 
+
     
     // Clear previous errors
     clearError(name);
@@ -493,9 +656,15 @@ function validateForm() {
     if (!email.value.trim()) {
         showError(email, 'Please fill in your email');
         isValid = false;
+    } else if (!validateEmail(email.value)) {
+        showError(email, 'Please enter a valid email');
+        isValid = false;
     }
     if (!mobile.value.trim()) {
         showError(mobile, 'Please fill in your mobile number');
+        isValid = false;
+    } else if (!validatePhone(mobile.value)) {
+        showError(mobile, 'Please enter a valid phone number');
         isValid = false;
     }
     if (!postalCode.value.trim()) {
@@ -504,6 +673,9 @@ function validateForm() {
     }
     if (!offer.value.trim() || parseFloat(offer.value) <= 0) {
         showError(offer, 'Offer price must be greater than zero');
+        isValid = false;
+    } else if (parseFloat(offer.value) > cartTotal) {
+        showError(offer, 'Offer price cannot exceed the cart total');
         isValid = false;
     }
     
@@ -514,6 +686,18 @@ function validateForm() {
     }
     
     return isValid;
+}
+
+// Function to validate email format
+function validateEmail(email) {
+    const emailPattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+    return emailPattern.test(email);
+}
+
+// Function to validate phone number format
+function validatePhone(phone) {
+    const phonePattern = /^[0-9]{10}$/; // Adjust the regex as needed for your phone format
+    return phonePattern.test(phone);
 }
 
 // Function to show an error
@@ -527,7 +711,7 @@ function clearError(element) {
     element.style.borderColor = '';
     element.title = '';
 }
-
+*/
 /////////// Function to submit the offer data to the API ///////////
 
 async function submitOfferToAPI(event) {
