@@ -158,56 +158,127 @@ function getQuantity() {
 }
   
 // Function to add the product and selected variant to the cart
+// Function to add the product and selected variant to the cart
 const addToCart = async function({ ID, quantity, template }) {
-    const data = {
-        items: [
-            {
-                id: ID,
-                quantity: quantity,
-                properties: {
-                    template: template
-                }
-            }
-        ]
-    };
-  
-    console.log('Adding to cart with data:', JSON.stringify(data));
-
     try {
-        const response = await fetch('/cart/add.js', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-  
-        if (!response.ok) {
-            throw new Error(`Network response was not ok, status: ${response.status}`);
-        }
-  
-        const result = await response.json();
-        console.log('Product added to cart with template:', template);
-       
-  
-        // Check if the quantity added is less than requested (i.e., some items are back-ordered)
-        const addedItem = result.items.find(item => item.id == ID);
-        if (addedItem && addedItem.quantity < quantity) {
-            return {
-                success: true,
-                availableQuantity: addedItem.quantity,
-                backOrderedQuantity: quantity - addedItem.quantity
+        // Check if the item is already in the cart
+        const existingItem = cart.items.find(item => item.variant_id === ID && item.properties?.template === template);
+
+        if (existingItem) {
+            // If the item already exists, update the quantity
+            console.log('Item already in the cart, updating quantity...');
+            const newQuantity = existingItem.quantity + quantity;
+
+            const response = await fetch('/cart/change.js', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: existingItem.key,
+                    quantity: newQuantity
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Network response was not ok, status: ${response.status}`);
+            }
+
+            const updatedCart = await response.json();
+            console.log('Cart updated:', updatedCart);
+
+            // Check if the quantity updated is less than requested (e.g., back-order scenario)
+            const updatedItem = updatedCart.items.find(item => item.variant_id === ID);
+            if (updatedItem && updatedItem.quantity < newQuantity) {
+                return {
+                    success: true,
+                    availableQuantity: updatedItem.quantity,
+                    backOrderedQuantity: newQuantity - updatedItem.quantity,
+                    cart: updatedCart
+                };
+            }
+
+            return { success: true, availableQuantity: newQuantity, backOrderedQuantity: 0, cart: updatedCart };
+
+        } else {
+            // Item does not exist in the cart, add it as a new item
+            const data = {
+                items: [
+                    {
+                        id: ID,
+                        quantity: quantity,
+                        properties: {
+                            template: template
+                        }
+                    }
+                ]
             };
+
+            console.log('Adding to cart with data:', JSON.stringify(data));
+
+            const response = await fetch('/cart/add.js', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Network response was not ok, status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Product added to cart with template:', template);
+
+            // Check if the quantity added is less than requested (i.e., some items are back-ordered)
+            const addedItem = result.items.find(item => item.id == ID);
+            if (addedItem && addedItem.quantity < quantity) {
+                return {
+                    success: true,
+                    availableQuantity: addedItem.quantity,
+                    backOrderedQuantity: quantity - addedItem.quantity,
+                    cart: result
+                };
+            }
+
+            return { success: true, availableQuantity: quantity, backOrderedQuantity: 0, cart: result };
         }
-  
-        return { success: true, availableQuantity: quantity, backOrderedQuantity: 0, cart: result };
-  
+
     } catch (error) {
         console.error("Error adding to cart:", error);
         return { success: false, error };
     }
 };
-  
+
+// Function to handle updating item quantities and re-rendering the cart
+const updateItemQuantityHandler = async (lineItemKey, newQuantity) => {
+    const currentItem = cart.items.find(item => item.key === lineItemKey);
+    if (currentItem) {
+        try {
+            // Update the item quantity in the cart
+            await updateItemQuantity(lineItemKey, newQuantity);
+            // Fetch the latest cart and re-render it
+            await updateAndRenderCart();
+        } catch (error) {
+            console.error('Error updating item quantity:', error);
+        }
+    } else {
+        console.error('Item not found for quantity update');
+    }
+};
+
+// Function to fetch and render the cart after any updates
+const updateAndRenderCart = async () => {
+    cart = await fetchCart();
+    if (cart) {
+        renderCartTable(cart);
+    } else {
+        console.error('Failed to fetch updated cart data');
+    }
+};
+
+
 // Function to fetch cart data to assemble cart data table
 const fetchCart = async function() {
     try {
@@ -280,7 +351,10 @@ const updateItemQuantity = async (lineItemKey, newQuantity) => {
         console.log('Current item:', currentItem); // Log current item details
 
         // Attempt to add the updated quantity to the cart to check if it's valid
-        const result = await addToCart({ ID: currentItem.variant_id, quantity: newQuantity });
+        const result = await addToCart({ 
+            ID: currentItem.variant_id, 
+            quantity: newQuantity,
+            template: currentItem.properties.template});
 
         if (!result.success) {
             throw new Error(result.error || 'Failed to update quantity');
@@ -356,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
         input.addEventListener('input', async (event) => {
             const lineItemKey = input.getAttribute('data-line-item-key');
             const newQuantity = parseInt(event.target.value);
-            await updateItemQuantity(lineItemKey, newQuantity);
+            await updateItemQuantityHandler(lineItemKey, newQuantity);
         });
     });
 });
