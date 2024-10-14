@@ -171,6 +171,8 @@ const addToCart = async function({ ID, quantity, template }) {
         ]
     };
   
+    console.log('Adding to cart with data:', JSON.stringify(data));
+
     try {
         const response = await fetch('/cart/add.js', {
             method: 'POST',
@@ -716,12 +718,12 @@ async function submitOfferToAPI(event) {
             sku: item.sku,
             quantity: item.quantity,
             price: item.price,
-            cartToken: cart.token
+            cartToken: cart.token,
+            template: item.template
         })),
         cartItems: new Set(cart.items.map(item => item.sku)).size,
         cartUnits: cart.items.reduce((totalUnits, item) => totalUnits + item.quantity, 0),
         cartTotalPrice: cartTotalCents,
-        sourceTemplate: sourceTemplate
     };
 
     console.log("Submitting offer with the following data:", offerData);
