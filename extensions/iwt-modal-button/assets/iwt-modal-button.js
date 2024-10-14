@@ -49,65 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     startupEventListeners();
 });
 
-/*
-//////// MODAL DEFINITION AND POSITIONING /////////
-document.addEventListener('DOMContentLoaded', () => {
-    const modalContainer = document.getElementById('iwt-modal-container');
-    const closeModalButton = document.getElementById('iwt-modal-close-btn');
-
-    // Check if modalContainer exists
-    if (!modalContainer) {
-        console.error('Modal container not found. Check the ID "iwt-modal-container".');
-        return;
-    }
-
-    // Check if closeModalButton exists
-    if (!closeModalButton) {
-        console.error('Close button not found. Check the ID "iwt-modal-close-btn".');
-    }
-
-    // Initialize modal container
-    modalContainer.style.display = 'none';
-    document.body.appendChild(modalContainer);
-
-    // Close the modal on button click
-    if (closeModalButton) {
-        closeModalButton.addEventListener('click', (event) => {
-            event.stopPropagation(); // Prevent event bubbling to the container
-            closeModal();
-            console.log('Modal closed with button click.');
-        });
-    }
-
-    // Close the modal on clicking outside the modal content
-    modalContainer.addEventListener('click', (event) => {
-        if (event.target === modalContainer) {
-            closeModal();
-            console.log('Modal closed by clicking outside the modal content.');
-        }
-    });
-
-    // Check if the URL has the 'cgo=iwt' parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const cgoParam = urlParams.get('cgo');
-
-    // If the parameter is 'iwt', show the modal
-    if (cgoParam === 'iwt') {
-        modalContainer.style.display = 'block'; // Show the modal
-        console.log('Modal opened based on URL parameter "cgo=iwt".');
-    }
-});
-
-///////// GLOBAL VARIABLES //////////
-let cart; // Global variable to store cart data
-let sourceTemplate; // Global variable to store the source page template
   
-document.addEventListener('DOMContentLoaded', async () => {
-    cart = await fetchCart(); // Fetch cart data on page load
-    // Other initialization code
-});
-*/
-
 // Function to clear and reset the modal data
 function resetModalData() {
     document.getElementById('iwt-cart-table').innerHTML = '';
