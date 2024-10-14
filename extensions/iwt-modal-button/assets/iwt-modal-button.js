@@ -105,7 +105,7 @@ resetModalData();
         console.log('Product ID (Variant ID):', ID);
   
         try {
-            await addToCart({ ID, quantity });
+            await addToCart({ ID, quantity, template });
         } catch (error) {
             console.error(`Error adding product ${ID} to the cart`, error);
         }
@@ -158,12 +158,15 @@ function getQuantity() {
 }
   
 // Function to add the product and selected variant to the cart
-const addToCart = async function({ ID, quantity }) {
+const addToCart = async function({ ID, quantity, template }) {
     const data = {
         items: [
             {
                 id: ID,
-                quantity: quantity
+                quantity: quantity,
+                properties: {
+                    template: template
+                }
             }
         ]
     };
@@ -182,6 +185,8 @@ const addToCart = async function({ ID, quantity }) {
         }
   
         const result = await response.json();
+        console.log('Product added to cart with template:', template);
+       
   
         // Check if the quantity added is less than requested (i.e., some items are back-ordered)
         const addedItem = result.items.find(item => item.id == ID);
@@ -193,7 +198,7 @@ const addToCart = async function({ ID, quantity }) {
             };
         }
   
-        return { success: true, availableQuantity: quantity, backOrderedQuantity: 0 };
+        return { success: true, availableQuantity: quantity, backOrderedQuantity: 0, cart: result };
   
     } catch (error) {
         console.error("Error adding to cart:", error);
@@ -211,7 +216,50 @@ const fetchCart = async function() {
         }
         const cart = await response.json();
         console.log('Cart details:', cart);
-        console.log('Cart date:', cart.createdAt);
+
+        let hasClearance = false;
+        let hasRegular = false;
+
+        // Iterate through each item in the cart to check its properties
+        cart.items.forEach((item, index) => {
+            console.log(`Item ${index + 1}:`, item);
+            
+            if (item.properties) {
+                console.log(`Properties for item ${index + 1}:`, item.properties);
+
+                // Make sure template property exists and has the correct value
+                if (item.properties.template) {
+                    console.log(`Template property for item ${index + 1}:`, item.properties.template);
+
+                    if (item.properties.template === 'iwtclearance') {
+                        hasClearance = true;
+                        console.log(`Item ${index + 1} is marked as clearance.`);
+                    } else {
+                        hasRegular = true;
+                        console.log(`Item ${index + 1} is marked as regular.`);
+                    }
+                } else {
+                    // No template property found
+                    hasRegular = true;
+                    console.warn(`Item ${index + 1} has no template property, assuming regular.`);
+                }
+            } else {
+                // No properties object found at all
+                hasRegular = true;
+                console.warn(`Item ${index + 1} has no properties object, assuming regular.`);
+            }
+        });
+
+        // Determine the type of items in the cart
+        if (hasClearance && hasRegular) {
+            console.log('The cart contains a mix of clearance and regular priced merchandise.');
+        } else if (hasClearance) {
+            console.log('The cart contains only clearance items.');
+        } else if (hasRegular) {
+            console.log('The cart contains only regular priced items.');
+        }
+        
+
         return cart;
     } catch (error) {
         console.error('Error fetching cart:', error);
