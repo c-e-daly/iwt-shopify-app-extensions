@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 ///////// GLOBAL VARIABLES //////////
 let cart; // Global variable to store cart data
+let sourceTemplate; // Global variable to store the source page template
 let storeBrandName; // Global variable to store the store brand name
   
 document.addEventListener('DOMContentLoaded', async () => {
@@ -81,9 +82,9 @@ function closeModal() {
 const openOfferModal = async function({ brand, template, default_variantID, storeUrl}) {
     console.log('Store URL:', storeUrl, template);
     let cartToken, cartDate;
-    let storeBrandName = brand || "our store";
-
+    sourceTemplate = template;
     storeUrlGlobal = storeUrl;
+    storeBrandName = brand;
   
 // Reset modal data before opening
 resetModalData();
