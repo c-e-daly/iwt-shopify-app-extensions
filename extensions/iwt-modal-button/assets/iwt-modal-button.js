@@ -589,7 +589,7 @@ function showError(element, message) {
     tooltip.style.position = 'absolute';
     tooltip.style.backgroundColor = '#f8d7da';
     tooltip.style.color = '#721c24';
-    tooltip.style.padding = '5px';
+    tooltip.style.padding = '10px';
     tooltip.style.borderRadius = '3px';
     tooltip.style.fontSize = '12px';
     tooltip.style.marginTop = '5px';
@@ -855,14 +855,16 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
 
         let responseMessage = '';
 
-        if (offerStatus === 'Accepted') {
+        if (offerStatus === 'Auto Accepted') {
             wooHooContainer.style.display = 'block'; // Show Woo-Hoo container
             whoopsContainer.style.display = 'none'; // Hide Whoops container
             pendingContainer.style.display = 'none'; // Hide Pending container
 
             responseMessage = `<p class="iwt-paragraph">You just made a Great Deal using I Want That!  Your offer of $${offerAmount} has been <strong>accepted</strong>.  Your deal will expire
-            in ${expiryMinutes} minutes.  Click on the button below and go claim it.</p>
-            <p class='iwt-paragraph">Thanks for shopping ${storeBrand}</p>`;
+            in ${expiryMinutes} minutes.  Click on the button below and go claim it.  Congratulations!</p>
+            <p class='iwt-paragraph">Thanks for shopping ${storeBrand}</p>
+            </br>
+            <p>p.s. Your coupon code is: ${couponCode}</p>`;
             
             const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
             const checkoutButton = document.getElementById('checkout-button');
@@ -871,7 +873,7 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
                 checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
             }
 
-        } else if (offerStatus === 'Declined') {
+        } else if (offerStatus === 'Auto Declined') {
             wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
             whoopsContainer.style.display = 'block'; // Show Whoops container
             pendingContainer.style.display = 'none'; // Hide Pending container
