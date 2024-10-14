@@ -49,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
 ///////// GLOBAL VARIABLES //////////
 let cart; // Global variable to store cart data
 let sourceTemplate; // Global variable to store the source page template
-let storeBrandName; // Global variable to store the store brand name
   
 document.addEventListener('DOMContentLoaded', async () => {
     cart = await fetchCart(); // Fetch cart data on page load
@@ -79,12 +78,12 @@ function closeModal() {
 }
 
 ///////// OFFER BUILDING AND DATA COLLECTION //////////
-const openOfferModal = async function({ brand, template, default_variantID, storeUrl}) {
+const openOfferModal = async function({  template, default_variantID, storeUrl}) {
     console.log('Store URL:', storeUrl, template, brand);
     let cartToken, cartDate;
     sourceTemplate = template;
     storeUrlGlobal = storeUrl;
-    storeBrandName = brand;
+ 
   
 // Reset modal data before opening
 resetModalData();
@@ -679,8 +678,7 @@ async function submitOfferToAPI(event) {
         cartItems: new Set(cart.items.map(item => item.sku)).size,
         cartUnits: cart.items.reduce((totalUnits, item) => totalUnits + item.quantity, 0),
         cartTotalPrice: cartTotalCents,
-        sourceTemplate: sourceTemplate,
-        brandName: storeBrandName
+        sourceTemplate: sourceTemplate
     };
 
     console.log("Submitting offer with the following data:", offerData);
