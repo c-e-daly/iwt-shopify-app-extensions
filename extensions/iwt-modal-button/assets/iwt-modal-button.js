@@ -78,8 +78,8 @@ function closeModal() {
 }
 
 ///////// OFFER BUILDING AND DATA COLLECTION //////////
-const openOfferModal = async function({  template, default_variantID, storeUrl}) {
-    console.log('Store URL:', storeUrl, template, brand);
+const openOfferModal = async function({ template, default_variantID, storeUrl}) {
+    console.log('Store URL:', storeUrl, template);
     let cartToken, cartDate;
     sourceTemplate = template;
     storeUrlGlobal = storeUrl;
