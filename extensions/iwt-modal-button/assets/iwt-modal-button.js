@@ -1,3 +1,55 @@
+// Declare global variables at the top of the script
+let cart; // Global variable to store cart data
+let sourceTemplate; // Global variable to store the source page template
+let storeUrlGlobal; // Global variable to store store URL
+
+// Attach all startup event listeners and initialize logic when DOM is fully loaded
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize modal container and listeners
+    const modalContainer = document.getElementById('iwt-modal-container');
+    const closeModalButton = document.getElementById('iwt-modal-close-btn');
+
+    if (modalContainer) {
+        modalContainer.style.display = 'none';
+        document.body.appendChild(modalContainer);
+
+        if (closeModalButton) {
+            closeModalButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                closeModal();
+                console.log('Modal closed with button click.');
+            });
+        }
+
+        modalContainer.addEventListener('click', (event) => {
+            if (event.target === modalContainer) {
+                closeModal();
+                console.log('Modal closed by clicking outside the modal content.');
+            }
+        });
+
+        // Check URL parameter and open modal if required
+        const urlParams = new URLSearchParams(window.location.search);
+        const cgoParam = urlParams.get('cgo');
+        if (cgoParam === 'iwt') {
+            modalContainer.style.display = 'block';
+            console.log('Modal opened based on URL parameter "cgo=iwt".');
+        }
+    } else {
+        console.error('Modal container not found. Check the ID "iwt-modal-container".');
+    }
+
+    // Fetch cart data on page load
+    cart = await fetchCart();
+
+    // Attach quantity input listeners to handle updates
+    attachQuantityInputListeners();
+
+    // Initialize other startup event listeners
+    startupEventListeners();
+});
+
+/*
 //////// MODAL DEFINITION AND POSITIONING /////////
 document.addEventListener('DOMContentLoaded', () => {
     const modalContainer = document.getElementById('iwt-modal-container');
@@ -54,6 +106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     cart = await fetchCart(); // Fetch cart data on page load
     // Other initialization code
 });
+*/
 
 // Function to clear and reset the modal data
 function resetModalData() {
@@ -79,7 +132,7 @@ function closeModal() {
 
 ///////// OFFER BUILDING AND DATA COLLECTION //////////
 const openOfferModal = async function({ template, default_variantID, storeUrl}) {
-    console.log('Store URL:', storeUrl, template);
+    console.log('Store URL:', storeUrl, default_variantID, template);
     let cartToken, cartDate;
     sourceTemplate = template;
     storeUrlGlobal = storeUrl;
