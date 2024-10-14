@@ -511,6 +511,7 @@ function validateForm() {
     } else {
         console.error("Cart total element not found or has invalid content");
         cartTotal = 0; // Set a default fallback value
+
     }
 
     // Clear previous errors
@@ -677,7 +678,9 @@ async function submitOfferToAPI(event) {
         })),
         cartItems: new Set(cart.items.map(item => item.sku)).size,
         cartUnits: cart.items.reduce((totalUnits, item) => totalUnits + item.quantity, 0),
-        cartTotalPrice: cartTotalCents
+        cartTotalPrice: cartTotalCents,
+        sourceTemplate: sourceTemplate,
+        brandName: storeBrandName
     };
 
     console.log("Submitting offer with the following data:", offerData);
