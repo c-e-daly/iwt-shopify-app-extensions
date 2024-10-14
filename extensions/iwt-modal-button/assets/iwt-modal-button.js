@@ -80,7 +80,7 @@ function closeModal() {
 
 ///////// OFFER BUILDING AND DATA COLLECTION //////////
 const openOfferModal = async function({ brand, template, default_variantID, storeUrl}) {
-    console.log('Store URL:', storeUrl, template);
+    console.log('Store URL:', storeUrl, template, brand);
     let cartToken, cartDate;
     sourceTemplate = template;
     storeUrlGlobal = storeUrl;
@@ -686,7 +686,7 @@ async function submitOfferToAPI(event) {
     console.log("Submitting offer with the following data:", offerData);
 
     // Submit the offerData to the API
-    fetch('https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation', {
+    fetch('https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation/initialize', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

@@ -2,13 +2,17 @@
 {{ 'iwt-modal-styles.css' | asset_url | stylesheet_tag }}
 
 {% assign default_variant = product.variants.first.id %}
-{% if template_suffix == blank or template_suffix == null %}
-  {% assign pagetemplate = template %}  
-{% elsif template_suffix == 'iwtclearance' %}
-  {% assign pagetemplate='iwtclearance' %}
-{% elsif template_suffix == 'iwantthat' %}
+
+{% if template.suffix == blank or template.suffix == null %}
+  {% assign pagetemplate = 'default' %}  
+{% elsif template.suffix == 'iwtclearance' %}
+  {% assign pagetemplate = 'iwtclearance' %}
+{% elsif template.suffix == 'iwantthat' %}
   {% assign pagetemplate = 'iwantthat' %}
+{% else %}
+  {% assign pagetemplate = template.suffix %}
 {% endif %}
+
 {% assign storeUrl = shop.url %}
 {%  assign brand = shop.name %}
 
