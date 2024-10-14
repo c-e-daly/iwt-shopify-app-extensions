@@ -149,7 +149,7 @@ resetModalData();
         console.log(`Cart Token: ${cartToken} || Cart Date: ${cartDate}`);
         renderCartTable(cart);
   
-    } else if (template === 'product' || template === 'product.iwantthat' || template === 'product.iwtclearance') {
+    } else if (template === 'product' || template === 'iwantthat' || template === 'iwtclearance') {
         let ID = default_variantID; // Set ID to default_variantID by default
   
         const urlVariantID = getVariantFromURL(); // Attempt to get the variant ID from the URL

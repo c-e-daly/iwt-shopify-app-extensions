@@ -4,7 +4,7 @@
 {% assign default_variant = product.variants.first.id %}
 
 {% if template.suffix == blank or template.suffix == null %}
-  {% assign pagetemplate = 'default' %}  
+  {% assign pagetemplate = 'product' %}  
 {% elsif template.suffix == 'iwtclearance' %}
   {% assign pagetemplate = 'iwtclearance' %}
 {% elsif template.suffix == 'iwantthat' %}
