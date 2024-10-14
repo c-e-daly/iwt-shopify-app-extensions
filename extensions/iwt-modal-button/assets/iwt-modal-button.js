@@ -713,10 +713,11 @@ function showError(element, message) {
     tooltip.style.borderRadius = '3px';
     tooltip.style.fontSize = '12px';
     tooltip.style.marginTop = '5px';
+    tooltip.style.zIndex = '1000'; 
     tooltip.innerText = message;
 
     // Append the tooltip
-    document.body.appendChild(tooltip);
+    element.parentElement.appendChild(tooltip);
 
     // Calculate the position of the input element
     const rect = element.getBoundingClientRect();
