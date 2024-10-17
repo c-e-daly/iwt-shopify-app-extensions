@@ -9,7 +9,22 @@
     "javascript": "iwt-modal-button.js",
     "templates": ["product", "cart"],
     "target": "section",
-    "settings": []
+    "settings": 
+    [{
+      "type": "text",
+      "id": "button_width",
+      "label": "Button Width",
+      "default": "100px",
+      "info": "Set the width of the 'I Want That!' button (e.g., 100px, 50%, etc.)"
+    },
+    {
+      "type": "text",
+      "id": "button_radius",
+      "label": "Button Border Radius",
+      "default": "5px",
+      "info": "Set the border radius of the button (e.g., 5px, 50%, etc.)"
+    }
+    ]
   }
 
 {% endschema %}

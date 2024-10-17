@@ -13,12 +13,16 @@
   {% assign pagetemplate = template.suffix %}
 {% endif %}
 
+{% assign buttonWidth = block.settings.button_width | default: '100px' %}
+{% assign buttonRadius = block.settings.button_radius | default: '5px' %}
+
 {% assign storeUrl = shop.url %}
 
 
   <button 
     id="iwt-modal-offer-button"
     class="iwtOfferButton"
+    style="width: {{ buttonWidth }}; border-radius: {{ buttonRadius }}"
     onclick="openOfferModal({ storeUrl: '{{storeUrl}}', default_variantID: '{{ default_variant}}', template: '{{ pagetemplate }}'})">
     Wanna Make a Deal?
     <img src="{{ 'iwtlogoicon.png' | asset_url }}" class="iwtLogoIcon" width="35" height="35"> 
