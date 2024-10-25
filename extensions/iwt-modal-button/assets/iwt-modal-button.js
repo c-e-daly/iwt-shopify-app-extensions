@@ -870,19 +870,20 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
             whoopsContainer.style.display = 'none'; // Hide Whoops container
             pendingContainer.style.display = 'none'; // Hide Pending container
 
-            responseMessage = `<p class="iwt-paragraph">You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been <strong>accepted</strong>.  Your deal will expire
+            responseMessage = `<p class="iwt-paragraph">You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} 
+            has been <strong>accepted</strong>.  Your deal will expire
             in ${expiryMinutes} minutes.  Click on the button below and go claim it.  Congratulations!</p>
             <p class='iwt-paragraph">Thanks for shopping ${storeBrand}</p>
             </br>
             <p>p.s. Your coupon code is:</p>
 
-    <div>
-      <input type="text" value="${couponCode}" id="discountCode" readonly>
-      <button onclick="copyDiscountCode()">Click to Copy</button>
-    </div>
+            <div>
+            <input type="text" value="${couponCode}" id="discountCode" readonly>
+            <button onclick="copyDiscountCode()">Click to Copy</button>
+            </div>
 
-    <p id="copyMessage" style="display:none;">Coupon code copied to clipboard!</p>
-  `;
+            <p id="copyMessage"> style="display:none;">Coupon code copied to clipboard!</p>
+             `;
             
             const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
             const checkoutButton = document.getElementById('checkout-button');
