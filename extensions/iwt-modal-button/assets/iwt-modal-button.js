@@ -844,7 +844,7 @@ async function submitOfferToAPI(event) {
 
 }
 
-function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiryMinutes = 0, couponCode = '', storeBrand) {
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinutes, couponCode , storeBrand) {
     const modalContentContainer = document.querySelector('.modal-content-container');
     
     // Fade out the modal content (form, table, etc.)
@@ -870,7 +870,7 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl = '', expiry
             whoopsContainer.style.display = 'none'; // Hide Whoops container
             pendingContainer.style.display = 'none'; // Hide Pending container
 
-            responseMessage = `<p class="iwt-paragraph">You just made a Great Deal using I Want That!  Your offer of $${offerAmount} has been <strong>accepted</strong>.  Your deal will expire
+            responseMessage = `<p class="iwt-paragraph">You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} has been <strong>accepted</strong>.  Your deal will expire
             in ${expiryMinutes} minutes.  Click on the button below and go claim it.  Congratulations!</p>
             <p class='iwt-paragraph">Thanks for shopping ${storeBrand}</p>
             </br>
