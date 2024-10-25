@@ -874,7 +874,17 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
             in ${expiryMinutes} minutes.  Click on the button below and go claim it.  Congratulations!</p>
             <p class='iwt-paragraph">Thanks for shopping ${storeBrand}</p>
             </br>
-            <p>p.s. Your coupon code is: ${couponCode}</p>`;
+            <p>p.s. Your coupon code is:</p>
+
+    <!-- Input field to show and copy the discount code -->
+    <div>
+      <input type="text" value="${couponCode}" id="discountCode" readonly>
+      <button onclick="copyDiscountCode()">Click to Copy</button>
+    </div>
+
+    <!-- Optional: Message after copying the code -->
+    <p id="copyMessage" style="display:none;">Coupon code copied to clipboard!</p>
+  `;
             
             const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
             const checkoutButton = document.getElementById('checkout-button');
@@ -909,6 +919,27 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
         
     }, 500); // Timeout to match the duration of fade-out animation
 }
+
+function copyDiscountCode() {
+    // Get the discount code input field
+    var discountCode = document.getElementById("discountCode");
+  
+    // Select the text inside the input field
+    discountCode.select();
+    discountCode.setSelectionRange(0, 99999); // For mobile compatibility
+  
+    // Copy the text to the clipboard
+    navigator.clipboard.writeText(discountCode.value).then(() => {
+      // Show confirmation message
+      document.getElementById("copyMessage").style.display = "block";
+  
+      // Hide the message after 2 seconds
+      setTimeout(() => {
+        document.getElementById("copyMessage").style.display = "none";
+      }, 2000);
+    });
+  }
+
 
 function retryOffer() {
     // Hide the response section
