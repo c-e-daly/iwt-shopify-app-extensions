@@ -875,15 +875,23 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
             in ${expiryMinutes} minutes.  Click on the button below and go claim it.  Congratulations!</p>
             <p class='iwt-paragraph">Thanks for shopping ${storeBrand}</p>
             </br>
-            <p>p.s. Your coupon code is:</p>
-
+         <p>p.s. Your coupon code is:</p>
+    
             <div>
-            <input type="text" value="${couponCode}" id="discountCode" readonly>
-            <button onclick="copyDiscountCode()">Click to Copy</button>
+             <input type="text" value="${couponCode}" id="discountCode" readonly style="padding: 5px; font-size: 16px; width: auto;">
+              <button onclick="copyDiscountCode()" style="padding: 5px 10px; font-size: 16px;">Click to Copy</button>
             </div>
+    
+            <p id="copyMessage" style="display:none; color: green; margin-top: 10px;">Coupon code copied to clipboard!</p>`
+        ;
 
-            <p id="copyMessage"> style="display:none;">Coupon code copied to clipboard!</p>
-             `;
+        
+        
+        
+        
+
+        
+        
             
             const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
             const checkoutButton = document.getElementById('checkout-button');
