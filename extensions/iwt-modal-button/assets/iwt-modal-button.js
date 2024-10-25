@@ -826,7 +826,7 @@ async function submitOfferToAPI(event) {
                 response.response.offerStatus,
                 response.response.offerAmount,
                 response.response.checkoutUrl,
-                response.response.offerExpiryMinutes,
+                response.response.expiryMinutes,
                 response.response.couponCode,
                 response.response.storeBrand,
                 response.response.firstName
@@ -876,13 +876,11 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
             </br>
             <p>p.s. Your coupon code is:</p>
 
-    <!-- Input field to show and copy the discount code -->
     <div>
       <input type="text" value="${couponCode}" id="discountCode" readonly>
       <button onclick="copyDiscountCode()">Click to Copy</button>
     </div>
 
-    <!-- Optional: Message after copying the code -->
     <p id="copyMessage" style="display:none;">Coupon code copied to clipboard!</p>
   `;
             
