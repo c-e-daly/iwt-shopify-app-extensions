@@ -873,9 +873,9 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
             responseMessage = `<p class="iwt-paragraph">You just made a Great Deal using I Want That!  Your offer of $${(offerAmount / 100).toFixed(2)} 
             has been <strong>accepted</strong>.  Your deal will expire
             in ${expiryMinutes} minutes.  Click on the button below and go claim it.  Congratulations!</p>
-            <p class='iwt-paragraph">Thanks for shopping ${storeBrand}</p>
+            <p class="iwt-paragraph">Thanks for shopping ${storeBrand}</p>
             </br>
-         <p>p.s. Your coupon code is:</p>
+         <p class="iwt-paragraph">p.s. Your coupon code is:</p>
     
             <div>
              <input type="text" value="${couponCode}" id="discountCode" readonly style="padding: 5px; font-size: 16px; width: auto;">
@@ -884,15 +884,6 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
     
             <p id="copyMessage" style="display:none; color: green; margin-top: 10px;">Coupon code copied to clipboard!</p>`
         ;
-
-        
-        
-        
-        
-
-        
-        
-            
             const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
             const checkoutButton = document.getElementById('checkout-button');
             if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
