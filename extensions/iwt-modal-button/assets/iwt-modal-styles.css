@@ -417,3 +417,29 @@ cart-table th,
         height: 106px !important;
         margin-bottom: 20px;
     }
+
+    .floating-input {
+        padding: 10px;
+        font-size: 16px;
+        background: #fff;
+        border: none;
+        border-radius: 5px;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        width: 20ch; /* width to fit approximately 18 characters */
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .click-to-copy{
+        padding: 5px 10px; 
+            font-size: 16px; 
+            margin-left: 10px; 
+            background-color: #80bf9b; 
+            color: white; 
+            border: none; 
+            box-shadow: 2px 2px 5px rgba(211, 211, 211, 0.8); /* light grey shadow */
+            cursor: pointer; 
+            padding: 10px 20px;
+            border-radius: 10px;
+    }
+    

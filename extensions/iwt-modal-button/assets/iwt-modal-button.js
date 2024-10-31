@@ -844,7 +844,7 @@ async function submitOfferToAPI(event) {
 
 }
 
-function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinutes, couponCode , storeBrand) {
+function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinutes, discountCode , storeBrand) {
     const modalContentContainer = document.querySelector('.modal-content-container');
     
     // Fade out the modal content (form, table, etc.)
@@ -865,6 +865,9 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
 
         let responseMessage = '';
 
+        // Set default store name if storeBrand is undefined
+            storeBrand = storeBrand || "our store!";
+
         if (offerStatus === 'Auto Accepted') {
             wooHooContainer.style.display = 'block'; // Show Woo-Hoo container
             whoopsContainer.style.display = 'none'; // Hide Whoops container
@@ -878,11 +881,11 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
          <p class="iwt-paragraph">p.s. Your coupon code is:</p>
     
             <div>
-             <input type="text" value="${couponCode}" id="discountCode" readonly style="padding: 5px; font-size: 16px; width: auto;">
-              <button onclick="copyDiscountCode()" style="padding: 5px 10px; font-size: 16px;">Click to Copy</button>
+             <input type="text" value="${discountCode}" id="iwtdiscountCode" readonly class="floating-input">
+              <button onclick="copyDiscountCode()" class="click-to-copy">Click to Copy</button>
             </div>
     
-            <p id="copyMessage" style="display:none; color: green; margin-top: 10px;">Coupon code copied to clipboard!</p>`
+            <p id="copyMessage" style="display:none; color: #80bf9b; margin-top: 10px;">Coupon code copied to clipboard!</p>`
         ;
             const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
             const checkoutButton = document.getElementById('checkout-button');
@@ -920,14 +923,14 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
 
 function copyDiscountCode() {
     // Get the discount code input field
-    var discountCode = document.getElementById("discountCode");
+    var iwtdiscountCode = document.getElementById("iwtdiscountCode");
   
     // Select the text inside the input field
-    discountCode.select();
-    discountCode.setSelectionRange(0, 99999); // For mobile compatibility
+    iwtdiscountCode.select();
+    iwtdiscountCode.setSelectionRange(0, 99999); // For mobile compatibility
   
     // Copy the text to the clipboard
-    navigator.clipboard.writeText(discountCode.value).then(() => {
+    navigator.clipboard.writeText(iwtdiscountCode.value).then(() => {
       // Show confirmation message
       document.getElementById("copyMessage").style.display = "block";
   
