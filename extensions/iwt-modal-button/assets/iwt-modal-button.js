@@ -846,6 +846,9 @@ async function submitOfferToAPI(event) {
 
 function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinutes, discountCode , storeBrand) {
     const modalContentContainer = document.querySelector('.modal-content-container');
+
+    discountCode = discountCode || "No Code Available"; 
+    console.log("Discount Code Received:", discountCode); // Debugging line
     
     // Fade out the modal content (form, table, etc.)
     modalContentContainer.classList.add('fade-out');
