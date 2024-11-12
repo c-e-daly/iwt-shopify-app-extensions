@@ -768,7 +768,7 @@ async function submitOfferToAPI(event) {
     // Fetch the latest cart data to ensure offerData is up-to-date
     cart = await fetchCart();
 
-    const offerAmount = (document.getElementById('iwt-consumer-offer').value)/toFixed(20);
+    const offerAmount = (document.getElementById('iwt-consumer-offer').value).toFixed(20);
     const cartTotalPrice = (cart.total_price * 100).toFixed(2);;
     const offerDiscountRate = ((cartTotalPrice - offerAmount) / cartTotalPrice).toFixed(2); 
 
@@ -794,7 +794,7 @@ async function submitOfferToAPI(event) {
             variantID: item.variant_id,
             sku: item.sku,
             quantity: item.quantity,
-            price: item.price,
+            price: item.presentment_price,
             cartToken: cart.token,
             template: item.properties?.template
         })),
