@@ -768,8 +768,9 @@ async function submitOfferToAPI(event) {
     // Fetch the latest cart data to ensure offerData is up-to-date
     cart = await fetchCart();
 
-    const cartTotalCents = cart.total_price; // Already in cents
-    const offerDiscountRate = ((cartTotalCents - offerAmountCents) / cartTotalCents).toFixed(4); // Perform calculation in cents
+    const offerAmount = (document.getElementById('iwt-consumer-offer').value)/toFixed(20);
+    const cartTotalPrice = (cart.total_price * 100).toFixed(2);;
+    const offerDiscountRate = ((cartTotalPrice - offerAmount) / cartTotalPrice).toFixed(2); 
 
     // Rebuild the offerData object using the latest data from the cart and form
     const offerData = {
@@ -778,7 +779,7 @@ async function submitOfferToAPI(event) {
         consumerEmail: document.getElementById('iwt-consumer-email').value,
         consumerMobile: document.getElementById('iwt-consumer-mobile').value,
         consumerPostalCode: document.getElementById('iwt-consumer-postal').value,
-        offerAmount: document.getElementById('iwt-consumer-offer').value,
+        offerAmount: offerAmount,
         offerDiscountRate: offerDiscountRate,
         tosChecked: document.getElementById('iwt-tos-checkbox').checked,
         tosCheckedDate: new Date().toISOString(),
@@ -797,7 +798,7 @@ async function submitOfferToAPI(event) {
         })),
         cartItems: new Set(cart.items.map(item => item.sku)).size,
         cartUnits: cart.items.reduce((totalUnits, item) => totalUnits + item.quantity, 0),
-        cartTotalPrice: cartTotalCents,
+        cartTotalPrice: cartTotalPrice,
     };
 
     console.log("Submitting offer with the following data:", offerData);
