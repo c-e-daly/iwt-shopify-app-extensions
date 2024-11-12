@@ -165,8 +165,8 @@
 .cart-table, .cart-table .th, .cart-table .td {
     border-collapse: collapse;
     width: 100%;
-    min-width: 438px;
-    max-width: 650px;
+    min-width: 100%;
+    max-width: 100%;
     table-layout: auto;
     padding: 4px;
 }
