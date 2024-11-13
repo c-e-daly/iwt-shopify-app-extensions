@@ -769,7 +769,7 @@ async function submitOfferToAPI(event) {
     cart = await fetchCart();
 
     const offerAmount = parseFloat(document.getElementById('iwt-consumer-offer').value).toFixed(2);
-    const cartTotalPrice = (cart.total_price * 100).toFixed(2);;
+    const cartTotalPrice = (cart.total_price / 100).toFixed(2);;
     const offerDiscountRate = ((cartTotalPrice - offerAmount) / cartTotalPrice).toFixed(2); 
 
     // Rebuild the offerData object using the latest data from the cart and form
