@@ -781,7 +781,7 @@ async function submitOfferToAPI(event) {
         consumerPostalCode: document.getElementById('iwt-consumer-postal').value,
         currency: cart.currency,
         offerAmount: offerAmount,
-        offerDiscountAmount: cartTotalPrice - offerAmount,
+        offerDiscountAmount: (cartTotalPrice - offerAmount).toFixed(2),
         offerDiscountRate: offerDiscountRate,
         tosChecked: document.getElementById('iwt-tos-checkbox').checked,
         tosCheckedDate: new Date().toISOString(),
