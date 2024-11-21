@@ -1,10 +1,11 @@
 // Declare global variables at the top of the script
 let cart, sourceTemplate, storeUrlGlobal, cartCreated = null, cartUpdated = null;
+const getEl = (id) => document.getElementById(id);
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-    const iwtModal = document.getElementById('iwt-modal-container');
-    const iwtCloseBtn = document.getElementById('iwt-modal-close-btn');
+    const iwtModal = getEl('iwt-modal-container');
+    const iwtCloseBtn = getEl('iwt-modal-close-btn');
 
     if (iwtModal) {
         iwtModal.style.display = 'none';
@@ -41,19 +42,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function resetModalData() {
-    document.getElementById('iwt-cart-table').innerHTML = '';
-    const qtyInpt = document.getElementById('iwt-consumer-quantity');
+    getEl('iwt-cart-table').innerHTML = '';
+    const qtyInpt = getEl('iwt-consumer-quantity');
     if (qtyInpt) {
         qtyInpt.value = 1;
     }
-    const subtotalInput = document.getElementById('iwt-consumer-subtotal');
+    const subtotalInput = getEl('iwt-consumer-subtotal');
     if (subtotalInput) {
         subtotalInput.value = 0;
     }
 }
 
 function closeModal() {
-    const iwtModal = document.getElementById('iwt-modal-container');
+    const iwtModal = getEl('iwt-modal-container');
     if (iwtModal) {
         iwtModal.style.display = 'none';
     }
@@ -100,18 +101,18 @@ resetModalData();
     }
   
     syncFormDataWithCart();
-    const iwtModal = document.getElementById('iwt-modal-container');
+    const iwtModal = getEl('iwt-modal-container');
     iwtModal.style.display = 'block';
 };
   
 function syncFormDataWithCart() {
-    const qtyInpt = document.getElementById('iwt-consumer-quantity');
+    const qtyInpt = getEl('iwt-consumer-quantity');
     if (qtyInpt) {
         const totalQuantity = cart.items.reduce((total, item) => total + item.quantity, 0);
         qtyInpt.value = totalQuantity;
     }
   
-    const subttlInpt = document.getElementById('iwt-consumer-subtotal');
+    const subttlInpt = getEl('iwt-consumer-subtotal');
     if (subttlInpt) {
         subttlInpt.value = cart.total_price;
     }
@@ -384,7 +385,7 @@ const updateItemQuantity = async (lineItemKey, newQty) => {
 
 
 const clearModalError = () => {
-    const errorSection = document.getElementById('iwt-modal-error');
+    const errorSection = getEl('iwt-modal-error');
     if (errorSection) {
         errorSection.style.display = 'none';
         errorSection.innerText = '';
@@ -405,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearInptError = (inputField) => {
       inputField.style.borderColor = ''; 
       inputField.title = ''; 
-      const errorSection = document.getElementById('iwt-modal-error');
+      const errorSection = getEl('iwt-modal-error');
       if (errorSection) {
           errorSection.style.display = 'none';
       }
@@ -530,7 +531,7 @@ const renderCartTable = function(cart, offerAcceptedPrice = null) {
   
     tableContent += '</tfoot></table>';
   
-    const cartTable = document.getElementById('iwt-cart-table');
+    const cartTable = getEl('iwt-cart-table');
     if (cartTable) {
         cartTable.innerHTML = tableContent;
     } else {
@@ -547,40 +548,58 @@ function checkTemplateMix(items) {
     return templates.size > 1;
 }
 
+
 function strtEventListen() {
-    const submitButton = document.getElementById('submit-offer-button');
-    const form = document.getElementById('iwt-offer-form');
+    const submitButton = getEl('submit-offer-button');
+    const form = getEl('iwt-offer-form');
 
     if (submitButton && form) {
-        console.log('Event listener attached to submit button'); 
+        // Remove existing listeners to prevent duplicate submissions
+        submitButton.removeEventListener('click', handleSubmit);
 
-        submitButton.addEventListener('click', async function(event) {
-            event.preventDefault(); 
-
-            console.log('Submit button clicked. Starting validation.');
-
-            if (validateForm()) {
-                console.log('Form is valid. Proceeding with submission...');
-                await submitOfferToAPI(event); 
-            } else {
-                console.log('Form is invalid. Submission prevented.');
-            }
-        });
+        console.log('Event listener attached to submit button');
+        submitButton.addEventListener('click', handleSubmit); // Delegates to handleSubmit
     } else {
         console.log('Submit button or form element not found.');
+    }
+}
+
+async function handleSubmit(event) {
+    event.preventDefault();
+
+    const submitButton = getEl('submit-offer-button');
+
+    if (submitButton.disabled) {
+        console.log('Submit button already disabled, preventing duplicate submission.');
+        return;
+    }
+
+    console.log('Submit button clicked. Starting validation.');
+
+    if (validateForm()) { // Validation is still part of the flow
+        submitButton.disabled = true; // Prevents double-clicks
+        try {
+            await submitOfferToAPI(event); // Process submission
+        } catch (error) {
+            console.error('Error during submission:', error);
+        } finally {
+            submitButton.disabled = false; // Re-enable button
+        }
+    } else {
+        console.log('Form is invalid. Submission prevented.');
     }
 }
 
 function validateForm() {
     let isValid = true;
 
-    const name = document.getElementById('iwt-consumer-name');
-    const email = document.getElementById('iwt-consumer-email');
-    const mobile = document.getElementById('iwt-consumer-mobile');
-    const postalCode = document.getElementById('iwt-consumer-postal');
-    const offer = document.getElementById('iwt-consumer-offer');
-    const tosCheckbox = document.getElementById('iwt-tos-checkbox');
-    const cartTotalElement = document.getElementById('iwt-cart-total');
+    const name = getEl('iwt-consumer-name');
+    const email = getEl('iwt-consumer-email');
+    const mobile = getEl('iwt-consumer-mobile');
+    const postalCode = getEl('iwt-consumer-postal');
+    const offer = getEl('iwt-consumer-offer');
+    const tosCheckbox = getEl('iwt-tos-checkbox');
+    const cartTotalElement = getEl('iwt-cart-total');
 
     let cartTotal = 0;
 
@@ -601,11 +620,11 @@ function validateForm() {
     clearError(mobile);
     clearError(postalCode);
     clearError(offer);
-    document.getElementById('iwt-tos-error').style.display = 'none';
+    getEl('iwt-tos-error').style.display = 'none';
 
     // Validation logic
     if (!name.value.trim()) {
-        showError(name, 'Please fill in your name');
+        showError(name, 'Please fill in your first and last name');
         isValid = false;
     }
     if (!email.value.trim()) {
@@ -634,7 +653,7 @@ function validateForm() {
         isValid = false;
     }
     if (!tosCheckbox.checked) {
-        document.getElementById('iwt-tos-error').style.display = 'block';
+        getEl('iwt-tos-error').style.display = 'block';
         isValid = false;
     }
     return isValid;
@@ -659,23 +678,21 @@ function showError(element, message) {
         existingTooltip.remove();
     }
 
-    // Create a new tooltip element
+
     const tooltip = document.createElement('div');
-    tooltip.className = 'custom-tooltip';
-    tooltip.style.position = 'absolute';
-    tooltip.style.backgroundColor = '#f8d7da';
-    tooltip.style.color = '#721c24';
-    tooltip.style.padding = '10px';
-    tooltip.style.borderRadius = '3px';
-    tooltip.style.fontSize = '12px';
-    tooltip.style.marginTop = '5px';
-    tooltip.style.zIndex = '1000'; 
+    tooltip.className = 'iwt-custom-tooltip';
     tooltip.innerText = message;
 
     element.parentElement.appendChild(tooltip);
     const rect = element.getBoundingClientRect();
     tooltip.style.left = `${rect.left + window.scrollX}px`;
-    tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`; // 5px below the field
+    tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`; 
+
+    setTimeout(() => {
+        tooltip.classList.add("fade-out"); 
+        setTimeout(() => tooltip.remove(), 1800); 
+    }, 5000);
+
 }
 
 function clearError(element) {
@@ -705,85 +722,86 @@ async function submitOfferToAPI(event) {
     if (!validateForm()) {
     return;
     }
-    cart = await fetchCart();
+    const submitButton = getEl('submit-offer-button');
 
-    const offerAmount = parseFloat(document.getElementById('iwt-consumer-offer').value).toFixed(2);
-    const cartTotalPrice = (cart.total_price / 100).toFixed(2);;
-    const offerDiscountRate = ((cartTotalPrice - offerAmount) / cartTotalPrice).toFixed(2); 
-
-    const offerData = {
-        storeUrl: storeUrlGlobal.replace(/^https?:\/\//, ''),
-        consumerName: document.getElementById('iwt-consumer-name').value,
-        consumerEmail: document.getElementById('iwt-consumer-email').value,
-        consumerMobile: document.getElementById('iwt-consumer-mobile').value,
-        consumerPostalCode: document.getElementById('iwt-consumer-postal').value,
-        currency: cart.currency,
-        offerAmount: offerAmount,
-        offerDiscountAmount: (cartTotalPrice - offerAmount).toFixed(2),
-        offerDiscountRate: offerDiscountRate,
-        tosChecked: document.getElementById('iwt-tos-checkbox').checked,
-        tosCheckedDate: new Date().toISOString(),
-        cartToken: cart.token,
-        cartCreateDate: cartCreated,
-        cartUpdateDate: cartUpdated,
-        offerCreateDate: new Date().toISOString(),
-        cartCompositon: checkTemplateMix(cart.items) ? 'mixed' : 'single',
-        items: cart.items.map(item => ({
-            productID: item.product_id,
-            productName: item.product_title,
-            variantID: item.variant_id,
-            sku: item.sku,
-            quantity: item.quantity,
-            price: item.presentment_price,
+    try {
+        submitButton.disabled = true; // Disable the button
+    
+        cart = await fetchCart(); // Fetch the cart
+    
+        const offerAmount = parseFloat(getEl('iwt-consumer-offer').value).toFixed(2);
+        const cartTotalPrice = (cart.total_price / 100).toFixed(2); // Convert cents to dollars
+        const offerDiscountRate = ((cartTotalPrice - offerAmount) / cartTotalPrice).toFixed(2);
+    
+        const offerData = {
+            storeUrl: storeUrlGlobal.replace(/^https?:\/\//, ''),
+            consumerName: getEl('iwt-consumer-name').value,
+            consumerEmail: getEl('iwt-consumer-email').value,
+            consumerMobile: getEl('iwt-consumer-mobile').value,
+            consumerPostalCode: getEl('iwt-consumer-postal').value,
+            currency: cart.currency,
+            offerAmount: offerAmount,
+            offerDiscountAmount: (cartTotalPrice - offerAmount).toFixed(2),
+            offerDiscountRate: offerDiscountRate,
+            tosChecked: getEl('iwt-tos-checkbox').checked,
+            tosCheckedDate: new Date().toISOString(),
             cartToken: cart.token,
-            template: item.properties?.template
-        })),
-        cartItems: new Set(cart.items.map(item => item.sku)).size,
-        cartUnits: cart.items.reduce((totalUnits, item) => totalUnits + item.quantity, 0),
-        cartTotalPrice: cartTotalPrice,
-    };
-
-    console.log("Submitting offer with the following data:", offerData);
-
-    // Submit the offerData to the API
-    fetch('https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(offerData),
-    })
-    .then(response => {
-        if (response.ok) return response.json();
-        else {
-            console.error("Error when submitting offer:", response);
-            throw new Error("Error when sending request: " + response.status);
+            cartCreateDate: cartCreated,
+            cartUpdateDate: cartUpdated,
+            offerCreateDate: new Date().toISOString(),
+            cartComposition: checkTemplateMix(cart.items) ? 'mixed' : 'single', // Check cart template
+            items: cart.items.map(item => ({
+                productID: item.product_id,
+                productName: item.product_title,
+                variantID: item.variant_id,
+                sku: item.sku,
+                quantity: item.quantity,
+                price: item.presentment_price,
+                cartToken: cart.token,
+                template: item.properties?.template,
+            })),
+            cartItems: new Set(cart.items.map(item => item.sku)).size,
+            cartUnits: cart.items.reduce((totalUnits, item) => totalUnits + item.quantity, 0),
+            cartTotalPrice: cartTotalPrice,
+        };
+    
+        console.log("Submitting offer with the following data:", offerData);
+    
+        const response = await fetch('https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(offerData),
+        });
+    
+        if (!response.ok) {
+            throw new Error(`Error when submitting offer: ${response.status}`);
         }
-    })
-
-    .then(response => {
-        console.log(response);
-        if (response.response.hasOwnProperty("offerStatus")) {
+    
+        const responseData = await response.json();
+        console.log("Offer submitted successfully:", responseData);
+    
+        if (responseData.response?.offerStatus) {
             displayOfferResponse(
-                response.response.offerStatus,
-                response.response.offerAmount,
-                response.response.checkoutUrl,
-                response.response.expiryMinutes,
-                response.response.discountCode,
-                response.response.storeBrand,
-                response.response.firstName
+                responseData.response.offerStatus,
+                responseData.response.offerAmount,
+                responseData.response.checkoutUrl,
+                responseData.response.expiryMinutes,
+                responseData.response.discountCode,
+                responseData.response.storeBrand,
+                responseData.response.firstName
             );
         } else {
-            console.error("Unexpected response format:", response);
+            console.error("Unexpected response format:", responseData);
             alert('Unexpected response. Please try again later.');
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error("Error when submitting offer:", error);
         alert('Error when submitting offer. Please try again later.');
-    });    
-
-
+    } finally {
+        submitButton.disabled = false;
+    }
 }
 
 function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinutes, discountCode , storeBrand) {
@@ -793,12 +811,12 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
 
     setTimeout(() => {
         iwtModalContent.style.display = 'none'; 
-        const modalResp = document.getElementById('iwt-modal-offer-response');
+        const modalResp = getEl('iwt-modal-offer-response');
         modalResp.style.display = 'flex';
         modalResp.classList.add('fade-in');
-        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
-        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
-        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+        const wooHooContainer = getEl('iwt-response-logo-container-woohoo');
+        const whoopsContainer = getEl('iwt-response-logo-container-whoops');
+        const pendingContainer = getEl('iwt-response-logo-container-pending');
 
         let responseMessage = '';
 
@@ -823,8 +841,8 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
     
             <p id="copyMessage" style="display:none; color: #80bf9b; margin-top: 10px;">Coupon code copied to clipboard!</p>`
         ;
-            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
-            const checkoutButton = document.getElementById('checkout-button');
+            const checkoutButtonContainer = getEl('iwt-checkout-button-container');
+            const checkoutButton = getEl('checkout-button');
             if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
                 checkoutButton.href = checkoutUrl;
                 checkoutButtonContainer.style.display = 'flex'; 
@@ -851,28 +869,28 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
         }
 
 
-        const modalRespCont = document.getElementById('response-message-container');
+        const modalRespCont = getEl('response-message-container');
         modalRespCont.innerHTML = responseMessage;
         
     }, 500); 
 }
 
 function copyDiscountCode() {
-    var iwtdiscountCode = document.getElementById("iwtdiscountCode");
+    var iwtdiscountCode = getEl("iwtdiscountCode");
     iwtdiscountCode.select();
     iwtdiscountCode.setSelectionRange(0, 99999); 
 
 
     navigator.clipboard.writeText(iwtdiscountCode.value).then(() => {
-      document.getElementById("copyMessage").style.display = "block";
+      getEl("copyMessage").style.display = "block";
       setTimeout(() => {
-        document.getElementById("copyMessage").style.display = "none";
+        getEl("copyMessage").style.display = "none";
       }, 2000);
     });
   }
 
 function retryOffer() {
-    const modalResp = document.getElementById('iwt-modal-offer-response');
+    const modalResp = getEl('iwt-modal-offer-response');
     modalResp.style.display = 'none';
     const iwtModalContent = document.querySelector('.modal-content-container');
     iwtModalContent.classList.remove('fade-out');

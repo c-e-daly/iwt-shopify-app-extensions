@@ -443,3 +443,20 @@ cart-table th,
             border-radius: 10px;
     }
     
+    .iwt-custom-tooltip{
+        position: absolute;
+        background-color: #e80013;
+        color: #ffffff;
+        padding: 10px 15px 10px 15px;
+        border-radius: 6px;
+        font-size: 14px;
+        margin-top: 5px;
+        z-Index: 1000;
+        opacity: 1;
+        transition: opacity 1.5s ease;
+ }
+
+ .iwt-custom-tooltip.fade-out {
+    opacity: 0; 
+}
+
