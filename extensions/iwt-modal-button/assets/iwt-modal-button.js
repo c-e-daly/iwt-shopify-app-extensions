@@ -169,6 +169,9 @@ const addToCart = async function({ ID, quantity, template }) {
             const updatedCart = await response.json();
             console.log('Cart updated:', updatedCart);
 
+            cartUpdated = getCurrentDateTime();
+            console.log(`Cart updated on: ${cartUpdated}`);
+
             const itemUpdate = updatedCart.items.find(item => item.variant_id === ID);
             if (itemUpdate && itemUpdate.quantity < newQty) {
                 return {
@@ -211,8 +214,12 @@ const addToCart = async function({ ID, quantity, template }) {
 
             const result = await response.json();
             console.log('Product added to cart with template:', template);
-
-            // Check if the quantity added is less than requested (i.e., some items are back-ordered)
+            if (!cartCreated) {
+                cartCreated = getCurrentDateTime();
+                console.log(`Cart created on: ${cartCreated}`);
+            }
+            cartUpdated = getCurrentDateTime();
+            console.log(`Cart updated on: ${cartUpdated}`);
             const addedItem = result.items.find(item => item.id == ID);
             if (addedItem && addedItem.quantity < quantity) {
                 return {
@@ -535,6 +542,10 @@ function formatPrice(cents) {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
+function checkTemplateMix(items) {
+    const templates = new Set(items.map((item) => item.properties?.template || 'regular'));
+    return templates.size > 1;
+}
 
 function strtEventListen() {
     const submitButton = document.getElementById('submit-offer-button');
@@ -713,8 +724,10 @@ async function submitOfferToAPI(event) {
         tosChecked: document.getElementById('iwt-tos-checkbox').checked,
         tosCheckedDate: new Date().toISOString(),
         cartToken: cart.token,
-        cartCreateDate: cart.createdAt,
+        cartCreateDate: cartCreated,
+        cartUpdateDate: cartUpdated,
         offerCreateDate: new Date().toISOString(),
+        cartCompositon: checkTemplateMix(cart.items) ? 'mixed' : 'single',
         items: cart.items.map(item => ({
             productID: item.product_id,
             productName: item.product_title,
