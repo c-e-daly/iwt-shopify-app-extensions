@@ -1,50 +1,59 @@
 // Declare global variables at the top of the script
 let cart, sourceTemplate, storeUrlGlobal, cartCreated = null, cartUpdated = null;
+const log = (msg) => log(msg);   
 
 document.addEventListener('DOMContentLoaded', async () => {
 
     const iwtModal = document.getElementById('iwt-modal-container');
-    const iwtCloseBtn = document.getElementById('iwt-modal-close-btn');
+    const closeModalButton = document.getElementById('iwt-modal-close-btn');
 
     if (iwtModal) {
         iwtModal.style.display = 'none';
         document.body.appendChild(iwtModal);
 
-        if (iwtCloseBtn) {
-            iwtCloseBtn.addEventListener('click', (event) => {
+        if (closeModalButton) {
+            closeModalButton.addEventListener('click', (event) => {
                 event.stopPropagation();
                 closeModal();
-                console.log('Modal closed with button click.');
+                log('Modal closed with button click.');
             });
         }
 
         iwtModal.addEventListener('click', (event) => {
             if (event.target === iwtModal) {
                 closeModal();
-                console.log('Modal closed by clicking outside the modal content.');
+                log('Modal closed by clicking outside the modal content.');
             }
         });
 
+        // Check URL parameter and open modal if required
         const urlParams = new URLSearchParams(window.location.search);
         const cgoParam = urlParams.get('cgo');
         if (cgoParam === 'iwt') {
             iwtModal.style.display = 'block';
-            console.log('Modal opened based on URL parameter "cgo=iwt".');
+            log('Modal opened based on URL parameter "cgo=iwt".');
         }
     } else {
         console.error('Modal container not found. Check the ID "iwt-modal-container".');
     }
 
+    // Fetch cart data on page load
     cart = await fetchCart();
-  /*  attachqtyInptListen();*/
-    strtEventListen();
+
+    // Attach quantity input listeners to handle updates
+    attachQuantityInputListeners();
+
+    // Initialize other startup event listeners
+    startupEventListeners();
 });
 
+  
+// Function to clear and reset the modal data
 function resetModalData() {
     document.getElementById('iwt-cart-table').innerHTML = '';
-    const qtyInpt = document.getElementById('iwt-consumer-quantity');
-    if (qtyInpt) {
-        qtyInpt.value = 1;
+    const quantityInput = document.getElementById('iwt-consumer-quantity');
+    if (quantityInput) {
+        quantityInput.value = 1;
     }
     const subtotalInput = document.getElementById('iwt-consumer-subtotal');
     if (subtotalInput) {
@@ -52,6 +61,7 @@ function resetModalData() {
     }
 }
 
+// Function to close the modal and reset its content
 function closeModal() {
     const iwtModal = document.getElementById('iwt-modal-container');
     if (iwtModal) {
@@ -60,32 +70,37 @@ function closeModal() {
     resetModalData();
 }
 
+///////// OFFER BUILDING AND DATA COLLECTION //////////
 const openOfferModal = async function({ template, default_variantID, storeUrl}) {
-    console.log('Store URL:', storeUrl, default_variantID, template);
+    log('Store URL:', storeUrl, default_variantID, template);
     let cartToken, cartDate;
     sourceTemplate = template;
     storeUrlGlobal = storeUrl;
  
+  
+// Reset modal data before opening
 resetModalData();
 
     if (template === 'cart' || template === 'checkout') {
         cart = await fetchCart();
-        console.log('Cart:', cart);
+        log('Cart:', cart);
         cartToken = cart.token;
+        cartDate = cart.createdAt;
+        log(`Cart Token: ${cartToken} || Cart Date: ${cartDate}`);
         renderCartTable(cart);
   
     } else if (template === 'product' || template === 'iwantthat' || template === 'iwtclearance') {
-        let ID = default_variantID; 
+        let ID = default_variantID; // Set ID to default_variantID by default
   
-        const urlVariantID = getVariantFromURL(); 
+        const urlVariantID = getVariantFromURL(); // Attempt to get the variant ID from the URL
         if (urlVariantID) {
-            ID = urlVariantID; 
+            ID = urlVariantID; // Overwrite ID if a variant ID is found in the URL
         } else {
-            console.log('Variant ID not found in URL, using default variant ID');
+            log('Variant ID not found in URL, using default variant ID');
         }
   
         const quantity = getQuantity();
-        console.log('Product ID (Variant ID):', ID);
+        log('Product ID (Variant ID):', ID);
   
         try {
             await addToCart({ ID, quantity, template });
@@ -94,62 +109,63 @@ resetModalData();
         }
   
         cart = await fetchCart();
-        console.log('Cart:', cart);
+        log('Cart:', cart);
         cartToken = cart.token;
+        cartDate = cart.createdAt;
+        log(`Cart Token: ${cartToken} || Cart Date: ${cartDate}`);
         renderCartTable(cart);
     }
   
+    // Sync form data with the latest cart data
     syncFormDataWithCart();
+  
     const iwtModal = document.getElementById('iwt-modal-container');
     iwtModal.style.display = 'block';
 };
   
+////////// HELPER FUNCTIONS /////////
+// Function to sync form data with the latest cart data
 function syncFormDataWithCart() {
-    const qtyInpt = document.getElementById('iwt-consumer-quantity');
-    if (qtyInpt) {
+    const quantityInput = document.getElementById('iwt-consumer-quantity');
+    if (quantityInput) {
         const totalQuantity = cart.items.reduce((total, item) => total + item.quantity, 0);
-        qtyInpt.value = totalQuantity;
+        quantityInput.value = totalQuantity;
     }
   
-    const subttlInpt = document.getElementById('iwt-consumer-subtotal');
-    if (subttlInpt) {
-        subttlInpt.value = cart.total_price;
+    const subtotalInput = document.getElementById('iwt-consumer-subtotal');
+    if (subtotalInput) {
+        subtotalInput.value = cart.total_price;
     }
   
+    const cartDateInput = document.getElementById('iwt-consumer-cart-date');
+    if (cartDateInput) {
+        cartDateInput.value = cart.created_at;
+    }
 }
   
+// Function to get the variant ID from the URL
 function getVariantFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('variant');
 }
   
+// Function to get the number of units for the item selected
 function getQuantity() {
-    const qtyInpt = document.querySelector('.quantity__input');
-    return qtyInpt ? qtyInpt.value : 1;
+    const quantityInput = document.querySelector('.quantity__input');
+    return quantityInput ? quantityInput.value : 1;
 }
-
-function getCurrentDateTime() {
-    return new Date().toISOString();
-}
-
-function updateCartDates(isNewItem) {
-    const currentDateTime = getCurrentDateTime();
-
-    if (isNewItem && !cartCreateDate) {
-        cartCreateDate = currentDateTime;
-        console.log(`Cart created on: ${cartCreateDate}`);
-    }
-    cartUpdateDate = currentDateTime;
-    console.log(`Cart updated on: ${cartUpdateDate}`);
-}
-
+  
+// Function to add the product and selected variant to the cart
+// Function to add the product and selected variant to the cart
 const addToCart = async function({ ID, quantity, template }) {
     try {
-        const itemExist = cart.items.find(item => item.variant_id === ID && item.properties?.template === template);
+        // Check if the item is already in the cart
+        const existingItem = cart.items.find(item => item.variant_id === ID && item.properties?.template === template);
 
-        if (itemExist) {
-            console.log('Item already in the cart, updating quantity...');
-            const newQty = itemExist.quantity + quantity;
+        if (existingItem) {
+            // If the item already exists, update the quantity
+            log('Item already in the cart, updating quantity...');
+            const newQuantity = existingItem.quantity + quantity;
 
             const response = await fetch('/cart/change.js', {
                 method: 'POST',
@@ -157,8 +173,8 @@ const addToCart = async function({ ID, quantity, template }) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    id: itemExist.key,
-                    quantity: newQty
+                    id: existingItem.key,
+                    quantity: newQuantity
                 })
             });
 
@@ -167,22 +183,23 @@ const addToCart = async function({ ID, quantity, template }) {
             }
 
             const updatedCart = await response.json();
-            console.log('Cart updated:', updatedCart);
+            log('Cart updated:', updatedCart);
 
-            const itemUpdate = updatedCart.items.find(item => item.variant_id === ID);
-            if (itemUpdate && itemUpdate.quantity < newQty) {
+            // Check if the quantity updated is less than requested (e.g., back-order scenario)
+            const updatedItem = updatedCart.items.find(item => item.variant_id === ID);
+            if (updatedItem && updatedItem.quantity < newQuantity) {
                 return {
                     success: true,
-                    availQty: itemUpdate.quantity,
-                    backOrdQty: newQty - itemUpdate.quantity,
+                    availableQuantity: updatedItem.quantity,
+                    backOrderedQuantity: newQuantity - updatedItem.quantity,
                     cart: updatedCart
                 };
             }
 
-            return { success: true, availQty: newQty, backOrdQty: 0, cart: updatedCart };
+            return { success: true, availableQuantity: newQuantity, backOrderedQuantity: 0, cart: updatedCart };
 
         } else {
-           
+            // Item does not exist in the cart, add it as a new item
             const data = {
                 items: [
                     {
@@ -195,7 +212,7 @@ const addToCart = async function({ ID, quantity, template }) {
                 ]
             };
 
-            console.log('Adding to cart with data:', JSON.stringify(data));
+            log('Adding to cart with data:', JSON.stringify(data));
 
             const response = await fetch('/cart/add.js', {
                 method: 'POST',
@@ -210,20 +227,20 @@ const addToCart = async function({ ID, quantity, template }) {
             }
 
             const result = await response.json();
-            console.log('Product added to cart with template:', template);
+            log('Product added to cart with template:', template);
 
             // Check if the quantity added is less than requested (i.e., some items are back-ordered)
             const addedItem = result.items.find(item => item.id == ID);
             if (addedItem && addedItem.quantity < quantity) {
                 return {
                     success: true,
-                    availQty: addedItem.quantity,
-                    backOrdQty: quantity - addedItem.quantity,
+                    availableQuantity: addedItem.quantity,
+                    backOrderedQuantity: quantity - addedItem.quantity,
                     cart: result
                 };
             }
 
-            return { success: true, availQty: quantity, backOrdQty: 0, cart: result };
+            return { success: true, availableQuantity: quantity, backOrderedQuantity: 0, cart: result };
         }
 
     } catch (error) {
@@ -232,11 +249,14 @@ const addToCart = async function({ ID, quantity, template }) {
     }
 };
 
-const updateItemQuantityHandler = async (lineItemKey, newQty) => {
+// Function to handle updating item quantities and re-rendering the cart
+const updateItemQuantityHandler = async (lineItemKey, newQuantity) => {
     const currentItem = cart.items.find(item => item.key === lineItemKey);
     if (currentItem) {
         try {
-            await updateItemQuantity(lineItemKey, newQty);
+            // Update the item quantity in the cart
+            await updateItemQuantity(lineItemKey, newQuantity);
+            // Fetch the latest cart and re-render it
             await updateAndRenderCart();
         } catch (error) {
             console.error('Error updating item quantity:', error);
@@ -246,6 +266,7 @@ const updateItemQuantityHandler = async (lineItemKey, newQty) => {
     }
 };
 
+// Function to fetch and render the cart after any updates
 const updateAndRenderCart = async () => {
     cart = await fetchCart();
     if (cart) {
@@ -255,54 +276,61 @@ const updateAndRenderCart = async () => {
     }
 };
 
+
+// Function to fetch cart data to assemble cart data table
 const fetchCart = async function() {
     try {
-        console.log('Fetching cart details...');
+        log('Fetching cart details...');
         const response = await fetch('/cart.js');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
         const cart = await response.json();
-        console.log('Cart details:', cart);
+        log('Cart details:', cart);
 
-        let hasClearance = false, hasRegular = false;
+        let hasClearance = false;
+        let hasRegular = false;
 
+        // Iterate through each item in the cart to check its properties
         cart.items.forEach((item, index) => {
-            console.log(`Item ${index + 1}:`, item);
+            log(`Item ${index + 1}:`, item);
             
             if (item.properties) {
-                console.log(`Properties for item ${index + 1}:`, item.properties);
+                log(`Properties for item ${index + 1}:`, item.properties);
 
+                // Make sure template property exists and has the correct value
                 if (item.properties.template) {
-                    console.log(`Template property for item ${index + 1}:`, item.properties.template);
+                    log(`Template property for item ${index + 1}:`, item.properties.template);
 
                     if (item.properties.template === 'iwtclearance') {
                         hasClearance = true;
-                        console.log(`Item ${index + 1} is marked as clearance.`);
+                        log(`Item ${index + 1} is marked as clearance.`);
                     } else {
                         hasRegular = true;
-                        console.log(`Item ${index + 1} is marked as regular.`);
+                        log(`Item ${index + 1} is marked as regular.`);
                     }
                 } else {
-
+                    // No template property found
                     hasRegular = true;
                     console.warn(`Item ${index + 1} has no template property, assuming regular.`);
                 }
             } else {
- 
+                // No properties object found at all
                 hasRegular = true;
                 console.warn(`Item ${index + 1} has no properties object, assuming regular.`);
             }
         });
 
+        // Determine the type of items in the cart
         if (hasClearance && hasRegular) {
-            console.log('The cart contains a mix of clearance and regular priced merchandise.');
+            log('The cart contains a mix of clearance and regular priced merchandise.');
         } else if (hasClearance) {
-            console.log('The cart contains only clearance items.');
+            log('The cart contains only clearance items.');
         } else if (hasRegular) {
-            console.log('The cart contains only regular priced items.');
+            log('The cart contains only regular priced items.');
         }
         
+
         return cart;
     } catch (error) {
         console.error('Error fetching cart:', error);
@@ -310,17 +338,20 @@ const fetchCart = async function() {
     }
 };
   
-const updateItemQuantity = async (lineItemKey, newQty) => {
+// Function to update item quantity in the cart and check inventory/back-order status
+const updateItemQuantity = async (lineItemKey, newQuantity) => {
     try {
         const currentItem = cart.items.find(item => item.key === lineItemKey);
         if (!currentItem) {
             throw new Error('Item not found in the cart');
         }
-        console.log('Current item:', currentItem); 
 
+        log('Current item:', currentItem); // Log current item details
+
+        // Attempt to add the updated quantity to the cart to check if it's valid
         const result = await addToCart({ 
             ID: currentItem.variant_id, 
-            quantity: newQty,
+            quantity: newQuantity,
             template: currentItem.properties.template});
 
         if (!result.success) {
@@ -329,20 +360,24 @@ const updateItemQuantity = async (lineItemKey, newQty) => {
 
         const inputField = document.querySelector(`input[data-line-item-key="${lineItemKey}"]`);
 
-        if (result.backOrdQty > 0) {
+        if (result.backOrderedQuantity > 0) {
+            // Highlight the input field to indicate back-order status
             if (inputField) {
-                inputField.style.borderColor = 'orange'; 
-                inputField.title = `Only ${result.availQty} in stock. ${result.backOrdQty} will be back-ordered.`;
+                inputField.style.borderColor = 'orange'; // Use orange to indicate back-order
+                inputField.title = `Only ${result.availableQuantity} in stock. ${result.backOrderedQuantity} will be back-ordered.`;
             }
 
-            showModalError(`Only ${result.availQty} items are available. ${result.backOrdQty} items will be back-ordered.`);
+            // Optionally, display the back-order information in the modal or a specific error section
+            displayErrorInModal(`Only ${result.availableQuantity} items are available. ${result.backOrderedQuantity} items will be back-ordered.`);
         } else {
+            // Clear any existing error messages if the quantity is valid
             if (inputField) {
-                inputField.style.borderColor = '';
-                inputField.title = ''; 
+                inputField.style.borderColor = ''; // Clear the border color
+                inputField.title = ''; // Clear the tooltip
             }
-            clearModalError();
+            clearErrorInModal();
 
+            // Proceed to update the cart on the server if the quantity is valid and in stock
             const response = await fetch(`/cart/change.js`, {
                 method: 'POST',
                 headers: {
@@ -350,7 +385,7 @@ const updateItemQuantity = async (lineItemKey, newQty) => {
                 },
                 body: JSON.stringify({
                     id: lineItemKey,
-                    quantity: newQty
+                    quantity: newQuantity
                 })
             });
 
@@ -359,24 +394,26 @@ const updateItemQuantity = async (lineItemKey, newQty) => {
             }
 
             const cartResult = await response.json();
-            console.log('Item quantity updated:', cartResult);
-            renderCartTable(cartResult); 
+            log('Item quantity updated:', cartResult);
+            renderCartTable(cartResult); // Re-render cart table with updated cart data
         }
     } catch (error) {
         console.error('Error updating item quantity:', error);
 
-     
+        // Highlight the input field to indicate an error
         const inputField = document.querySelector(`input[data-line-item-key="${lineItemKey}"]`);
         if (inputField) {
             inputField.style.borderColor = 'red';
             inputField.title = 'Error updating quantity. Please try again.';
         }
-        showModalError('Unable to update quantity. Please try again.');
+
+        // Display error in the modal
+        displayErrorInModal('Unable to update quantity. Please try again.');
     }
 };
 
-
-const clearModalError = () => {
+// Function to clear error messages in the modal
+const clearErrorInModal = () => {
     const errorSection = document.getElementById('iwt-modal-error');
     if (errorSection) {
         errorSection.style.display = 'none';
@@ -384,36 +421,39 @@ const clearModalError = () => {
     }
 };
 
+// Attach event listeners to clear the error state when the user modifies the input
 document.addEventListener('DOMContentLoaded', () => {
-    const qtyInpts = document.querySelectorAll('.iwt-input-number');
-    qtyInpts.forEach(input => {
+    const quantityInputs = document.querySelectorAll('.iwt-input-number');
+    quantityInputs.forEach(input => {
         input.addEventListener('input', async (event) => {
             const lineItemKey = input.getAttribute('data-line-item-key');
-            const newQty = parseInt(event.target.value);
-            await updateItemQuantityHandler(lineItemKey, newQty);
+            const newQuantity = parseInt(event.target.value);
+            await updateItemQuantityHandler(lineItemKey, newQuantity);
         });
     });
 });
- 
-  const clearInptError = (inputField) => {
-      inputField.style.borderColor = ''; 
-      inputField.title = ''; 
+
+
+  // Add this helper function to clear the error state when the input changes
+  const clearInputErrorState = (inputField) => {
+      inputField.style.borderColor = ''; // Reset the border color
+      inputField.title = ''; // Clear the tooltip
       const errorSection = document.getElementById('iwt-modal-error');
       if (errorSection) {
           errorSection.style.display = 'none';
       }
   };
   
-  
+  // Attach event listeners to clear the error state when the user modifies the input
   document.addEventListener('DOMContentLoaded', () => {
-      const qtyInpts = document.querySelectorAll('.iwt-input-number');
-      qtyInpts.forEach(input => {
-          input.addEventListener('input', () => clearInptError(input));
+      const quantityInputs = document.querySelectorAll('.iwt-input-number');
+      quantityInputs.forEach(input => {
+          input.addEventListener('input', () => clearInputErrorState(input));
       });
   });
   
-
-  const removeItem = async (lineItemKey) => {
+  // Function to remove an item from the cart
+  const removeItemFromCart = async (lineItemKey) => {
     try {
         const response = await fetch(`/cart/change.js`, {
             method: 'POST',
@@ -431,14 +471,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
   
         const result = await response.json();
-        console.log('Item removed from cart:', result);
-        renderCartTable(result); 
+        log('Item removed from cart:', result);
+        renderCartTable(result); // Re-render cart table with updated cart data
     } catch (error) {
         console.error('Error removing item from cart:', error);
     }
 };
   
-
+// Function to render the cart table and display cart items for offer
 const renderCartTable = function(cart, offerAcceptedPrice = null) {
     if (!cart) {
         console.error('Cart is null');
@@ -447,7 +487,7 @@ const renderCartTable = function(cart, offerAcceptedPrice = null) {
   
     if (!cart.items) {
         console.error('Cart items property is missing');
-        console.log('Cart object:', cart);
+        log('Cart object:', cart);
         return;
     }
   
@@ -460,7 +500,7 @@ const renderCartTable = function(cart, offerAcceptedPrice = null) {
         line_price: 'Line Price'
     };
   
- 
+    // Generate table headers
     allowedKeys.forEach(key => {
         tableContent += `<th>${labels[key]}</th>`;
     });
@@ -468,7 +508,7 @@ const renderCartTable = function(cart, offerAcceptedPrice = null) {
   
     let subtotal = 0;
   
-    
+    // Generate table rows
     cart.items.forEach((item, index) => {
         const rowColor = index % 2 === 0 ? '#fff' : '#f2f2f2';
         tableContent += `<tr style="background-color: ${rowColor};">`;
@@ -492,10 +532,10 @@ const renderCartTable = function(cart, offerAcceptedPrice = null) {
         subtotal += lineTotal;
         tableContent += `<td>${formatPrice(lineTotal)}</td>`;
   
-      
+        // Add remove button
         tableContent += `
           <td style="background-color: white;">
-            <button class="iwt-remove-item" onclick="removeItem('${item.key}')" title="Remove item" style="color: red; font-size: 16px; border: none; background: none;">
+            <button class="iwt-remove-item" onclick="removeItemFromCart('${item.key}')" title="Remove item" style="color: red; font-size: 16px; border: none; background: none;">
               &cross;
             </button>
           </td>
@@ -535,34 +575,39 @@ function formatPrice(cents) {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-
-function strtEventListen() {
+////// Handle the submission of the offer and process the return data //////
+// Function to start event listeners
+function startupEventListeners() {
     const submitButton = document.getElementById('submit-offer-button');
     const form = document.getElementById('iwt-offer-form');
 
     if (submitButton && form) {
-        console.log('Event listener attached to submit button'); 
+        log('Event listener attached to submit button'); // Debugging log
 
+        // Only use the button click event, as it's already handling form submission
         submitButton.addEventListener('click', async function(event) {
-            event.preventDefault(); 
+            event.preventDefault(); // Prevent the form from submitting the traditional way
 
-            console.log('Submit button clicked. Starting validation.');
+            log('Submit button clicked. Starting validation.');
 
             if (validateForm()) {
-                console.log('Form is valid. Proceeding with submission...');
-                await submitOfferToAPI(event); 
+                log('Form is valid. Proceeding with submission...');
+                await submitOfferToAPI(event); // Call the API submission function
             } else {
-                console.log('Form is invalid. Submission prevented.');
+                log('Form is invalid. Submission prevented.');
             }
         });
     } else {
-        console.log('Submit button or form element not found.');
+        log('Submit button or form element not found.');
     }
 }
+
+// Function to validate the form (as you have already defined
 
 function validateForm() {
     let isValid = true;
 
+    // Get form elements
     const name = document.getElementById('iwt-consumer-name');
     const email = document.getElementById('iwt-consumer-email');
     const mobile = document.getElementById('iwt-consumer-mobile');
@@ -577,14 +622,15 @@ function validateForm() {
         cartTotal = parseFloat(cartTotalElement.textContent.replace(/[^\d.-]/g, ''));
         if (isNaN(cartTotal)) {
             console.error("Cart total is not a valid number");
-            cartTotal = 0; 
+            cartTotal = 0; // Set a default fallback value
         }
     } else {
         console.error("Cart total element not found or has invalid content");
-        cartTotal = 0; 
+        cartTotal = 0; // Set a default fallback value
 
     }
 
+    // Clear previous errors
     clearError(name);
     clearError(email);
     clearError(mobile);
@@ -622,27 +668,34 @@ function validateForm() {
         showError(offer, 'Offer price cannot exceed the cart total');
         isValid = false;
     }
+
     if (!tosCheckbox.checked) {
         document.getElementById('iwt-tos-error').style.display = 'block';
         isValid = false;
     }
+
     return isValid;
 }
 
+// Function to validate email format
 function validateEmail(email) {
     const emailPattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
     return emailPattern.test(email);
 }
 
+// Function to validate phone number format
 function validatePhone(phone) {
-    const phonePattern = /^[0-9]{10}$/; 
+    const phonePattern = /^[0-9]{10}$/; // Adjust the regex as needed for your phone format
     return phonePattern.test(phone);
 }
 
+
+// Function to show an error with a custom tooltip
 function showError(element, message) {
     element.style.borderColor = 'red';
     element.style.borderWidth = '2px';
 
+    // Remove existing custom tooltips if present
     const existingTooltip = element.parentElement.querySelector('.custom-tooltip');
     if (existingTooltip) {
         existingTooltip.remove();
@@ -661,22 +714,29 @@ function showError(element, message) {
     tooltip.style.zIndex = '1000'; 
     tooltip.innerText = message;
 
+    // Append the tooltip
     element.parentElement.appendChild(tooltip);
+
+    // Calculate the position of the input element
     const rect = element.getBoundingClientRect();
     tooltip.style.left = `${rect.left + window.scrollX}px`;
     tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`; // 5px below the field
 }
 
+// Function to clear the custom tooltip
 function clearError(element) {
     element.style.borderColor = '';
     element.style.borderWidth = '';
 
+    // Remove any existing tooltips
     const tooltip = document.body.querySelector('.custom-tooltip');
     if (tooltip) {
         tooltip.remove();
     }
 }
 
+
+// Function to clear errors and tooltips
 function clearError(element) {
     element.style.borderColor = '';
     element.style.borderWidth = '';
@@ -687,19 +747,30 @@ function clearError(element) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', strtEventListen);
+
+
+// Call the startupEventListeners function when the DOM is ready
+document.addEventListener('DOMContentLoaded', startupEventListeners);
+
+
+/////////// Function to submit the offer data to the API ///////////
 
 async function submitOfferToAPI(event) {
-    event.preventDefault(); 
+    event.preventDefault(); // Prevent default form submission
+
+    // Validate form
     if (!validateForm()) {
     return;
     }
+
+    // Fetch the latest cart data to ensure offerData is up-to-date
     cart = await fetchCart();
 
     const offerAmount = parseFloat(document.getElementById('iwt-consumer-offer').value).toFixed(2);
     const cartTotalPrice = (cart.total_price / 100).toFixed(2);;
     const offerDiscountRate = ((cartTotalPrice - offerAmount) / cartTotalPrice).toFixed(2); 
 
+    // Rebuild the offerData object using the latest data from the cart and form
     const offerData = {
         storeUrl: storeUrlGlobal.replace(/^https?:\/\//, ''),
         consumerName: document.getElementById('iwt-consumer-name').value,
@@ -730,7 +801,7 @@ async function submitOfferToAPI(event) {
         cartTotalPrice: cartTotalPrice,
     };
 
-    console.log("Submitting offer with the following data:", offerData);
+    log("Submitting offer with the following data:", offerData);
 
     // Submit the offerData to the API
     fetch('https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation', {
@@ -749,7 +820,7 @@ async function submitOfferToAPI(event) {
     })
 
     .then(response => {
-        console.log(response);
+        log(response);
         if (response.response.hasOwnProperty("offerStatus")) {
             displayOfferResponse(
                 response.response.offerStatus,
@@ -774,27 +845,33 @@ async function submitOfferToAPI(event) {
 }
 
 function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinutes, discountCode , storeBrand) {
-    const iwtModalContent = document.querySelector('.modal-content-container');
+    const modalContentContainer = document.querySelector('.modal-content-container');
     
-    iwtModalContent.classList.add('fade-out');
+    // Fade out the modal content (form, table, etc.)
+    modalContentContainer.classList.add('fade-out');
 
     setTimeout(() => {
-        iwtModalContent.style.display = 'none'; 
-        const modalResp = document.getElementById('iwt-modal-offer-response');
-        modalResp.style.display = 'flex';
-        modalResp.classList.add('fade-in');
+        modalContentContainer.style.display = 'none'; // Hides the form, table, etc.
+
+        // Show the response section with fade-in animation
+        const responseSection = document.getElementById('iwt-modal-offer-response');
+        responseSection.style.display = 'flex';
+        responseSection.classList.add('fade-in');
+
+        // Containers for different offer statuses
         const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
         const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
         const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
 
         let responseMessage = '';
 
+        // Set default store name if storeBrand is undefined
             storeBrand = storeBrand || "our store!";
 
         if (offerStatus === 'Auto Accepted') {
-            wooHooContainer.style.display = 'block'; 
-            whoopsContainer.style.display = 'none'; 
-            pendingContainer.style.display = 'none'; 
+            wooHooContainer.style.display = 'block'; // Show Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
 
             responseMessage = `<p class="iwt-paragraph">You just made a Great Deal using I Want That!  Your offer of $${(offerAmount).toFixed(2)} 
             has been <strong>accepted</strong>.  Your deal will expire
@@ -814,22 +891,22 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
             const checkoutButton = document.getElementById('checkout-button');
             if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
                 checkoutButton.href = checkoutUrl;
-                checkoutButtonContainer.style.display = 'flex'; 
+                checkoutButtonContainer.style.display = 'flex'; // Ensure it's displayed only once
             }
 
         } else if (offerStatus === 'Auto Declined') {
-            wooHooContainer.style.display = 'none'; 
-            whoopsContainer.style.display = 'block';
-            pendingContainer.style.display = 'none'; 
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'block'; // Show Whoops container
+            pendingContainer.style.display = 'none'; // Hide Pending container
 
             responseMessage = `<p class="iwt-paragraph">Hey thanks for the offer but unfortunately we cannot make $${(offerAmount).toFixed(2)} work. 
             If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
             <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
 
         } else if (offerStatus === 'Pending Review') {
-            wooHooContainer.style.display = 'none'; 
-            whoopsContainer.style.display = 'none'; 
-            pendingContainer.style.display = 'block'; 
+            wooHooContainer.style.display = 'none'; // Hide Woo-Hoo container
+            whoopsContainer.style.display = 'none'; // Hide Whoops container
+            pendingContainer.style.display = 'block'; // Show Pending container
 
             responseMessage = `<p class="iwt-paragraph">Hey, thanks for your offer of $${(offerAmount).toFixed(2)} for your cart.  
             We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
@@ -837,34 +914,45 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
             responseMessage = `<p class="iwt-paragraph">Unexpected status: ${offerStatus}. Please try again later.</p>`;
         }
 
-
-        const modalRespCont = document.getElementById('response-message-container');
-        modalRespCont.innerHTML = responseMessage;
+        // Set the response message
+        const responseMessageContainer = document.getElementById('response-message-container');
+        responseMessageContainer.innerHTML = responseMessage;
         
-    }, 500); 
+    }, 500); // Timeout to match the duration of fade-out animation
 }
 
 function copyDiscountCode() {
+    // Get the discount code input field
     var iwtdiscountCode = document.getElementById("iwtdiscountCode");
+  
+    // Select the text inside the input field
     iwtdiscountCode.select();
-    iwtdiscountCode.setSelectionRange(0, 99999); 
-
-
+    iwtdiscountCode.setSelectionRange(0, 99999); // For mobile compatibility
+  
+    // Copy the text to the clipboard
     navigator.clipboard.writeText(iwtdiscountCode.value).then(() => {
+      // Show confirmation message
       document.getElementById("copyMessage").style.display = "block";
+  
+      // Hide the message after 2 seconds
       setTimeout(() => {
         document.getElementById("copyMessage").style.display = "none";
       }, 2000);
     });
   }
 
+
 function retryOffer() {
-    const modalResp = document.getElementById('iwt-modal-offer-response');
-    modalResp.style.display = 'none';
-    const iwtModalContent = document.querySelector('.modal-content-container');
-    iwtModalContent.classList.remove('fade-out');
-    iwtModalContent.style.display = 'flex';
-    iwtModalContent.classList.add('fade-in');
+    // Hide the response section
+    const responseSection = document.getElementById('iwt-modal-offer-response');
+    responseSection.style.display = 'none';
+
+    // Show the modal content container again with fade-in animation
+    const modalContentContainer = document.querySelector('.modal-content-container');
+    modalContentContainer.classList.remove('fade-out');
+    modalContentContainer.style.display = 'flex';
+    modalContentContainer.classList.add('fade-in');
 }
 
-document.addEventListener('DOMContentLoaded', strtEventListen);
+// Initialize event listeners when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', startupEventListeners);
