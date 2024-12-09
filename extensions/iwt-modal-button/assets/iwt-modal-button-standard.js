@@ -1,61 +1,78 @@
 // Declare global variables at the top of the script
-let cart, storeUrlGlobal; 
+let cart, sourceTemplate, storeUrlGlobal, cartCreated = null, cartUpdated = null;
+const getEl = (id) => document.getElementById(id);
 
-// Attach all startup event listeners and initialize logic when DOM is fully loaded
 document.addEventListener('DOMContentLoaded', async () => {
-    const modalContainer = document.getElementById('iwt-modal-container');
-    const closeModalButton = document.getElementById('iwt-modal-close-btn');
 
-    if (modalContainer) {        
-        document.body.appendChild(modalContainer);
-        modalContainer.style.display = 'none';
-        closeModalButton?.addEventListener('click', closeModal);
-        modalContainer.addEventListener('click', (e) => e.target === modalContainer && closeModal());
+    const iwtModal = getEl('iwt-modal-container');
+    const iwtCloseBtn = getEl('iwt-modal-close-btn');
+
+    if (iwtModal) {
+        iwtModal.style.display = 'none';
+        document.body.appendChild(iwtModal);
+
+        if (iwtCloseBtn) {
+            iwtCloseBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                closeModal();
+                console.log('Modal closed with button click.');
+            });
+        }
+
+        iwtModal.addEventListener('click', (event) => {
+            if (event.target === iwtModal) {
+                closeModal();
+                console.log('Modal closed by clicking outside the modal content.');
+            }
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const cgoParam = urlParams.get('cgo');
+        if (cgoParam === 'iwt') {
+            iwtModal.style.display = 'block';
+            console.log('Modal opened based on URL parameter "cgo=iwt".');
+        }
+    } else {
+        console.error('Modal container not found. Check the ID "iwt-modal-container".');
     }
 
     cart = await fetchCart();
-    startupEventListeners();
+  /*  attachqtyInptListen();*/
+    strtEventListen();
 });
 
 function resetModalData() {
-    document.getElementById('iwt-cart-table').innerHTML = '';
-    const quantityInput = document.getElementById('iwt-consumer-quantity');
-    if (quantityInput) {
-        quantityInput.value = 1;
+    getEl('iwt-cart-table').innerHTML = '';
+    const qtyInpt = getEl('iwt-consumer-quantity');
+    if (qtyInpt) {
+        qtyInpt.value = 1;
     }
-    const subtotalInput = document.getElementById('iwt-consumer-subtotal');
+    const subtotalInput = getEl('iwt-consumer-subtotal');
     if (subtotalInput) {
         subtotalInput.value = 0;
     }
 }
 
 function closeModal() {
-    const modalContainer = document.getElementById('iwt-modal-container');
-    if (modalContainer) {
-        modalContainer.style.display = 'none';
+    const iwtModal = getEl('iwt-modal-container');
+    if (iwtModal) {
+        iwtModal.style.display = 'none';
     }
     resetModalData();
 }
 
-///////// OFFER BUILDING AND DATA COLLECTION //////////
 const openOfferModal = async function({ template, default_variantID, storeUrl}) {
     console.log('Store URL:', storeUrl, default_variantID, template);
     let cartToken, cartDate;
+    sourceTemplate = template;
     storeUrlGlobal = storeUrl;
-
-    const modifiedTemplate = (template === 'iwantthat' || template === 'iwtclearance') 
-                             ? `__${template}` 
-                             : template;
  
-// Reset modal data before opening
 resetModalData();
 
     if (template === 'cart' || template === 'checkout') {
         cart = await fetchCart();
         console.log('Cart:', cart);
         cartToken = cart.token;
-        cartDate = cart.createdAt;
-        console.log(`Cart Token: ${cartToken} || Cart Date: ${cartDate}`);
         renderCartTable(cart);
   
     } else if (template === 'product' || template === 'iwantthat' || template === 'iwtclearance') {
@@ -72,7 +89,7 @@ resetModalData();
         console.log('Product ID (Variant ID):', ID);
   
         try {
-            await addToCart({ ID, quantity, template:modifiedTemplate });
+            await addToCart({ ID, quantity, template });
         } catch (error) {
             console.error(`Error adding product ${ID} to the cart`, error);
         }
@@ -80,34 +97,26 @@ resetModalData();
         cart = await fetchCart();
         console.log('Cart:', cart);
         cartToken = cart.token;
-        cartDate = cart.createdAt;
-        console.log(`Cart Token: ${cartToken} || Cart Date: ${cartDate}`);
         renderCartTable(cart);
     }
   
     syncFormDataWithCart();
-  
-    const modalContainer = document.getElementById('iwt-modal-container');
-    modalContainer.style.display = 'block';
+    const iwtModal = getEl('iwt-modal-container');
+    iwtModal.style.display = 'block';
 };
   
-////////// HELPER FUNCTIONS /////////
 function syncFormDataWithCart() {
-    const quantityInput = document.getElementById('iwt-consumer-quantity');
-    if (quantityInput) {
+    const qtyInpt = getEl('iwt-consumer-quantity');
+    if (qtyInpt) {
         const totalQuantity = cart.items.reduce((total, item) => total + item.quantity, 0);
-        quantityInput.value = totalQuantity;
+        qtyInpt.value = totalQuantity;
     }
   
-    const subtotalInput = document.getElementById('iwt-consumer-subtotal');
-    if (subtotalInput) {
-        subtotalInput.value = cart.total_price;
+    const subttlInpt = getEl('iwt-consumer-subtotal');
+    if (subttlInpt) {
+        subttlInpt.value = cart.total_price;
     }
   
-    const cartDateInput = document.getElementById('iwt-consumer-cart-date');
-    if (cartDateInput) {
-        cartDateInput.value = cart.created_at;
-    }
 }
   
 function getVariantFromURL() {
@@ -116,20 +125,32 @@ function getVariantFromURL() {
 }
   
 function getQuantity() {
-    const quantityInput = document.querySelector('.quantity__input');
-    return quantityInput ? quantityInput.value : 1;
+    const qtyInpt = document.querySelector('.quantity__input');
+    return qtyInpt ? qtyInpt.value : 1;
 }
-  
-// Function to add the product and selected variant to the cart
+
+function getCurrentDateTime() {
+    return new Date().toISOString();
+}
+
+function updateCartDates(isNewItem) {
+    const currentDateTime = getCurrentDateTime();
+
+    if (isNewItem && !cartCreateDate) {
+        cartCreateDate = currentDateTime;
+        console.log(`Cart created on: ${cartCreateDate}`);
+    }
+    cartUpdateDate = currentDateTime;
+    console.log(`Cart updated on: ${cartUpdateDate}`);
+}
+
 const addToCart = async function({ ID, quantity, template }) {
     try {
-        // Check if the item is already in the cart
-        const existingItem = cart.items.find(item => item.variant_id === ID && item.properties?.template === template);
+        const itemExist = cart.items.find(item => item.variant_id === ID && item.properties?.template === template);
 
-        if (existingItem) {
-            // If the item already exists, update the quantity
+        if (itemExist) {
             console.log('Item already in the cart, updating quantity...');
-            const newQuantity = existingItem.quantity + quantity;
+            const newQty = itemExist.quantity + quantity;
 
             const response = await fetch('/cart/change.js', {
                 method: 'POST',
@@ -137,8 +158,8 @@ const addToCart = async function({ ID, quantity, template }) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    id: existingItem.key,
-                    quantity: newQuantity
+                    id: itemExist.key,
+                    quantity: newQty
                 })
             });
 
@@ -149,20 +170,23 @@ const addToCart = async function({ ID, quantity, template }) {
             const updatedCart = await response.json();
             console.log('Cart updated:', updatedCart);
 
-            // Check if the quantity updated is less than requested (e.g., back-order scenario)
-            const updatedItem = updatedCart.items.find(item => item.variant_id === ID);
-            if (updatedItem && updatedItem.quantity < newQuantity) {
+            cartUpdated = getCurrentDateTime();
+            console.log(`Cart updated on: ${cartUpdated}`);
+
+            const itemUpdate = updatedCart.items.find(item => item.variant_id === ID);
+            if (itemUpdate && itemUpdate.quantity < newQty) {
                 return {
                     success: true,
-                    availableQuantity: updatedItem.quantity,
-                    backOrderedQuantity: newQuantity - updatedItem.quantity,
+                    availQty: itemUpdate.quantity,
+                    backOrdQty: newQty - itemUpdate.quantity,
                     cart: updatedCart
                 };
             }
 
-            return { success: true, availableQuantity: newQuantity, backOrderedQuantity: 0, cart: updatedCart };
+            return { success: true, availQty: newQty, backOrdQty: 0, cart: updatedCart };
 
         } else {
+           
             const data = {
                 items: [
                     {
@@ -191,30 +215,36 @@ const addToCart = async function({ ID, quantity, template }) {
 
             const result = await response.json();
             console.log('Product added to cart with template:', template);
-
+            if (!cartCreated) {
+                cartCreated = getCurrentDateTime();
+                console.log(`Cart created on: ${cartCreated}`);
+            }
+            cartUpdated = getCurrentDateTime();
+            console.log(`Cart updated on: ${cartUpdated}`);
             const addedItem = result.items.find(item => item.id == ID);
             if (addedItem && addedItem.quantity < quantity) {
                 return {
                     success: true,
-                    availableQuantity: addedItem.quantity,
-                    backOrderedQuantity: quantity - addedItem.quantity,
+                    availQty: addedItem.quantity,
+                    backOrdQty: quantity - addedItem.quantity,
                     cart: result
                 };
             }
-            return { success: true, availableQuantity: quantity, backOrderedQuantity: 0, cart: result };
+
+            return { success: true, availQty: quantity, backOrdQty: 0, cart: result };
         }
+
     } catch (error) {
         console.error("Error adding to cart:", error);
         return { success: false, error };
     }
 };
 
-// Function to handle updating item quantities and re-rendering the cart
-const updateItemQuantityHandler = async (lineItemKey, newQuantity) => {
+const updateItemQuantityHandler = async (lineItemKey, newQty) => {
     const currentItem = cart.items.find(item => item.key === lineItemKey);
     if (currentItem) {
-        try {        
-            await updateItemQuantity(lineItemKey, newQuantity);
+        try {
+            await updateItemQuantity(lineItemKey, newQty);
             await updateAndRenderCart();
         } catch (error) {
             console.error('Error updating item quantity:', error);
@@ -224,7 +254,6 @@ const updateItemQuantityHandler = async (lineItemKey, newQuantity) => {
     }
 };
 
-// Function to fetch and render the cart after any updates
 const updateAndRenderCart = async () => {
     cart = await fetchCart();
     if (cart) {
@@ -234,7 +263,6 @@ const updateAndRenderCart = async () => {
     }
 };
 
-// Function to fetch cart data to assemble cart data table
 const fetchCart = async function() {
     try {
         console.log('Fetching cart details...');
@@ -245,17 +273,14 @@ const fetchCart = async function() {
         const cart = await response.json();
         console.log('Cart details:', cart);
 
-        let hasClearance = false;
-        let hasRegular = false;
+        let hasClearance = false, hasRegular = false;
 
-        // Iterate through each item in the cart to check its properties
         cart.items.forEach((item, index) => {
             console.log(`Item ${index + 1}:`, item);
             
             if (item.properties) {
                 console.log(`Properties for item ${index + 1}:`, item.properties);
 
-                // Make sure template property exists and has the correct value
                 if (item.properties.template) {
                     console.log(`Template property for item ${index + 1}:`, item.properties.template);
 
@@ -267,12 +292,12 @@ const fetchCart = async function() {
                         console.log(`Item ${index + 1} is marked as regular.`);
                     }
                 } else {
-                    // No template property found
+
                     hasRegular = true;
                     console.warn(`Item ${index + 1} has no template property, assuming regular.`);
                 }
             } else {
-                // No properties object found at all
+ 
                 hasRegular = true;
                 console.warn(`Item ${index + 1} has no properties object, assuming regular.`);
             }
@@ -285,6 +310,7 @@ const fetchCart = async function() {
         } else if (hasRegular) {
             console.log('The cart contains only regular priced items.');
         }
+        
         return cart;
     } catch (error) {
         console.error('Error fetching cart:', error);
@@ -292,20 +318,17 @@ const fetchCart = async function() {
     }
 };
   
-// Function to update item quantity in the cart and check inventory/back-order status
-const updateItemQuantity = async (lineItemKey, newQuantity) => {
+const updateItemQuantity = async (lineItemKey, newQty) => {
     try {
         const currentItem = cart.items.find(item => item.key === lineItemKey);
         if (!currentItem) {
             throw new Error('Item not found in the cart');
         }
-
         console.log('Current item:', currentItem); 
 
-        // Attempt to add the updated quantity to the cart to check if it's valid
         const result = await addToCart({ 
             ID: currentItem.variant_id, 
-            quantity: newQuantity,
+            quantity: newQty,
             template: currentItem.properties.template});
 
         if (!result.success) {
@@ -314,24 +337,20 @@ const updateItemQuantity = async (lineItemKey, newQuantity) => {
 
         const inputField = document.querySelector(`input[data-line-item-key="${lineItemKey}"]`);
 
-        if (result.backOrderedQuantity > 0) {
-        
+        if (result.backOrdQty > 0) {
             if (inputField) {
                 inputField.style.borderColor = 'orange'; 
-                inputField.title = `Only ${result.availableQuantity} in stock. ${result.backOrderedQuantity} will be back-ordered.`;
+                inputField.title = `Only ${result.availQty} in stock. ${result.backOrdQty} will be back-ordered.`;
             }
 
-  
-            displayErrorInModal(`Only ${result.availableQuantity} items are available. ${result.backOrderedQuantity} items will be back-ordered.`);
+            showModalError(`Only ${result.availQty} items are available. ${result.backOrdQty} items will be back-ordered.`);
         } else {
-           
             if (inputField) {
-                inputField.style.borderColor = ''; 
+                inputField.style.borderColor = '';
                 inputField.title = ''; 
             }
-            clearErrorInModal();
+            clearModalError();
 
-            // Proceed to update the cart on the server if the quantity is valid and in stock
             const response = await fetch(`/cart/change.js`, {
                 method: 'POST',
                 headers: {
@@ -339,7 +358,7 @@ const updateItemQuantity = async (lineItemKey, newQuantity) => {
                 },
                 body: JSON.stringify({
                     id: lineItemKey,
-                    quantity: newQuantity
+                    quantity: newQty
                 })
             });
 
@@ -354,60 +373,55 @@ const updateItemQuantity = async (lineItemKey, newQuantity) => {
     } catch (error) {
         console.error('Error updating item quantity:', error);
 
-        // Highlight the input field to indicate an error
+     
         const inputField = document.querySelector(`input[data-line-item-key="${lineItemKey}"]`);
         if (inputField) {
             inputField.style.borderColor = 'red';
             inputField.title = 'Error updating quantity. Please try again.';
         }
-
-        // Display error in the modal
-        displayErrorInModal('Unable to update quantity. Please try again.');
+        showModalError('Unable to update quantity. Please try again.');
     }
 };
 
-// Function to clear error messages in the modal
-const clearErrorInModal = () => {
-    const errorSection = document.getElementById('iwt-modal-error');
+
+const clearModalError = () => {
+    const errorSection = getEl('iwt-modal-error');
     if (errorSection) {
         errorSection.style.display = 'none';
         errorSection.innerText = '';
     }
 };
 
-// Attach event listeners to clear the error state when the user modifies the input
 document.addEventListener('DOMContentLoaded', () => {
-    const quantityInputs = document.querySelectorAll('.iwt-input-number');
-    quantityInputs.forEach(input => {
+    const qtyInpts = document.querySelectorAll('.iwt-input-number');
+    qtyInpts.forEach(input => {
         input.addEventListener('input', async (event) => {
             const lineItemKey = input.getAttribute('data-line-item-key');
-            const newQuantity = parseInt(event.target.value);
-            await updateItemQuantityHandler(lineItemKey, newQuantity);
+            const newQty = parseInt(event.target.value);
+            await updateItemQuantityHandler(lineItemKey, newQty);
         });
     });
 });
-
-
-  // Add this helper function to clear the error state when the input changes
-  const clearInputErrorState = (inputField) => {
+ 
+  const clearInptError = (inputField) => {
       inputField.style.borderColor = ''; 
       inputField.title = ''; 
-      const errorSection = document.getElementById('iwt-modal-error');
+      const errorSection = getEl('iwt-modal-error');
       if (errorSection) {
           errorSection.style.display = 'none';
       }
   };
   
-  // Attach event listeners to clear the error state when the user modifies the input
+  
   document.addEventListener('DOMContentLoaded', () => {
-      const quantityInputs = document.querySelectorAll('.iwt-input-number');
-      quantityInputs.forEach(input => {
-          input.addEventListener('input', () => clearInputErrorState(input));
+      const qtyInpts = document.querySelectorAll('.iwt-input-number');
+      qtyInpts.forEach(input => {
+          input.addEventListener('input', () => clearInptError(input));
       });
   });
   
-  // Function to remove an item from the cart
-  const removeItemFromCart = async (lineItemKey) => {
+
+  const removeItem = async (lineItemKey) => {
     try {
         const response = await fetch(`/cart/change.js`, {
             method: 'POST',
@@ -432,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 };
   
-// Function to render the cart table and display cart items for offer
+
 const renderCartTable = function(cart, offerAcceptedPrice = null) {
     if (!cart) {
         console.error('Cart is null');
@@ -454,7 +468,7 @@ const renderCartTable = function(cart, offerAcceptedPrice = null) {
         line_price: 'Line Price'
     };
   
-    // Generate table headers
+ 
     allowedKeys.forEach(key => {
         tableContent += `<th>${labels[key]}</th>`;
     });
@@ -462,7 +476,7 @@ const renderCartTable = function(cart, offerAcceptedPrice = null) {
   
     let subtotal = 0;
   
-    // Generate table rows
+    
     cart.items.forEach((item, index) => {
         const rowColor = index % 2 === 0 ? '#fff' : '#f2f2f2';
         tableContent += `<tr style="background-color: ${rowColor};">`;
@@ -486,10 +500,10 @@ const renderCartTable = function(cart, offerAcceptedPrice = null) {
         subtotal += lineTotal;
         tableContent += `<td>${formatPrice(lineTotal)}</td>`;
   
-        // Add remove button
+      
         tableContent += `
           <td style="background-color: white;">
-            <button class="iwt-remove-item" onclick="removeItemFromCart('${item.key}')" title="Remove item" style="color: red; font-size: 16px; border: none; background: none;">
+            <button class="iwt-remove-item" onclick="removeItem('${item.key}')" title="Remove item" style="color: red; font-size: 16px; border: none; background: none;">
               &cross;
             </button>
           </td>
@@ -517,7 +531,7 @@ const renderCartTable = function(cart, offerAcceptedPrice = null) {
   
     tableContent += '</tfoot></table>';
   
-    const cartTable = document.getElementById('iwt-cart-table');
+    const cartTable = getEl('iwt-cart-table');
     if (cartTable) {
         cartTable.innerHTML = tableContent;
     } else {
@@ -529,208 +543,290 @@ function formatPrice(cents) {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-////// Handle the submission of the offer and process the return data //////
-// Function to start event listeners
-document.addEventListener('DOMContentLoaded', () => {
-    const tosCheckbox = document.getElementById('iwt-tos-checkbox');
+function checkTemplateMix(items) {
+    const templates = new Set(items.map((item) => item.properties?.template || 'regular'));
+    return templates.size > 1;
+}
 
-    // Form submission handler
-    async function submitOfferToAPI(event) {
-        event.preventDefault(); 
 
-        if (!validateForm()) {
-            return; // Exit if the form is invalid
-        }
+function strtEventListen() {
+    const submitButton = getEl('submit-offer-button');
+    const form = getEl('iwt-offer-form');
 
-        // Continue with form submission if valid
-        console.log("Form submitted successfully!");
-        // Add code here to submit the form data to the API...
+    if (submitButton && form) {
+        // Remove existing listeners to prevent duplicate submissions
+        submitButton.removeEventListener('click', handleSubmit);
+
+        console.log('Event listener attached to submit button');
+        submitButton.addEventListener('click', handleSubmit); // Delegates to handleSubmit
+    } else {
+        console.log('Submit button or form element not found.');
+    }
+}
+
+async function handleSubmit(event) {
+    event.preventDefault();
+
+    const submitButton = getEl('submit-offer-button');
+
+    if (submitButton.disabled) {
+        console.log('Submit button already disabled, preventing duplicate submission.');
+        return;
     }
 
-    // Main validation function
-    function validateForm() {
-        let formIsValid = true;
+    console.log('Submit button clicked. Starting validation.');
 
-        fields.forEach(({ id, validator, errorId }) => {
-            const input = document.getElementById(id);
-            if (!validator(input.value.trim())) {
-                showError(input, errorId);
-                formIsValid = false;
-            } else {
-                clearError(input, errorId);
-            }
-        });
-
-        // Check the Terms of Service checkbox
-        if (!tosCheckbox.checked) {
-            showError(tosCheckbox, 'error-tos');
-            formIsValid = false;
-        } else {
-            clearError(tosCheckbox, 'error-tos');
+    if (validateForm()) { // Validation is still part of the flow
+        submitButton.disabled = true; // Prevents double-clicks
+        try {
+            await submitOfferToAPI(event); // Process submission
+        } catch (error) {
+            console.error('Error during submission:', error);
+        } finally {
+            submitButton.disabled = false; // Re-enable button
         }
+    } else {
+        console.log('Form is invalid. Submission prevented.');
+    }
+}
 
-        return formIsValid;
+function validateForm() {
+    let isValid = true;
+
+    const name = getEl('iwt-consumer-name');
+    const email = getEl('iwt-consumer-email');
+    const mobile = getEl('iwt-consumer-mobile');
+    const postalCode = getEl('iwt-consumer-postal');
+    const offer = getEl('iwt-consumer-offer');
+    const tosCheckbox = getEl('iwt-tos-checkbox');
+    const cartTotalElement = getEl('iwt-cart-total');
+
+    let cartTotal = 0;
+
+    if (cartTotalElement && cartTotalElement.textContent) {
+        cartTotal = parseFloat(cartTotalElement.textContent.replace(/[^\d.-]/g, ''));
+        if (isNaN(cartTotal)) {
+            console.error("Cart total is not a valid number");
+            cartTotal = 0; 
+        }
+    } else {
+        console.error("Cart total element not found or has invalid content");
+        cartTotal = 0; 
+
     }
 
-    // Add blur event listeners for immediate validation feedback
-    const fields = [
-        { id: 'iwt-consumer-name', validator: validateName, errorId: 'error-consumer-name' },
-        { id: 'iwt-consumer-email', validator: validateEmail, errorId: 'error-consumer-email' },
-        { id: 'iwt-consumer-mobile', validator: validatePhone, errorId: 'error-consumer-mobile' },
-        { id: 'iwt-consumer-postal', validator: validatePostal, errorId: 'error-consumer-postal' },
-        { id: 'iwt-consumer-offer', validator: validateOffer, errorId: 'error-consumer-offer' }
-    ];
+    clearError(name);
+    clearError(email);
+    clearError(mobile);
+    clearError(postalCode);
+    clearError(offer);
+    getEl('iwt-tos-error').style.display = 'none';
 
-    fields.forEach(({ id, validator, errorId }) => {
-        const input = document.getElementById(id);
-        input.addEventListener('blur', () => {
-            if (!validator(input.value.trim())) {
-                showError(input, errorId);
-            } else {
-                clearError(input, errorId);
-            }
-        });
-    });
-
-    document.getElementById('iwt-form').addEventListener('submit', submitOfferToAPI);
-});
-
-// Validation functions
-function validateName(name) {
-    return name.length >= 10 && name.includes(' ');
+    // Validation logic
+    if (!name.value.trim()) {
+        showError(name, 'Please fill in your first and last name');
+        isValid = false;
+    }
+    if (!email.value.trim()) {
+        showError(email, 'Please fill in your email');
+        isValid = false;
+    } else if (!validateEmail(email.value)) {
+        showError(email, 'Please enter a valid email');
+        isValid = false;
+    }
+    if (!mobile.value.trim()) {
+        showError(mobile, 'Please fill in your mobile number');
+        isValid = false;
+    } else if (!validatePhone(mobile.value)) {
+        showError(mobile, 'Please enter a valid phone number');
+        isValid = false;
+    }
+    if (!postalCode.value.trim()) {
+        showError(postalCode, 'Please fill in your postal code');
+        isValid = false;
+    }
+    if (!offer.value.trim() || parseFloat(offer.value) <= 0) {
+        showError(offer, 'Offer price must be greater than zero');
+        isValid = false;
+    } else if (parseFloat(offer.value) > cartTotal) {
+        showError(offer, 'Offer price cannot exceed the cart total');
+        isValid = false;
+    }
+    if (!tosCheckbox.checked) {
+        getEl('iwt-tos-error').style.display = 'block';
+        isValid = false;
+    }
+    return isValid;
 }
 
 function validateEmail(email) {
-    return /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/.test(email);
+    const emailPattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+    return emailPattern.test(email);
 }
 
 function validatePhone(phone) {
-    return /^[0-9]{10}$/.test(phone);
+    const phonePattern = /^[0-9]{10}$/; 
+    return phonePattern.test(phone);
 }
 
-function validatePostal(postal) {
-    return postal.length >= 5;
-}
+function showError(element, message) {
+    element.style.borderColor = 'red';
+    element.style.borderWidth = '2px';
 
-function validateOffer(offer) {
-    return parseFloat(offer) > 0;
-}
-
-// Functions to show and clear errors
-function showError(element, errorId) {
-    document.getElementById(errorId).style.display = 'block';
-    element.classList.add('iwt-error-field');
-}
-
-function clearError(element, errorId) {
-    document.getElementById(errorId).style.display = 'none';
-    element.classList.remove('iwt-error-field');
-}
-
-
-/////////// Function to submit the offer data to the API ///////////
-async function submitOfferToAPI(event) {
-    event.preventDefault(); 
-    console.log("Submit button clicked and prevented default");
-
-    if (!validateForm()) {
-        console.log("Form validation failed");
-    return;
+    const existingTooltip = element.parentElement.querySelector('.custom-tooltip');
+    if (existingTooltip) {
+        existingTooltip.remove();
     }
 
-    cart = await fetchCart();
 
-    const offerAmount = parseFloat(document.getElementById('iwt-consumer-offer').value); // Keep in dollars and cents
-    const cartTotal = cart.total_price / 100; // Convert from cents to dollars
-    const offerDiscountRate = ((cartTotal - offerAmount) / cartTotal).toFixed(2); // Calculate discount rate in dollars
+    const tooltip = document.createElement('div');
+    tooltip.className = 'iwt-custom-tooltip';
+    tooltip.innerText = message;
 
-const offerData = {
-    storeUrl: storeUrlGlobal.replace(/^https?:\/\//, ''),
-    consumerName: document.getElementById('iwt-consumer-name').value,
-    consumerEmail: document.getElementById('iwt-consumer-email').value,
-    consumerMobile: document.getElementById('iwt-consumer-mobile').value,
-    consumerPostalCode: document.getElementById('iwt-consumer-postal').value,
-    offerAmount: offerAmount, // In dollars
-    offerDiscountRate: offerDiscountRate,
-    tosChecked: document.getElementById('iwt-tos-checkbox').checked,
-    tosCheckedDate: new Date().toISOString(),
-    cartToken: cart.token,
-    cartCreateDate: cart.createdAt,
-    offerCreateDate: new Date().toISOString(),
-    items: cart.items.map(item => ({
-        productID: item.product_id,
-        productName: item.product_title,
-        variantID: item.variant_id,
-        sku: item.sku,
-        quantity: item.quantity,
-        price: item.price / 100, // Convert from cents to dollars
-        cartToken: cart.token,
-        template: item.properties?.template
-    })),
-    cartItems: new Set(cart.items.map(item => item.sku)).size,
-    cartUnits: cart.items.reduce((totalUnits, item) => totalUnits + item.quantity, 0),
-    cartTotalPrice: cartTotal, // In dollars
-};
+    element.parentElement.appendChild(tooltip);
+    const rect = element.getBoundingClientRect();
+    tooltip.style.left = `${rect.left + window.scrollX}px`;
+    tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`; 
 
-    console.log("Submitting offer with the following data:", offerData);
+    setTimeout(() => {
+        tooltip.classList.add("fade-out"); 
+        setTimeout(() => tooltip.remove(), 1800); 
+    }, 5000);
 
-    // Submit the offerData to the API
-    fetch('https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(offerData),
-    })
-    .then(response => {
-        if (response.ok) return response.json();
-        else {
-            console.error("Error when submitting offer:", response);
-            throw new Error("Error when sending request: " + response.status);
+}
+
+function clearError(element) {
+    element.style.borderColor = '';
+    element.style.borderWidth = '';
+
+    const tooltip = document.body.querySelector('.custom-tooltip');
+    if (tooltip) {
+        tooltip.remove();
+    }
+}
+
+function clearError(element) {
+    element.style.borderColor = '';
+    element.style.borderWidth = '';
+
+    const tooltip = element.parentElement.querySelector('.custom-tooltip');
+    if (tooltip) {
+        tooltip.remove();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', strtEventListen);
+
+async function submitOfferToAPI(event) {
+    event.preventDefault(); 
+    if (!validateForm()) {
+    return;
+    }
+    const submitButton = getEl('submit-offer-button');
+
+    try {
+        submitButton.disabled = true; // Disable the button
+    
+        cart = await fetchCart(); // Fetch the cart
+    
+        const offerAmount = parseFloat(getEl('iwt-consumer-offer').value).toFixed(2);
+        const cartTotalPrice = (cart.total_price / 100).toFixed(2); // Convert cents to dollars
+        const offerDiscountRate = ((cartTotalPrice - offerAmount) / cartTotalPrice).toFixed(2);
+    
+        const offerData = {
+            storeUrl: storeUrlGlobal.replace(/^https?:\/\//, ''),
+            consumerName: getEl('iwt-consumer-name').value,
+            consumerEmail: getEl('iwt-consumer-email').value,
+            consumerMobile: getEl('iwt-consumer-mobile').value,
+            consumerPostalCode: getEl('iwt-consumer-postal').value,
+            currency: cart.currency,
+            offerAmount: offerAmount,
+            offerDiscountAmount: (cartTotalPrice - offerAmount).toFixed(2),
+            offerDiscountRate: offerDiscountRate,
+            tosChecked: getEl('iwt-tos-checkbox').checked,
+            tosCheckedDate: new Date().toISOString(),
+            cartToken: cart.token,
+            cartCreateDate: cartCreated,
+            cartUpdateDate: cartUpdated,
+            offerCreateDate: new Date().toISOString(),
+            cartComposition: checkTemplateMix(cart.items) ? 'mixed' : 'single', // Check cart template
+            items: cart.items.map(item => ({
+                productID: item.product_id,
+                productName: item.product_title,
+                variantID: item.variant_id,
+                sku: item.sku,
+                quantity: item.quantity,
+                price: item.presentment_price,
+                cartToken: cart.token,
+                template: item.properties?.template,
+            })),
+            cartItems: new Set(cart.items.map(item => item.sku)).size,
+            cartUnits: cart.items.reduce((totalUnits, item) => totalUnits + item.quantity, 0),
+            cartTotalPrice: cartTotalPrice,
+        };
+    
+        console.log("Submitting offer with the following data:", offerData);
+    
+        const response = await fetch('https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(offerData),
+        });
+    
+        if (!response.ok) {
+            throw new Error(`Error when submitting offer: ${response.status}`);
         }
-    })
-
-    .then(response => {
-        console.log(response);
-        if (response.response.hasOwnProperty("offerStatus")) {
+    
+        const responseData = await response.json();
+        console.log("Offer submitted successfully:", responseData);
+    
+        if (responseData.response?.offerStatus) {
             displayOfferResponse(
-                response.response.offerStatus,
-                response.response.offerAmount,
-                response.response.checkoutUrl,
-                response.response.expiryMinutes,
-                response.response.discountCode,
-                response.response.storeBrand,
-                response.response.firstName
+                responseData.response.offerStatus,
+                responseData.response.offerAmount,
+                responseData.response.checkoutUrl,
+                responseData.response.expiryMinutes,
+                responseData.response.discountCode,
+                responseData.response.storeBrand,
+                responseData.response.firstName
             );
         } else {
-            console.error("Unexpected response format:", response);
+            console.error("Unexpected response format:", responseData);
             alert('Unexpected response. Please try again later.');
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error("Error when submitting offer:", error);
         alert('Error when submitting offer. Please try again later.');
-    });    
+    } finally {
+        submitButton.disabled = false;
+    }
 }
 
 function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinutes, discountCode , storeBrand) {
-    const modalContentContainer = document.querySelector('.modal-content-container');
-    modalContentContainer.classList.add('fade-out');
+    const iwtModalContent = document.querySelector('.modal-content-container');
+    
+    iwtModalContent.classList.add('fade-out');
 
     setTimeout(() => {
-        modalContentContainer.style.display = 'none'; 
-        const responseSection = document.getElementById('iwt-modal-offer-response');
-        responseSection.style.display = 'flex';
-        responseSection.classList.add('fade-in');
-        const wooHooContainer = document.getElementById('iwt-response-logo-container-woohoo');
-        const whoopsContainer = document.getElementById('iwt-response-logo-container-whoops');
-        const pendingContainer = document.getElementById('iwt-response-logo-container-pending');
+        iwtModalContent.style.display = 'none'; 
+        const modalResp = getEl('iwt-modal-offer-response');
+        modalResp.style.display = 'flex';
+        modalResp.classList.add('fade-in');
+        const wooHooContainer = getEl('iwt-response-logo-container-woohoo');
+        const whoopsContainer = getEl('iwt-response-logo-container-whoops');
+        const pendingContainer = getEl('iwt-response-logo-container-pending');
+
         let responseMessage = '';
+
             storeBrand = storeBrand || "our store!";
+
         if (offerStatus === 'Auto Accepted') {
             wooHooContainer.style.display = 'block'; 
             whoopsContainer.style.display = 'none'; 
             pendingContainer.style.display = 'none'; 
+
             responseMessage = `<p class="iwt-paragraph">You just made a Great Deal using I Want That!  Your offer of $${(offerAmount).toFixed(2)} 
             has been <strong>accepted</strong>.  Your deal will expire
             in ${expiryMinutes} minutes.  Click on the button below and go claim it.  Congratulations!</p>
@@ -745,16 +841,18 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
     
             <p id="copyMessage" style="display:none; color: #80bf9b; margin-top: 10px;">Coupon code copied to clipboard!</p>`
         ;
-            const checkoutButtonContainer = document.getElementById('iwt-checkout-button-container');
-            const checkoutButton = document.getElementById('checkout-button');
+            const checkoutButtonContainer = getEl('iwt-checkout-button-container');
+            const checkoutButton = getEl('checkout-button');
             if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
                 checkoutButton.href = checkoutUrl;
                 checkoutButtonContainer.style.display = 'flex'; 
             }
+
         } else if (offerStatus === 'Auto Declined') {
             wooHooContainer.style.display = 'none'; 
-            whoopsContainer.style.display = 'block'; 
+            whoopsContainer.style.display = 'block';
             pendingContainer.style.display = 'none'; 
+
             responseMessage = `<p class="iwt-paragraph">Hey thanks for the offer but unfortunately we cannot make $${(offerAmount).toFixed(2)} work. 
             If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
             <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
@@ -763,38 +861,41 @@ function displayOfferResponse(offerStatus, offerAmount, checkoutUrl, expiryMinut
             wooHooContainer.style.display = 'none'; 
             whoopsContainer.style.display = 'none'; 
             pendingContainer.style.display = 'block'; 
+
             responseMessage = `<p class="iwt-paragraph">Hey, thanks for your offer of $${(offerAmount).toFixed(2)} for your cart.  
             We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
         } else {
             responseMessage = `<p class="iwt-paragraph">Unexpected status: ${offerStatus}. Please try again later.</p>`;
         }
-        const responseMessageContainer = document.getElementById('response-message-container');
-        responseMessageContainer.innerHTML = responseMessage;       
+
+
+        const modalRespCont = getEl('response-message-container');
+        modalRespCont.innerHTML = responseMessage;
+        
     }, 500); 
 }
 
 function copyDiscountCode() {
-    var iwtdiscountCode = document.getElementById("iwtdiscountCode");
+    var iwtdiscountCode = getEl("iwtdiscountCode");
     iwtdiscountCode.select();
     iwtdiscountCode.setSelectionRange(0, 99999); 
-  
+
+
     navigator.clipboard.writeText(iwtdiscountCode.value).then(() => {
-      document.getElementById("copyMessage").style.display = "block";
-  
+      getEl("copyMessage").style.display = "block";
       setTimeout(() => {
-        document.getElementById("copyMessage").style.display = "none";
+        getEl("copyMessage").style.display = "none";
       }, 2000);
     });
   }
 
 function retryOffer() {
-    const responseSection = document.getElementById('iwt-modal-offer-response');
-    responseSection.style.display = 'none';
-    const modalContentContainer = document.querySelector('.modal-content-container');
-    modalContentContainer.classList.remove('fade-out');
-    modalContentContainer.style.display = 'flex';
-    modalContentContainer.classList.add('fade-in');
+    const modalResp = getEl('iwt-modal-offer-response');
+    modalResp.style.display = 'none';
+    const iwtModalContent = document.querySelector('.modal-content-container');
+    iwtModalContent.classList.remove('fade-out');
+    iwtModalContent.style.display = 'flex';
+    iwtModalContent.classList.add('fade-in');
 }
 
-// Initialize event listeners when the DOM is fully loaded
-document.addEventListener('DOMContentLoaded', startupEventListeners);
+document.addEventListener('DOMContentLoaded', strtEventListen);
