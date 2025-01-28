@@ -1,1 +1,901 @@
-let cart,sourceTemplate,storeUrlGlobal,cartCreated=null,cartUpdated=null;const getEl=t=>document.getElementById(t);function resetModalData(){getEl("iwt-cart-table").innerHTML="";const t=getEl("iwt-consumer-quantity");t&&(t.value=1);const e=getEl("iwt-consumer-subtotal");e&&(e.value=0)}function closeModal(){const t=getEl("iwt-modal-container");t&&(t.style.display="none"),resetModalData()}document.addEventListener("DOMContentLoaded",(async()=>{const t=getEl("iwt-modal-container"),e=getEl("iwt-modal-close-btn");if(t){t.style.display="none",document.body.appendChild(t),e&&e.addEventListener("click",(t=>{t.stopPropagation(),closeModal(),console.log("Modal closed with button click.")})),t.addEventListener("click",(e=>{e.target===t&&(closeModal(),console.log("Modal closed by clicking outside the modal content."))}));"iwt"===new URLSearchParams(window.location.search).get("cgo")&&(t.style.display="block",console.log('Modal opened based on URL parameter "cgo=iwt".'))}else console.error('Modal container not found. Check the ID "iwt-modal-container".');cart=await fetchCart(),strtEventListen()}));const openOfferModal=async function({template:t,default_variantID:e,storeUrl:o}){let r;if(console.log("Store URL:",o,e,t),sourceTemplate=t,storeUrlGlobal=o,resetModalData(),"cart"===t||"checkout"===t)cart=await fetchCart(),console.log("Cart:",cart),r=cart.token,renderCartTable(cart);else if("product"===t||"iwantthat"===t||"iwtclearance"===t){let o=e;const a=getVariantFromURL();a?o=a:console.log("Variant ID not found in URL, using default variant ID");const n=getQuantity();console.log("Product ID (Variant ID):",o);try{await addToCart({ID:o,quantity:n,template:t})}catch(t){console.error(`Error adding product ${o} to the cart`,t)}cart=await fetchCart(),console.log("Cart:",cart),r=cart.token,renderCartTable(cart)}syncFormDataWithCart();getEl("iwt-modal-container").style.display="block"};function syncFormDataWithCart(){const t=getEl("iwt-consumer-quantity");if(t){const e=cart.items.reduce(((t,e)=>t+e.quantity),0);t.value=e}const e=getEl("iwt-consumer-subtotal");e&&(e.value=cart.total_price)}function getVariantFromURL(){return new URLSearchParams(window.location.search).get("variant")}function getQuantity(){const t=document.querySelector(".quantity__input");return t?t.value:1}function getCurrentDateTime(){return(new Date).toISOString()}function updateCartDates(t){const e=getCurrentDateTime();t&&!cartCreateDate&&(cartCreateDate=e,console.log(`Cart created on: ${cartCreateDate}`)),cartUpdateDate=e,console.log(`Cart updated on: ${cartUpdateDate}`)}const addToCart=async function({ID:t,quantity:e,template:o}){try{const r=cart.items.find((e=>e.variant_id===t&&e.properties?.template===o));if(r){console.log("Item already in the cart, updating quantity...");const o=r.quantity+e,a=await fetch("/cart/change.js",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:r.key,quantity:o})});if(!a.ok)throw new Error(`Network response was not ok, status: ${a.status}`);const n=await a.json();console.log("Cart updated:",n),cartUpdated=getCurrentDateTime(),console.log(`Cart updated on: ${cartUpdated}`);const i=n.items.find((e=>e.variant_id===t));return i&&i.quantity<o?{success:!0,availQty:i.quantity,backOrdQty:o-i.quantity,cart:n}:{success:!0,availQty:o,backOrdQty:0,cart:n}}{const r={items:[{id:t,quantity:e,properties:{template:o}}]};console.log("Adding to cart with data:",JSON.stringify(r));const a=await fetch("/cart/add.js",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(r)});if(!a.ok)throw new Error(`Network response was not ok, status: ${a.status}`);const n=await a.json();console.log("Product added to cart with template:",o),cartCreated||(cartCreated=getCurrentDateTime(),console.log(`Cart created on: ${cartCreated}`)),cartUpdated=getCurrentDateTime(),console.log(`Cart updated on: ${cartUpdated}`);const i=n.items.find((e=>e.id==t));return i&&i.quantity<e?{success:!0,availQty:i.quantity,backOrdQty:e-i.quantity,cart:n}:{success:!0,availQty:e,backOrdQty:0,cart:n}}}catch(t){return console.error("Error adding to cart:",t),{success:!1,error:t}}},updateItemQuantityHandler=async(t,e)=>{if(cart.items.find((e=>e.key===t)))try{await updateItemQuantity(t,e),await updateAndRenderCart()}catch(t){console.error("Error updating item quantity:",t)}else console.error("Item not found for quantity update")},updateAndRenderCart=async()=>{cart=await fetchCart(),cart?renderCartTable(cart):console.error("Failed to fetch updated cart data")},fetchCart=async function(){try{console.log("Fetching cart details...");const t=await fetch("/cart.js");if(!t.ok)throw new Error("Network response was not ok");const e=await t.json();console.log("Cart details:",e);let o=!1,r=!1;return e.items.forEach(((t,e)=>{console.log(`Item ${e+1}:`,t),t.properties?(console.log(`Properties for item ${e+1}:`,t.properties),t.properties.template?(console.log(`Template property for item ${e+1}:`,t.properties.template),"iwtclearance"===t.properties.template?(o=!0,console.log(`Item ${e+1} is marked as clearance.`)):(r=!0,console.log(`Item ${e+1} is marked as regular.`))):(r=!0,console.warn(`Item ${e+1} has no template property, assuming regular.`))):(r=!0,console.warn(`Item ${e+1} has no properties object, assuming regular.`))})),o&&r?console.log("The cart contains a mix of clearance and regular priced merchandise."):o?console.log("The cart contains only clearance items."):r&&console.log("The cart contains only regular priced items."),e}catch(t){return console.error("Error fetching cart:",t),null}},updateItemQuantity=async(t,e)=>{try{const o=cart.items.find((e=>e.key===t));if(!o)throw new Error("Item not found in the cart");console.log("Current item:",o);const r=await addToCart({ID:o.variant_id,quantity:e,template:o.properties.template});if(!r.success)throw new Error(r.error||"Failed to update quantity");const a=document.querySelector(`input[data-line-item-key="${t}"]`);if(r.backOrdQty>0)a&&(a.style.borderColor="orange",a.title=`Only ${r.availQty} in stock. ${r.backOrdQty} will be back-ordered.`),showModalError(`Only ${r.availQty} items are available. ${r.backOrdQty} items will be back-ordered.`);else{a&&(a.style.borderColor="",a.title=""),clearModalError();const o=await fetch("/cart/change.js",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:t,quantity:e})});if(!o.ok)throw new Error(`Network response was not ok, status: ${o.status}`);const r=await o.json();console.log("Item quantity updated:",r),renderCartTable(r)}}catch(e){console.error("Error updating item quantity:",e);const o=document.querySelector(`input[data-line-item-key="${t}"]`);o&&(o.style.borderColor="red",o.title="Error updating quantity. Please try again."),showModalError("Unable to update quantity. Please try again.")}},clearModalError=()=>{const t=getEl("iwt-modal-error");t&&(t.style.display="none",t.innerText="")};document.addEventListener("DOMContentLoaded",(()=>{document.querySelectorAll(".iwt-input-number").forEach((t=>{t.addEventListener("input",(async e=>{const o=t.getAttribute("data-line-item-key"),r=parseInt(e.target.value);await updateItemQuantityHandler(o,r)}))}))}));const clearInptError=t=>{t.style.borderColor="",t.title="";const e=getEl("iwt-modal-error");e&&(e.style.display="none")};document.addEventListener("DOMContentLoaded",(()=>{document.querySelectorAll(".iwt-input-number").forEach((t=>{t.addEventListener("input",(()=>clearInptError(t)))}))}));const removeItem=async t=>{try{const e=await fetch("/cart/change.js",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:t,quantity:0})});if(!e.ok)throw new Error(`Network response was not ok, status: ${e.status}`);const o=await e.json();console.log("Item removed from cart:",o),renderCartTable(o)}catch(t){console.error("Error removing item from cart:",t)}},renderCartTable=function(t,e=null){if(!t)return void console.error("Cart is null");if(!t.items)return console.error("Cart items property is missing"),void console.log("Cart object:",t);let o='<table><thead class="table-header"><tr>';const r=["product_title","quantity","price"],a={product_title:"Product Name",quantity:"Units",price:"Price",line_price:"Line Price"};r.forEach((t=>{o+=`<th>${a[t]}</th>`})),o+=`<th>${a.line_price}</th></tr></thead><tbody>`;let n=0;t.items.forEach(((t,e)=>{o+=`<tr style="background-color: ${e%2==0?"#fff":"#f2f2f2"};">`,r.forEach((e=>{if("product_title"===e)o+=`\n                    <td>\n                        <div>${t.product_title}</div>\n                        <div style="font-size: 0.8em; color: #666;">SKU: ${t.sku||"N/A"}</div>\n                    </td>`;else if("quantity"===e)o+=`<td><input type="number" class="iwt-input-number" value="${t[e]}" min="1" onchange="updateItemQuantity('${t.key}', this.value)" data-line-item-key="${t.key}"></td>`;else{const r="price"===e?formatPrice(t[e]):t[e];o+=`<td>${r||""}</td>`}}));const a=t.price*t.quantity;n+=a,o+=`<td>${formatPrice(a)}</td>`,o+=`\n          <td style="background-color: white;">\n            <button class="iwt-remove-item" onclick="removeItem('${t.key}')" title="Remove item" style="color: red; font-size: 16px; border: none; background: none;">\n              &cross;\n            </button>\n          </td>\n        `,o+="</tr>"})),o+=`\n      </tbody>\n      <tfoot>\n        <tr style="background-color: #0442b4; color: #fff;">\n          <td colspan="${r.length}">Subtotal</td>\n          <td id="iwt-cart-total">${formatPrice(n)}</td>\n        </tr>\n    `,null!==e&&(o+=`\n        <tr>\n          <td colspan="${r.length}">Accepted Offer Price</td>\n          <td>${formatPrice(e)}</td>\n        </tr>\n      `),o+="</tfoot></table>";const i=getEl("iwt-cart-table");i?i.innerHTML=o:console.error("Element with ID iwt-cart-table not found")};function formatPrice(t){return`$${(t/100).toFixed(2)}`}function checkTemplateMix(t){return new Set(t.map((t=>t.properties?.template||"regular"))).size>1}function strtEventListen(){const t=getEl("submit-offer-button"),e=getEl("iwt-offer-form");t&&e?(t.removeEventListener("click",handleSubmit),console.log("Event listener attached to submit button"),t.addEventListener("click",handleSubmit)):console.log("Submit button or form element not found.")}async function handleSubmit(t){t.preventDefault();const e=getEl("submit-offer-button");if(e.disabled)console.log("Submit button already disabled, preventing duplicate submission.");else if(console.log("Submit button clicked. Starting validation."),validateForm()){e.disabled=!0;try{await submitOfferToAPI(t)}catch(t){console.error("Error during submission:",t)}finally{e.disabled=!1}}else console.log("Form is invalid. Submission prevented.")}function validateForm(){let t=!0;const e=getEl("iwt-consumer-name"),o=getEl("iwt-consumer-email"),r=getEl("iwt-consumer-mobile"),a=getEl("iwt-consumer-postal"),n=getEl("iwt-consumer-offer"),i=getEl("iwt-tos-checkbox"),s=getEl("iwt-cart-total");let l=0;return s&&s.textContent?(l=parseFloat(s.textContent.replace(/[^\d.-]/g,"")),isNaN(l)&&(console.error("Cart total is not a valid number"),l=0)):(console.error("Cart total element not found or has invalid content"),l=0),clearError(e),clearError(o),clearError(r),clearError(a),clearError(n),getEl("iwt-tos-error").style.display="none",e.value.trim()||(showError(e,"Please fill in your first and last name"),t=!1),o.value.trim()?validateEmail(o.value)||(showError(o,"Please enter a valid email"),t=!1):(showError(o,"Please fill in your email"),t=!1),r.value.trim()?validatePhone(r.value)||(showError(r,"Please enter a valid phone number"),t=!1):(showError(r,"Please fill in your mobile number"),t=!1),a.value.trim()||(showError(a,"Please fill in your postal code"),t=!1),!n.value.trim()||parseFloat(n.value)<=0?(showError(n,"Offer price must be greater than zero"),t=!1):parseFloat(n.value)>l&&(showError(n,"Offer price cannot exceed the cart total"),t=!1),i.checked||(getEl("iwt-tos-error").style.display="block",t=!1),t}function validateEmail(t){return/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/.test(t)}function validatePhone(t){return/^[0-9]{10}$/.test(t)}function showError(t,e){t.style.borderColor="red",t.style.borderWidth="2px";const o=t.parentElement.querySelector(".custom-tooltip");o&&o.remove();const r=document.createElement("div");r.className="iwt-custom-tooltip",r.innerText=e,t.parentElement.appendChild(r);const a=t.getBoundingClientRect();r.style.left=`${a.left+window.scrollX}px`,r.style.top=`${a.bottom+window.scrollY+5}px`,setTimeout((()=>{r.classList.add("fade-out"),setTimeout((()=>r.remove()),1800)}),5e3)}function clearError(t){t.style.borderColor="",t.style.borderWidth="";const e=document.body.querySelector(".custom-tooltip");e&&e.remove()}function clearError(t){t.style.borderColor="",t.style.borderWidth="";const e=t.parentElement.querySelector(".custom-tooltip");e&&e.remove()}async function submitOfferToAPI(t){if(t.preventDefault(),!validateForm())return;const e=getEl("submit-offer-button");try{e.disabled=!0,cart=await fetchCart();const t=parseFloat(getEl("iwt-consumer-offer").value).toFixed(2),o=(cart.total_price/100).toFixed(2),r=((o-t)/o).toFixed(2),a={storeUrl:storeUrlGlobal.replace(/^https?:\/\//,""),consumerName:getEl("iwt-consumer-name").value,consumerEmail:getEl("iwt-consumer-email").value,consumerMobile:getEl("iwt-consumer-mobile").value,consumerPostalCode:getEl("iwt-consumer-postal").value,currency:cart.currency,offerAmount:t,offerDiscountAmount:(o-t).toFixed(2),offerDiscountRate:r,tosChecked:getEl("iwt-tos-checkbox").checked,tosCheckedDate:(new Date).toISOString(),cartToken:cart.token,cartCreateDate:cartCreated,cartUpdateDate:cartUpdated,offerCreateDate:(new Date).toISOString(),cartComposition:checkTemplateMix(cart.items)?"mixed":"single",items:cart.items.map((t=>({productID:t.product_id,productName:t.product_title,variantID:t.variant_id,sku:t.sku,quantity:t.quantity,price:t.presentment_price,cartToken:cart.token,template:t.properties?.template}))),cartItems:new Set(cart.items.map((t=>t.sku))).size,cartUnits:cart.items.reduce(((t,e)=>t+e.quantity),0),cartTotalPrice:o};console.log("Submitting offer with the following data:",a);const n=await fetch("https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(a)});if(!n.ok)throw new Error(`Error when submitting offer: ${n.status}`);const i=await n.json();console.log("Offer submitted successfully:",i),i.response?.offerStatus?displayOfferResponse(i.response.offerStatus,i.response.offerAmount,i.response.checkoutUrl,i.response.expiryMinutes,i.response.discountCode,i.response.storeBrand,i.response.firstName):(console.error("Unexpected response format:",i),alert("Unexpected response. Please try again later."))}catch(t){console.error("Error when submitting offer:",t),alert("Error when submitting offer. Please try again later.")}finally{e.disabled=!1}}function displayOfferResponse(t,e,o,r,a,n){const i=document.querySelector(".modal-content-container");i.classList.add("fade-out"),setTimeout((()=>{i.style.display="none";const s=getEl("iwt-modal-offer-response");s.style.display="flex",s.classList.add("fade-in");const l=getEl("iwt-response-logo-container-woohoo"),c=getEl("iwt-response-logo-container-whoops"),d=getEl("iwt-response-logo-container-pending");let u="";if(n=n||"our store!","Auto Accepted"===t){l.style.display="block",c.style.display="none",d.style.display="none",u=`<p class="iwt-paragraph">You just made a Great Deal using I Want That!  Your offer of $${e.toFixed(2)} \n            has been <strong>accepted</strong>.  Your deal will expire\n            in ${r} minutes.  Click on the button below and go claim it.  Congratulations!</p>\n            <p class="iwt-paragraph">Thanks for shopping ${n}</p>\n            </br>\n         <p class="iwt-paragraph">p.s. Your coupon code is:</p>\n    \n            <div>\n             <input type="text" value="${a}" id="iwtdiscountCode" readonly class="floating-input">\n              <button onclick="copyDiscountCode()" class="click-to-copy">Click to Copy</button>\n            </div>\n    \n            <p id="copyMessage" style="display:none; color: #80bf9b; margin-top: 10px;">Coupon code copied to clipboard!</p>`;const t=getEl("iwt-checkout-button-container"),i=getEl("checkout-button");t.style.display&&"none"!==t.style.display||(i.href=o,t.style.display="flex")}else"Auto Declined"===t?(l.style.display="none",c.style.display="block",d.style.display="none",u=`<p class="iwt-paragraph">Hey thanks for the offer but unfortunately we cannot make $${e.toFixed(2)} work. \n            If you would like to submit a new offer, just select the button below. Thanks for shopping ${n}!</p>\n            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`):"Pending Review"===t?(l.style.display="none",c.style.display="none",d.style.display="block",u=`<p class="iwt-paragraph">Hey, thanks for your offer of $${e.toFixed(2)} for your cart.  \n            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${n}!</p>`):u=`<p class="iwt-paragraph">Unexpected status: ${t}. Please try again later.</p>`;getEl("response-message-container").innerHTML=u}),500)}function copyDiscountCode(){var t=getEl("iwtdiscountCode");t.select(),t.setSelectionRange(0,99999),navigator.clipboard.writeText(t.value).then((()=>{getEl("copyMessage").style.display="block",setTimeout((()=>{getEl("copyMessage").style.display="none"}),2e3)}))}function retryOffer(){getEl("iwt-modal-offer-response").style.display="none";const t=document.querySelector(".modal-content-container");t.classList.remove("fade-out"),t.style.display="flex",t.classList.add("fade-in")}document.addEventListener("DOMContentLoaded",strtEventListen),document.addEventListener("DOMContentLoaded",strtEventListen);
+// Declare global variables at the top of the script
+let cart, sourceTemplate, storeUrlGlobal, cartCreated = null, cartUpdated = null;
+const getEl = (id) => document.getElementById(id);
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+    const iwtModal = getEl('iwt-modal-container');
+    const iwtCloseBtn = getEl('iwt-modal-close-btn');
+
+    if (iwtModal) {
+        iwtModal.style.display = 'none';
+        document.body.appendChild(iwtModal);
+
+        if (iwtCloseBtn) {
+            iwtCloseBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                closeModal();
+                console.log('Modal closed with button click.');
+            });
+        }
+
+        iwtModal.addEventListener('click', (event) => {
+            if (event.target === iwtModal) {
+                closeModal();
+                console.log('Modal closed by clicking outside the modal content.');
+            }
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const cgoParam = urlParams.get('cgo');
+        if (cgoParam === 'iwt') {
+            iwtModal.style.display = 'block';
+            console.log('Modal opened based on URL parameter "cgo=iwt".');
+        }
+    } else {
+        console.error('Modal container not found. Check the ID "iwt-modal-container".');
+    }
+
+    cart = await fetchCart();
+  /*  attachqtyInptListen();*/
+    strtEventListen();
+});
+
+function resetModalData() {
+    getEl('iwt-cart-table').innerHTML = '';
+    const qtyInpt = getEl('iwt-consumer-quantity');
+    if (qtyInpt) {
+        qtyInpt.value = 1;
+    }
+    const subtotalInput = getEl('iwt-consumer-subtotal');
+    if (subtotalInput) {
+        subtotalInput.value = 0;
+    }
+}
+
+function closeModal() {
+    const iwtModal = getEl('iwt-modal-container');
+    if (iwtModal) {
+        iwtModal.style.display = 'none';
+    }
+    resetModalData();
+}
+
+const openOfferModal = async function({ template, default_variantID, storeUrl}) {
+    console.log('Store URL:', storeUrl, default_variantID, template);
+    let cartToken, cartDate;
+    sourceTemplate = template;
+    storeUrlGlobal = storeUrl;
+ 
+resetModalData();
+
+    if (template === 'cart' || template === 'checkout') {
+        cart = await fetchCart();
+        console.log('Cart:', cart);
+        cartToken = cart.token;
+        renderCartTable(cart);
+  
+    } else if (template === 'product' || template === 'iwantthat' || template === 'iwtclearance') {
+        let ID = default_variantID; 
+  
+        const urlVariantID = getVariantFromURL(); 
+        if (urlVariantID) {
+            ID = urlVariantID; 
+        } else {
+            console.log('Variant ID not found in URL, using default variant ID');
+        }
+  
+        const quantity = getQuantity();
+        console.log('Product ID (Variant ID):', ID);
+  
+        try {
+            await addToCart({ ID, quantity, template });
+        } catch (error) {
+            console.error(`Error adding product ${ID} to the cart`, error);
+        }
+  
+        cart = await fetchCart();
+        console.log('Cart:', cart);
+        cartToken = cart.token;
+        renderCartTable(cart);
+    }
+  
+    syncFormDataWithCart();
+    const iwtModal = getEl('iwt-modal-container');
+    iwtModal.style.display = 'block';
+};
+  
+function syncFormDataWithCart() {
+    const qtyInpt = getEl('iwt-consumer-quantity');
+    if (qtyInpt) {
+        const totalQuantity = cart.items.reduce((total, item) => total + item.quantity, 0);
+        qtyInpt.value = totalQuantity;
+    }
+  
+    const subttlInpt = getEl('iwt-consumer-subtotal');
+    if (subttlInpt) {
+        subttlInpt.value = cart.total_price;
+    }
+  
+}
+  
+function getVariantFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('variant');
+}
+  
+function getQuantity() {
+    const qtyInpt = document.querySelector('.quantity__input');
+    return qtyInpt ? qtyInpt.value : 1;
+}
+
+function getCurrentDateTime() {
+    return new Date().toISOString();
+}
+
+function updateCartDates(isNewItem) {
+    const currentDateTime = getCurrentDateTime();
+
+    if (isNewItem && !cartCreateDate) {
+        cartCreateDate = currentDateTime;
+        console.log(`Cart created on: ${cartCreateDate}`);
+    }
+    cartUpdateDate = currentDateTime;
+    console.log(`Cart updated on: ${cartUpdateDate}`);
+}
+
+const addToCart = async function({ ID, quantity, template }) {
+    try {
+        const itemExist = cart.items.find(item => item.variant_id === ID && item.properties?.template === template);
+
+        if (itemExist) {
+            console.log('Item already in the cart, updating quantity...');
+            const newQty = itemExist.quantity + quantity;
+
+            const response = await fetch('/cart/change.js', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: itemExist.key,
+                    quantity: newQty
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Network response was not ok, status: ${response.status}`);
+            }
+
+            const updatedCart = await response.json();
+            console.log('Cart updated:', updatedCart);
+
+            cartUpdated = getCurrentDateTime();
+            console.log(`Cart updated on: ${cartUpdated}`);
+
+            const itemUpdate = updatedCart.items.find(item => item.variant_id === ID);
+            if (itemUpdate && itemUpdate.quantity < newQty) {
+                return {
+                    success: true,
+                    availQty: itemUpdate.quantity,
+                    backOrdQty: newQty - itemUpdate.quantity,
+                    cart: updatedCart
+                };
+            }
+
+            return { success: true, availQty: newQty, backOrdQty: 0, cart: updatedCart };
+
+        } else {
+           
+            const data = {
+                items: [
+                    {
+                        id: ID,
+                        quantity: quantity,
+                        properties: {
+                            template: template
+                        }
+                    }
+                ]
+            };
+
+            console.log('Adding to cart with data:', JSON.stringify(data));
+
+            const response = await fetch('/cart/add.js', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Network response was not ok, status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Product added to cart with template:', template);
+            if (!cartCreated) {
+                cartCreated = getCurrentDateTime();
+                console.log(`Cart created on: ${cartCreated}`);
+            }
+            cartUpdated = getCurrentDateTime();
+            console.log(`Cart updated on: ${cartUpdated}`);
+            const addedItem = result.items.find(item => item.id == ID);
+            if (addedItem && addedItem.quantity < quantity) {
+                return {
+                    success: true,
+                    availQty: addedItem.quantity,
+                    backOrdQty: quantity - addedItem.quantity,
+                    cart: result
+                };
+            }
+
+            return { success: true, availQty: quantity, backOrdQty: 0, cart: result };
+        }
+
+    } catch (error) {
+        console.error("Error adding to cart:", error);
+        return { success: false, error };
+    }
+};
+
+const updateItemQuantityHandler = async (lineItemKey, newQty) => {
+    const currentItem = cart.items.find(item => item.key === lineItemKey);
+    if (currentItem) {
+        try {
+            await updateItemQuantity(lineItemKey, newQty);
+            await updateAndRenderCart();
+        } catch (error) {
+            console.error('Error updating item quantity:', error);
+        }
+    } else {
+        console.error('Item not found for quantity update');
+    }
+};
+
+const updateAndRenderCart = async () => {
+    cart = await fetchCart();
+    if (cart) {
+        renderCartTable(cart);
+    } else {
+        console.error('Failed to fetch updated cart data');
+    }
+};
+
+const fetchCart = async function() {
+    try {
+        console.log('Fetching cart details...');
+        const response = await fetch('/cart.js');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const cart = await response.json();
+        console.log('Cart details:', cart);
+
+        let hasClearance = false, hasRegular = false;
+
+        cart.items.forEach((item, index) => {
+            console.log(`Item ${index + 1}:`, item);
+            
+            if (item.properties) {
+                console.log(`Properties for item ${index + 1}:`, item.properties);
+
+                if (item.properties.template) {
+                    console.log(`Template property for item ${index + 1}:`, item.properties.template);
+
+                    if (item.properties.template === 'iwtclearance') {
+                        hasClearance = true;
+                        console.log(`Item ${index + 1} is marked as clearance.`);
+                    } else {
+                        hasRegular = true;
+                        console.log(`Item ${index + 1} is marked as regular.`);
+                    }
+                } else {
+
+                    hasRegular = true;
+                    console.warn(`Item ${index + 1} has no template property, assuming regular.`);
+                }
+            } else {
+ 
+                hasRegular = true;
+                console.warn(`Item ${index + 1} has no properties object, assuming regular.`);
+            }
+        });
+
+        if (hasClearance && hasRegular) {
+            console.log('The cart contains a mix of clearance and regular priced merchandise.');
+        } else if (hasClearance) {
+            console.log('The cart contains only clearance items.');
+        } else if (hasRegular) {
+            console.log('The cart contains only regular priced items.');
+        }
+        
+        return cart;
+    } catch (error) {
+        console.error('Error fetching cart:', error);
+        return null;
+    }
+};
+  
+const updateItemQuantity = async (lineItemKey, newQty) => {
+    try {
+        const currentItem = cart.items.find(item => item.key === lineItemKey);
+        if (!currentItem) {
+            throw new Error('Item not found in the cart');
+        }
+        console.log('Current item:', currentItem); 
+
+        const result = await addToCart({ 
+            ID: currentItem.variant_id, 
+            quantity: newQty,
+            template: currentItem.properties.template});
+
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to update quantity');
+        }
+
+        const inputField = document.querySelector(`input[data-line-item-key="${lineItemKey}"]`);
+
+        if (result.backOrdQty > 0) {
+            if (inputField) {
+                inputField.style.borderColor = 'orange'; 
+                inputField.title = `Only ${result.availQty} in stock. ${result.backOrdQty} will be back-ordered.`;
+            }
+
+            showModalError(`Only ${result.availQty} items are available. ${result.backOrdQty} items will be back-ordered.`);
+        } else {
+            if (inputField) {
+                inputField.style.borderColor = '';
+                inputField.title = ''; 
+            }
+            clearModalError();
+
+            const response = await fetch(`/cart/change.js`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: lineItemKey,
+                    quantity: newQty
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Network response was not ok, status: ${response.status}`);
+            }
+
+            const cartResult = await response.json();
+            console.log('Item quantity updated:', cartResult);
+            renderCartTable(cartResult); 
+        }
+    } catch (error) {
+        console.error('Error updating item quantity:', error);
+
+     
+        const inputField = document.querySelector(`input[data-line-item-key="${lineItemKey}"]`);
+        if (inputField) {
+            inputField.style.borderColor = 'red';
+            inputField.title = 'Error updating quantity. Please try again.';
+        }
+        showModalError('Unable to update quantity. Please try again.');
+    }
+};
+
+
+const clearModalError = () => {
+    const errorSection = getEl('iwt-modal-error');
+    if (errorSection) {
+        errorSection.style.display = 'none';
+        errorSection.innerText = '';
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const qtyInpts = document.querySelectorAll('.iwt-input-number');
+    qtyInpts.forEach(input => {
+        input.addEventListener('input', async (event) => {
+            const lineItemKey = input.getAttribute('data-line-item-key');
+            const newQty = parseInt(event.target.value);
+            await updateItemQuantityHandler(lineItemKey, newQty);
+        });
+    });
+});
+ 
+  const clearInptError = (inputField) => {
+      inputField.style.borderColor = ''; 
+      inputField.title = ''; 
+      const errorSection = getEl('iwt-modal-error');
+      if (errorSection) {
+          errorSection.style.display = 'none';
+      }
+  };
+  
+  
+  document.addEventListener('DOMContentLoaded', () => {
+      const qtyInpts = document.querySelectorAll('.iwt-input-number');
+      qtyInpts.forEach(input => {
+          input.addEventListener('input', () => clearInptError(input));
+      });
+  });
+  
+
+  const removeItem = async (lineItemKey) => {
+    try {
+        const response = await fetch(`/cart/change.js`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: lineItemKey,
+                quantity: 0
+            })
+        });
+  
+        if (!response.ok) {
+            throw new Error(`Network response was not ok, status: ${response.status}`);
+        }
+  
+        const result = await response.json();
+        console.log('Item removed from cart:', result);
+        renderCartTable(result); 
+    } catch (error) {
+        console.error('Error removing item from cart:', error);
+    }
+};
+  
+
+const renderCartTable = function(cart, offerAcceptedPrice = null) {
+    if (!cart) {
+        console.error('Cart is null');
+        return;
+    }
+  
+    if (!cart.items) {
+        console.error('Cart items property is missing');
+        console.log('Cart object:', cart);
+        return;
+    }
+  
+    let tableContent = '<table><thead class="table-header"><tr>';
+    const allowedKeys = ['product_title', 'quantity', 'price'];
+    const labels = {
+        product_title: 'Product Name',
+        quantity: 'Units',
+        price: 'Price',
+        line_price: 'Line Price'
+    };
+  
+ 
+    allowedKeys.forEach(key => {
+        tableContent += `<th>${labels[key]}</th>`;
+    });
+    tableContent += `<th>${labels.line_price}</th></tr></thead><tbody>`;
+  
+    let subtotal = 0;
+  
+    
+    cart.items.forEach((item, index) => {
+        const rowColor = index % 2 === 0 ? '#fff' : '#f2f2f2';
+        tableContent += `<tr style="background-color: ${rowColor};">`;
+  
+        allowedKeys.forEach(key => {
+            if (key === 'product_title') {
+                tableContent += `
+                    <td>
+                        <div>${item.product_title}</div>
+                        <div style="font-size: 0.8em; color: #666;">SKU: ${item.sku || 'N/A'}</div>
+                    </td>`;
+            } else if (key === 'quantity') {
+                tableContent += `<td><input type="number" class="iwt-input-number" value="${item[key]}" min="1" onchange="updateItemQuantity('${item.key}', this.value)" data-line-item-key="${item.key}"></td>`;
+            } else {
+                const value = key === 'price' ? formatPrice(item[key]) : item[key];
+                tableContent += `<td>${value || ''}</td>`;
+            }
+        });
+  
+        const lineTotal = item.price * item.quantity;
+        subtotal += lineTotal;
+        tableContent += `<td>${formatPrice(lineTotal)}</td>`;
+  
+      
+        tableContent += `
+          <td style="background-color: white;">
+            <button class="iwt-remove-item" onclick="removeItem('${item.key}')" title="Remove item" style="color: red; font-size: 16px; border: none; background: none;">
+              &cross;
+            </button>
+          </td>
+        `;
+        tableContent += '</tr>';
+    });
+  
+    tableContent += `
+      </tbody>
+      <tfoot>
+        <tr style="background-color: #0442b4; color: #fff;">
+          <td colspan="${allowedKeys.length}">Subtotal</td>
+          <td id="iwt-cart-total">${formatPrice(subtotal)}</td>
+        </tr>
+    `;
+  
+    if (offerAcceptedPrice !== null) {
+        tableContent += `
+        <tr>
+          <td colspan="${allowedKeys.length}">Accepted Offer Price</td>
+          <td>${formatPrice(offerAcceptedPrice)}</td>
+        </tr>
+      `;
+    }
+  
+    tableContent += '</tfoot></table>';
+  
+    const cartTable = getEl('iwt-cart-table');
+    if (cartTable) {
+        cartTable.innerHTML = tableContent;
+    } else {
+        console.error('Element with ID iwt-cart-table not found');
+    }
+};
+  
+function formatPrice(cents) {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+function checkTemplateMix(items) {
+    const templates = new Set(items.map((item) => item.properties?.template || 'regular'));
+    return templates.size > 1;
+}
+
+
+function strtEventListen() {
+    const submitButton = getEl('submit-offer-button');
+    const form = getEl('iwt-offer-form');
+
+    if (submitButton && form) {
+        // Remove existing listeners to prevent duplicate submissions
+        submitButton.removeEventListener('click', handleSubmit);
+
+        console.log('Event listener attached to submit button');
+        submitButton.addEventListener('click', handleSubmit); // Delegates to handleSubmit
+    } else {
+        console.log('Submit button or form element not found.');
+    }
+}
+
+async function handleSubmit(event) {
+    event.preventDefault();
+
+    const submitButton = getEl('submit-offer-button');
+
+    if (submitButton.disabled) {
+        console.log('Submit button already disabled, preventing duplicate submission.');
+        return;
+    }
+
+    console.log('Submit button clicked. Starting validation.');
+
+    if (validateForm()) { // Validation is still part of the flow
+        submitButton.disabled = true; // Prevents double-clicks
+        try {
+            await submitOfferToAPI(event); // Process submission
+        } catch (error) {
+            console.error('Error during submission:', error);
+        } finally {
+            submitButton.disabled = false; // Re-enable button
+        }
+    } else {
+        console.log('Form is invalid. Submission prevented.');
+    }
+}
+
+function validateForm() {
+    let isValid = true;
+
+    const name = getEl('iwt-consumer-name');
+    const email = getEl('iwt-consumer-email');
+    const mobile = getEl('iwt-consumer-mobile');
+    const postalCode = getEl('iwt-consumer-postal');
+    const offer = getEl('iwt-consumer-offer');
+    const tosCheckbox = getEl('iwt-tos-checkbox');
+    const cartTotalElement = getEl('iwt-cart-total');
+
+    let cartTotal = 0;
+
+    if (cartTotalElement && cartTotalElement.textContent) {
+        cartTotal = parseFloat(cartTotalElement.textContent.replace(/[^\d.-]/g, ''));
+        if (isNaN(cartTotal)) {
+            console.error("Cart total is not a valid number");
+            cartTotal = 0; 
+        }
+    } else {
+        console.error("Cart total element not found or has invalid content");
+        cartTotal = 0; 
+
+    }
+
+    clearError(name);
+    clearError(email);
+    clearError(mobile);
+    clearError(postalCode);
+    clearError(offer);
+    getEl('iwt-tos-error').style.display = 'none';
+
+    // Validation logic
+    if (!name.value.trim()) {
+        showError(name, 'Please fill in your first and last name');
+        isValid = false;
+    }
+    if (!email.value.trim()) {
+        showError(email, 'Please fill in your email');
+        isValid = false;
+    } else if (!validateEmail(email.value)) {
+        showError(email, 'Please enter a valid email');
+        isValid = false;
+    }
+    if (!mobile.value.trim()) {
+        showError(mobile, 'Please fill in your mobile number');
+        isValid = false;
+    } else if (!validatePhone(mobile.value)) {
+        showError(mobile, 'Please enter a valid phone number');
+        isValid = false;
+    }
+    if (!postalCode.value.trim()) {
+        showError(postalCode, 'Please fill in your postal code');
+        isValid = false;
+    }
+    if (!offer.value.trim() || parseFloat(offer.value) <= 0) {
+        showError(offer, 'Offer price must be greater than zero');
+        isValid = false;
+    } else if (parseFloat(offer.value) > cartTotal) {
+        showError(offer, 'Offer price cannot exceed the cart total');
+        isValid = false;
+    }
+    if (!tosCheckbox.checked) {
+        getEl('iwt-tos-error').style.display = 'block';
+        isValid = false;
+    }
+    return isValid;
+}
+
+function validateEmail(email) {
+    const emailPattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+    return emailPattern.test(email);
+}
+
+function validatePhone(phone) {
+    const phonePattern = /^[0-9]{10}$/; 
+    return phonePattern.test(phone);
+}
+
+function showError(element, message) {
+    element.style.borderColor = 'red';
+    element.style.borderWidth = '2px';
+
+    const existingTooltip = element.parentElement.querySelector('.custom-tooltip');
+    if (existingTooltip) {
+        existingTooltip.remove();
+    }
+
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'iwt-custom-tooltip';
+    tooltip.innerText = message;
+
+    element.parentElement.appendChild(tooltip);
+    const rect = element.getBoundingClientRect();
+    tooltip.style.left = `${rect.left + window.scrollX}px`;
+    tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`; 
+
+    setTimeout(() => {
+        tooltip.classList.add("fade-out"); 
+        setTimeout(() => tooltip.remove(), 1800); 
+    }, 5000);
+
+}
+
+function clearError(element) {
+    element.style.borderColor = '';
+    element.style.borderWidth = '';
+
+    const tooltip = document.body.querySelector('.custom-tooltip');
+    if (tooltip) {
+        tooltip.remove();
+    }
+}
+
+function clearError(element) {
+    element.style.borderColor = '';
+    element.style.borderWidth = '';
+
+    const tooltip = element.parentElement.querySelector('.custom-tooltip');
+    if (tooltip) {
+        tooltip.remove();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', strtEventListen);
+
+async function submitOfferToAPI(event) {
+    event.preventDefault(); 
+    if (!validateForm()) {
+    return;
+    }
+    const submitButton = getEl('submit-offer-button');
+
+    try {
+        submitButton.disabled = true; // Disable the button
+    
+        cart = await fetchCart(); // Fetch the cart
+    
+        const offerAmount = parseFloat(getEl('iwt-consumer-offer').value).toFixed(2);
+        const cartTotalPrice = (cart.total_price / 100).toFixed(2); // Convert cents to dollars
+        const offerDiscountRate = ((cartTotalPrice - offerAmount) / cartTotalPrice).toFixed(2);
+    
+        const offerData = {
+            storeUrl: storeUrlGlobal.replace(/^https?:\/\//, ''),
+            consumerName: getEl('iwt-consumer-name').value,
+            consumerEmail: getEl('iwt-consumer-email').value,
+            consumerMobile: getEl('iwt-consumer-mobile').value,
+            consumerPostalCode: getEl('iwt-consumer-postal').value,
+            currency: cart.currency,
+            offerAmount: offerAmount,
+            offerDiscountAmount: (cartTotalPrice - offerAmount).toFixed(2),
+            offerDiscountRate: offerDiscountRate,
+            tosChecked: getEl('iwt-tos-checkbox').checked,
+            tosCheckedDate: new Date().toISOString(),
+            cartToken: cart.token,
+            cartCreateDate: cartCreated,
+            cartUpdateDate: cartUpdated,
+            offerCreateDate: new Date().toISOString(),
+            cartComposition: checkTemplateMix(cart.items) ? 'mixed' : 'single', // Check cart template
+            items: cart.items.map(item => ({
+                productID: item.product_id,
+                productName: item.product_title,
+                variantID: item.variant_id,
+                sku: item.sku,
+                quantity: item.quantity,
+                price: item.presentment_price,
+                cartToken: cart.token,
+                template: item.properties?.template,
+            })),
+            cartItems: new Set(cart.items.map(item => item.sku)).size,
+            cartUnits: cart.items.reduce((totalUnits, item) => totalUnits + item.quantity, 0),
+            cartTotalPrice: cartTotalPrice,
+        };
+    
+        console.log("Submitting offer with the following data:", offerData);
+    
+        const response = await fetch('https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(offerData),
+        });
+    
+        if (!response.ok) {
+            throw new Error(`Error when submitting offer: ${response.status}`);
+        }
+    
+        const responseData = await response.json();
+        console.log("Offer submitted successfully:", responseData);
+    
+        if (responseData.response?.offerStatus) {
+            displayOfferResponse(
+                responseData.response.offerStatus,
+                responseData.response.offerAmount,
+                responseData.response.checkoutUrl,
+                responseData.response.expiryMinutes,
+                responseData.response.discountCode,
+                responseData.response.storeBrand,
+                responseData.response.firstName
+            );
+        } else {
+            console.error("Unexpected response format:", responseData);
+            alert('Unexpected response. Please try again later.');
+        }
+    } catch (error) {
+        console.error("Error when submitting offer:", error);
+        alert('Error when submitting offer. Please try again later.');
+    } finally {
+        submitButton.disabled = false;
+    }
+}
+
+function displayOfferResponse(firstName, offerStatus, offerAmount, checkoutUrl, expiryMinutes, discountCode , storeBrand) {
+    const iwtModalContent = document.querySelector('.modal-content-container');
+    
+    iwtModalContent.classList.add('fade-out');
+
+    setTimeout(() => {
+        iwtModalContent.style.display = 'none'; 
+        const modalResp = getEl('iwt-modal-offer-response');
+        modalResp.style.display = 'flex';
+        modalResp.classList.add('fade-in');
+        const wooHooContainer = getEl('iwt-response-logo-container-woohoo');
+        const whoopsContainer = getEl('iwt-response-logo-container-whoops');
+        const pendingContainer = getEl('iwt-response-logo-container-pending');
+
+        let responseMessage = '';
+
+            storeBrand = storeBrand || "our store!";
+
+        if (offerStatus === 'Auto Accepted') {
+            wooHooContainer.style.display = 'block'; 
+            whoopsContainer.style.display = 'none'; 
+            pendingContainer.style.display = 'none'; 
+
+            responseMessage = `<p class="iwt-paragraph">Hey ${firstName}, you just made a Great Deal using I Want That!  Your offer of $${(offerAmount).toFixed(2)} 
+            has been <strong>accepted</strong>.  Your deal will expire
+            in ${expiryMinutes} minutes.  Click on the button below and go claim it.  Congratulations!</p>
+            <p class="iwt-paragraph">Thanks for shopping ${storeBrand}</p>
+            </br>
+         <p class="iwt-paragraph">p.s. Your coupon code is:</p>
+    
+            <div>
+             <input type="text" value="${discountCode}" id="iwtdiscountCode" readonly class="floating-input">
+              <button onclick="copyDiscountCode()" class="click-to-copy">Click to Copy</button>
+            </div>
+    
+            <p id="copyMessage" style="display:none; color: #80bf9b; margin-top: 10px;">Coupon code copied to clipboard!</p>`
+        ;
+            const checkoutButtonContainer = getEl('iwt-checkout-button-container');
+            const checkoutButton = getEl('checkout-button');
+            if (!checkoutButtonContainer.style.display || checkoutButtonContainer.style.display === 'none') {
+                checkoutButton.href = checkoutUrl;
+                checkoutButtonContainer.style.display = 'flex'; 
+            }
+
+        } else if (offerStatus === 'Auto Declined') {
+            wooHooContainer.style.display = 'none'; 
+            whoopsContainer.style.display = 'block';
+            pendingContainer.style.display = 'none'; 
+
+            responseMessage = `<p class="iwt-paragraph">Hey thanks for the offer but unfortunately we cannot make $${(offerAmount).toFixed(2)} work. 
+            If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+            <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+        } else if (offerStatus === 'Pending Review') {
+            wooHooContainer.style.display = 'none'; 
+            whoopsContainer.style.display = 'none'; 
+            pendingContainer.style.display = 'block'; 
+
+            responseMessage = `<p class="iwt-paragraph">Hey, thanks for your offer of $${(offerAmount).toFixed(2)} for your cart.  
+            We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+        } else {
+            responseMessage = `<p class="iwt-paragraph">Unexpected status: ${offerStatus}. Please try again later.</p>`;
+        }
+
+
+        const modalRespCont = getEl('response-message-container');
+        modalRespCont.innerHTML = responseMessage;
+        
+    }, 500); 
+}
+
+function copyDiscountCode() {
+    var iwtdiscountCode = getEl("iwtdiscountCode");
+    iwtdiscountCode.select();
+    iwtdiscountCode.setSelectionRange(0, 99999); 
+
+
+    navigator.clipboard.writeText(iwtdiscountCode.value).then(() => {
+      getEl("copyMessage").style.display = "block";
+      setTimeout(() => {
+        getEl("copyMessage").style.display = "none";
+      }, 2000);
+    });
+  }
+
+function retryOffer() {
+    const modalResp = getEl('iwt-modal-offer-response');
+    modalResp.style.display = 'none';
+    const iwtModalContent = document.querySelector('.modal-content-container');
+    iwtModalContent.classList.remove('fade-out');
+    iwtModalContent.style.display = 'flex';
+    iwtModalContent.classList.add('fade-in');
+}
+
+document.addEventListener('DOMContentLoaded', strtEventListen);
