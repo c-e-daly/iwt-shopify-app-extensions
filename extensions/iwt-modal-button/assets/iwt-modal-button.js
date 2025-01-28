@@ -864,6 +864,9 @@ function displayOfferResponse(firstName, offerStatus, offerAmount, checkoutUrl, 
             whoopsContainer.style.display = 'block';
             responseMessage = responseMessageDecline;
 
+            const retryButton = getEl('retry-button-container'); 
+            retryButton.style.display = 'block'; 
+
         } else if (offerStatus === 'Pending') {
             pendingContainer.style.display = 'block';
             responseMessage = responseMessagePending;
