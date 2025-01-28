@@ -867,7 +867,7 @@ function displayOfferResponse(firstName, offerStatus, offerAmount, checkoutUrl, 
             const retryButton = getEl('retry-button-container'); 
             retryButton.style.display = 'block'; 
 
-        } else if (offerStatus === 'Pending') {
+        } else if (offerStatus === 'Pending Review') {
             pendingContainer.style.display = 'block';
             responseMessage = responseMessagePending;
         } else {
