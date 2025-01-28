@@ -819,11 +819,15 @@ function displayOfferResponse(firstName, offerStatus, offerAmount, checkoutUrl, 
         const pendingContainer = getEl('iwt-response-logo-container-pending');
 
         let responseMessage = '';
+        wooHooContainer.style.display = 'none';
+        whoopsContainer.style.display = 'none';
+        pendingContainer.style.display = 'none';
+        checkoutButtonContainer.style.display = 'none';
 
         storeBrand = storeBrand || "our store!";
 
 
-        const responseMessageAccept = `<p class="iwt-paragraph">Hey ${firstName}, you just made a Great Deal using I Want That!  Your offer of $${(offerAmount).toFixed(2)} 
+        const msgAccept = `<p class="iwt-paragraph">Hey ${firstName}, you just made a Great Deal using I Want That!  Your offer of $${(offerAmount).toFixed(2)} 
             has been <strong>accepted</strong>.  Your deal will expire
             in ${expiryMinutes} minutes.  Click on the button below and go claim it.  Congratulations!</p>
             <p class="iwt-paragraph">Thanks for shopping ${storeBrand}</p>
@@ -838,21 +842,21 @@ function displayOfferResponse(firstName, offerStatus, offerAmount, checkoutUrl, 
             <p id="copyMessage" style="display:none; color: #80bf9b; margin-top: 10px;">Coupon code copied to clipboard!</p>`
         ;
 
-        const responseMessageDecline = `<p class="iwt-paragraph">Hey ${firstName}, thanks for the offer but unfortunately we cannot make $${(offerAmount).toFixed(2)} work. 
+        const msgDecline = `<p class="iwt-paragraph">Hey ${firstName}, thanks for the offer but unfortunately we cannot make $${(offerAmount).toFixed(2)} work. 
             If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
             <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`
         ;
 
-        const responseMessagePending = `<p class="iwt-paragraph">Hey, thanks for your offer of $${(offerAmount).toFixed(2)} for your cart.  
+        const msgPending = `<p class="iwt-paragraph">Hey, thanks for your offer of $${(offerAmount).toFixed(2)} for your cart.  
             We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`
         ;
 
-        const responseMessageUnexpected = `<p class="iwt-paragraph">Unexpected status: ${offerStatus}. Please try again later.</p>`
+        const msgUnexpected = `<p class="iwt-paragraph">Unexpected status: ${offerStatus}. Please try again later.</p>`
         
     ;
         if (offerStatus === 'Auto Accepted') {
             wooHooContainer.style.display = 'block'; 
-            responseMessage = responseMessageAccept;
+            responseMessage = msgAccept;
 
             const checkoutButtonContainer = getEl('iwt-checkout-button-container');
             const checkoutButton = getEl('checkout-button');
@@ -862,16 +866,16 @@ function displayOfferResponse(firstName, offerStatus, offerAmount, checkoutUrl, 
             }
         } else if (offerStatus === 'Auto Declined') {
             whoopsContainer.style.display = 'block';
-            responseMessage = responseMessageDecline;
+            responseMessage = msgDecline;
 
             const retryButton = getEl('retry-button-container'); 
             retryButton.style.display = 'block'; 
 
         } else if (offerStatus === 'Pending Review') {
             pendingContainer.style.display = 'block';
-            responseMessage = responseMessagePending;
+            responseMessage = msgPending;
         } else {
-            responseMessage = responseMessageUnexpected;
+            responseMessage = msgUnexpected;
         }
 
         const modalRespCont = getEl('response-message-container');
