@@ -804,6 +804,77 @@ async function submitOfferToAPI(event) {
     }
 }
 
+function displayOfferResponse(firstName, offerStatus, offerAmount, checkoutUrl, expiryMinutes, discountCode, storeBrand) {
+    // Select elements
+    const offerContainer = document.getEl('iwt-modal-offer-container'); // Form container
+    const responseContainer = document.getEl('iwt-modal-offer-response'); // Response container
+    const wooHooContainer = getEl('iwt-response-logo-container-woohoo');
+    const whoopsContainer = getEl('iwt-response-logo-container-whoops');
+    const pendingContainer = getEl('iwt-response-logo-container-pending');
+    const modalRespCont = getEl('response-message-container');
+    const checkoutButtonContainer = getEl('iwt-checkout-button-container');
+    const checkoutButton = getEl('checkout-button');
+
+    console.log(document.getElementById('iwt-modal-offer-container'));
+
+    storeBrand = storeBrand || "our store!";
+
+    // Define response messages
+    const msgAccept = `<p class="iwt-paragraph">Hey ${firstName}, you just made a Great Deal using I Want That! Your offer of $${offerAmount.toFixed(2)} 
+        has been <strong>accepted</strong>. Your deal will expire in ${expiryMinutes} minutes. Click on the button below and go claim it. Congratulations!</p>
+        <p class="iwt-paragraph">Thanks for shopping ${storeBrand}</p>
+        <br>
+        <p class="iwt-paragraph">p.s. Your coupon code is:</p>
+        <div>
+            <input type="text" value="${discountCode}" id="iwtdiscountCode" readonly class="floating-input">
+            <button onclick="copyDiscountCode()" class="click-to-copy">Click to Copy</button>
+        </div>
+        <p id="copyMessage" style="display:none; color: #80bf9b; margin-top: 10px;">Coupon code copied to clipboard!</p>`;
+
+    const msgDecline = `<p class="iwt-paragraph">Hey ${firstName}, thanks for the offer but unfortunately we cannot make $${offerAmount.toFixed(2)} work. 
+        If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
+        <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>`;
+
+    const msgPending = `<p class="iwt-paragraph">Hey, thanks for your offer of $${offerAmount.toFixed(2)} for your cart.  
+        We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>`;
+
+    const msgUnexpected = `<p class="iwt-paragraph">Unexpected status: ${offerStatus}. Please try again later.</p>`;
+
+    // Reset visibility for all response containers
+    wooHooContainer.style.display = 'none';
+    whoopsContainer.style.display = 'none';
+    pendingContainer.style.display = 'none';
+    checkoutButtonContainer.style.display = 'none';
+
+    let responseMessage = '';
+
+    // Conditional logic for offer status
+    if (offerStatus === 'Auto Accepted') {
+        wooHooContainer.style.display = 'block';
+        responseMessage = msgAccept;
+
+        checkoutButton.href = checkoutUrl;
+        checkoutButtonContainer.style.display = 'flex';
+
+    } else if (offerStatus === 'Auto Declined') {
+        whoopsContainer.style.display = 'block';
+        responseMessage = msgDecline;
+
+    } else if (offerStatus === 'Pending Review') {
+        pendingContainer.style.display = 'block';
+        responseMessage = msgPending;
+
+    } else {
+        responseMessage = msgUnexpected;
+    }
+
+    modalRespCont.innerHTML = responseMessage;
+    offerContainer.style.display = 'none'; 
+    responseContainer.style.display = 'block'; 
+}
+
+
+/*
 function displayOfferResponse(firstName, offerStatus, offerAmount, checkoutUrl, expiryMinutes, discountCode , storeBrand) {
     const iwtModalContent = document.querySelector('.modal-content-container');
     
@@ -907,5 +978,5 @@ function retryOffer() {
     iwtModalContent.style.display = 'flex';
     iwtModalContent.classList.add('fade-in');
 }
-
+*/
 document.addEventListener('DOMContentLoaded', strtEventListen);
