@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             iwtModal.style.display = 'block';
         }
     } else {
-        console.error('Modal container not found. Check the ID "iwt-modal-container".');
+        console.error('Modal container not found.');
     }
 
     cart = await fetchCart();
