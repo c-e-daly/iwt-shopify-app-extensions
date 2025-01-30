@@ -794,10 +794,11 @@ async function submitOfferToAPI(event) {
 
         const offerContainer = getEl('iwt-offer-container');
         const modalResp = getEl('iwt-response-container');
-        const woohoo = getEl('iwt-woohoo-container');
-        const whoops = getEl('iwt-whoops-container');
-        const pending = getEl('iwt-pending-container');
         const respMessage = getEl('iwt-message-container');
+
+        const woohooLogo = getEl('woo-hoo-image');
+        const whoopsLogo = getEl('whoops-image');
+        const pendingLogo = getEl('pending-image');
     
         offerContainer.classList.add('fade-out'); 
     
@@ -811,7 +812,7 @@ async function submitOfferToAPI(event) {
 
                 const msgAccepted = `
                     <p class="iwt-paragraph">Hey ${firstName}, you just made a Great Deal using I Want That!  
-                    Your offer of $${(parseFloat(offerAmount)).toFixed(2)} has been <strong>accepted</strong>. 
+                    Your offer of ${offerAmount} has been <strong>accepted</strong>. 
                     Your deal will expire in ${expiryMinutes} minutes. Click on the button below and go claim it. Congratulations!</p>
                     <p class="iwt-paragraph">Thanks for shopping ${storeBrand}</p>
                     </br>
@@ -824,19 +825,19 @@ async function submitOfferToAPI(event) {
                 `;
         
                 const msgDeclined = `
-                    <p class="iwt-paragraph">Hey ${firstName}, thanks for the offer but unfortunately we cannot make $${(parseFloat(offerAmount)).toFixed(2)} work. 
+                    <p class="iwt-paragraph">Hey ${firstName}, thanks for the offer but unfortunately we cannot make ${offerAmount} work. 
                     If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
                     <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>
                 `;
         
                 const msgPending = `
-                    <p class="iwt-paragraph">Hey ${firstName}, thanks for your offer of $${(parseFloat(offerAmount)).toFixed(2)} for your cart.  
+                    <p class="iwt-paragraph">Hey ${firstName}, thanks for your offer of ${offerAmount} for your cart.  
                     We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>
                 `;
         
                 //  Apply the correct status display logic
                 if (offerStatus === "Auto Accepted") {
-                    woohoo.style.display = 'block'; 
+                    woohooLogo.style.display = 'block'; 
                     responseMessage = msgAccepted;
         
                     // Handle checkout button
@@ -847,11 +848,11 @@ async function submitOfferToAPI(event) {
                         checkoutButtonContainer.style.display = 'flex'; 
                     }
                 } else if (offerStatus === "Auto Declined") {
-                    whoops.style.display = 'block';
+                    whoopsLogo.style.display = 'block';
                     responseMessage = msgDeclined;
 
                 } else if (offerStatus === "Pending Review") {
-                    pending.style.display = 'block';
+                    pendingLogo.style.display = 'block';
                     responseMessage = msgPending;
 
                 } else {

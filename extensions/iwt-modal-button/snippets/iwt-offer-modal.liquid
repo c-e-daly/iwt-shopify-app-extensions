@@ -45,32 +45,23 @@
                 </form>
             </div>
         </div>
-          <!-- Single Response Section -->
-          <div id="iwt-response-container" class="modal-offer-response" style="display: none;">
-            <div id="iwt-woohoo-container" class="woo-hoo-logo">
+          <!-- Offer Response Section -->
+        <div id="iwt-response-container" class="modal-offer-response" style="display: none;">
+            <div id="iwt-response-logo-container" class="iwt-response-logo">
                 <img src="{{ 'Woo-Hoo.png' | asset_url }}" id="woo-hoo-image" class="woo-hoo-image" width="300" height="107" style="display: none;"/>
+                <img src="{{ 'Whoops.png' | asset_url }}" id="whoops-image" class="whoops-image" width="300" height="107" style="display: none;"/>
+                <img src="{{ 'Pending.png' | asset_url }}" id="pending-image" class="pending-logo-image" width="300" height="107" style="display: none;"/>
             </div>
-            
-            <!-- Whoops for Declined Offers -->
-            <div id="iwt-whoops-container" class="whoops-logo" style="display: none;">
-                <img src="{{ 'Whoops.png' | asset_url }}" id="whoops-image" class="whoops-image" width="300" height="107"/>
-           </div>
-
-              <!-- Taking a quick look for Pending Review Offers -->
-            <div id="iwt-pending-container" class="pending-logo" style="display: none;">
-                <img src="{{ 'Pending.png' | asset_url }}" id="pending-image" class="pending-logo-image" width="300" height="107"/>
-            </div>
-
-                <div id="iwt-message-container" class="message-container">
+            <div id="iwt-message-container" class="message-container">
                     <!-- Response message will be populated dynamically -->
-                </div>
-                <div id="iwt-checkout-button-container" class="button-container" style="display: none;">
-                    <a id="checkout-button" href="" class="iwt-submit-offer">
-                        Proceed to Checkout
-                        <img src="{{ 'iwtlogoicon.png' | asset_url }}" class="iwt-logo-icon" width="30" height="30"> 
-                    </a>
-                </div>
-            </div>     
+            </div>
+            <div id="iwt-checkout-button-container" class="button-container" style="display: none;">
+                <a id="checkout-button" href="" class="iwt-submit-offer">
+                    Proceed to Checkout
+                    <img src="{{ 'iwtlogoicon.png' | asset_url }}" class="iwt-logo-icon" width="30" height="30"> 
+                </a>
+            </div>
+        </div>     
     </div>
 </div>
 
