@@ -784,15 +784,13 @@ async function submitOfferToAPI(event) {
         console.log("`displayOfferResponse` was triggered!");
         console.log("Received `offerResponse`:", JSON.stringify(offerResponse, null, 2));
     
-        const {
-            offerStatus = "",
-            offerAmount = "0.00",
-            storeBrand = "",
-            firstName = "",
-            checkoutUrl = "",
-            expiryMinutes = "0",
-            discountCode = ""
-        } = offerResponse;
+        let offerStatus = offerResponse.offerStatus;
+        let offerAmount = offerResponse.offerAmount;
+        let storeBrand = offerResponse.storeBrand;
+        let firstName = offerResponse.firstName;
+        let checkoutUrl = offerResponse.checkoutUrl;
+        let expiryMinutes = offerResponse.expiryMinutes;
+        let discountCode = offerResponse.discountCode;
 
         const offerContainer = getEl('iwt-offer-container');
         const modalResp = getEl('iwt-response-container');
