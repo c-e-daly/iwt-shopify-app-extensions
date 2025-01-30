@@ -795,11 +795,11 @@ async function submitOfferToAPI(event) {
         } = offerResponse;
 
         const offerContainer = getEl('iwt-offer-container');
-        const modalResp = getEl('iwt-modal-offer-response');
-        const wooHooContainer = getEl('iwt-response-logo-container-woohoo');
-        const whoopsContainer = getEl('iwt-response-logo-container-whoops');
-        const pendingContainer = getEl('iwt-response-logo-container-pending');
-        const modalRespCont = getEl('response-message-container');
+        const modalResp = getEl('iwt-response-container');
+        const woohoo = getEl('iwt-woohoo-container');
+        const whoops = getEl('iwt-whoops-container');
+        const pending = getEl('iwt-pending-container');
+        const respMessage = getEl('iwt-message-container');
     
         offerContainer.classList.add('fade-out'); 
     
@@ -808,9 +808,6 @@ async function submitOfferToAPI(event) {
         modalResp.style.display = 'flex'; 
         modalResp.classList.add('fade-in'); 
 
-        wooHooContainer.style.display = 'none';
-        whoopsContainer.style.display = 'none';
-        pendingContainer.style.display = 'none';
         let responseMessage = '';
         storeBrand = storeBrand || "our store!";
 
@@ -841,7 +838,7 @@ async function submitOfferToAPI(event) {
         
                 //  Apply the correct status display logic
                 if (offerStatus === "Auto Accepted") {
-                    wooHooContainer.style.display = 'block'; 
+                    woohoo.style.display = 'block'; 
                     responseMessage = msgAccepted;
         
                     // Handle checkout button
@@ -852,15 +849,17 @@ async function submitOfferToAPI(event) {
                         checkoutButtonContainer.style.display = 'flex'; 
                     }
                 } else if (offerStatus === "Auto Declined") {
-                    whoopsContainer.style.display = 'block';
+                    whoops.style.display = 'block';
                     responseMessage = msgDeclined;
+
                 } else if (offerStatus === "Pending Review") {
-                    pendingContainer.style.display = 'block';
+                    pending.style.display = 'block';
                     responseMessage = msgPending;
+
                 } else {
                     responseMessage = `<p class="iwt-paragraph">Unexpected status: ${offerStatus}. Please try again later.</p>`;
                 }
-        modalRespCont.innerHTML = responseMessage;
+        respMessage.innerHTML = responseMessage;
         
     }, 500); 
 }
