@@ -794,7 +794,7 @@ async function submitOfferToAPI(event) {
 
         const offerContainer = getEl('iwt-offer-container');
         const modalResp = getEl('iwt-response-container');
-        const respMessage = getEl('iwt-message-container');
+        const msgContainer = getEl('iwt-message-container');
 
         const woohooLogo = getEl('woo-hoo-image');
         const whoopsLogo = getEl('whoops-image');
@@ -806,6 +806,10 @@ async function submitOfferToAPI(event) {
         offerContainer.style.display = 'none'; 
         modalResp.style.display = 'flex'; 
         modalResp.classList.add('fade-in'); 
+
+        woohooLogo.style.display = 'none';
+        whoopsLogo.style.display = 'none';
+        pendingLogo.style.display = 'none';
 
         let responseMessage = '';
         storeBrand = storeBrand || "our store!";
@@ -858,7 +862,7 @@ async function submitOfferToAPI(event) {
                 } else {
                     responseMessage = `<p class="iwt-paragraph">Unexpected status: ${offerStatus}. Please try again later.</p>`;
                 }
-        respMessage.innerHTML = responseMessage;
+        msgContainer.innerHTML = responseMessage;
         
     }, 500); 
 }
