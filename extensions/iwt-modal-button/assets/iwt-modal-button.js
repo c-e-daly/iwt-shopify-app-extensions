@@ -806,11 +806,7 @@ async function submitOfferToAPI(event) {
         offerContainer.style.display = 'none'; 
         modalResp.style.display = 'flex'; 
         modalResp.classList.add('fade-in'); 
-
-        woohooLogo.style.display = 'none';
-        whoopsLogo.style.display = 'none';
-        pendingLogo.style.display = 'none';
-
+        
         let responseMessage = '';
         storeBrand = storeBrand || "our store!";
 

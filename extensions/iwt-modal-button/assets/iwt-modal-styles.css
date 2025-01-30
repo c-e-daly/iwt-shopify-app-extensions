@@ -410,7 +410,6 @@ cart-table th,
     }
     
     #woo-hoo-image, #whoops-image, #pending-image {
-        display:flex !important;
         flex-direction: row;
         justify-content:center;
         width: 300px !important;
