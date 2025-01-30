@@ -767,21 +767,6 @@ async function submitOfferToAPI(event) {
     };
 
         displayOfferResponse(offerResponse);
-        /*
-        const responseData = await response.json();
-        console.log("Offer submitted successfully:", responseData);
-    
-        if (responseData.response?.offerStatus) {
-            displayOfferResponse(
-                responseData.response.offerStatus,
-                responseData.response.offerAmount,
-                responseData.response.checkoutUrl,
-                responseData.response.expiryMinutes,
-                responseData.response.discountCode,
-                responseData.response.storeBrand,
-                responseData.response.firstName
-            );
-            */
 
         } else {
             console.error("Unexpected response format:", responseData);
@@ -795,15 +780,10 @@ async function submitOfferToAPI(event) {
     }
 }
 
-/*function displayOfferResponse(firstName, offerStatus, offerAmount, checkoutUrl, expiryMinutes, discountCode , storeBrand) {
-    console.log('Displaying offer response:', offerStatus, offerAmount, checkoutUrl, expiryMinutes, discountCode, storeBrand);
-    */
-
     function displayOfferResponse(offerResponse) {
         console.log("`displayOfferResponse` was triggered!");
         console.log("Received `offerResponse`:", JSON.stringify(offerResponse, null, 2));
     
-        // Ensure we have valid values, avoiding `undefined`
         const {
             offerStatus = "",
             offerAmount = "0.00",
@@ -821,7 +801,6 @@ async function submitOfferToAPI(event) {
         const pendingContainer = getEl('iwt-response-logo-container-pending');
         const modalRespCont = getEl('response-message-container');
     
-        // Hide form smoothly
         offerContainer.classList.add('fade-out'); 
     
     setTimeout(() => {
