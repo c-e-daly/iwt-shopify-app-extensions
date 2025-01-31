@@ -771,7 +771,7 @@ async function submitOfferToAPI(event) {
                     </br>
                     <p class="iwtP">p.s. Your coupon code is:</p>
                     <div>
-                        <input type="text" value="${discountCode}" id="iwtdiscountCode" readonly class="floating-input">
+                        <input type="text" value="${discountCode}" id="iwtCode" readonly class="floating-input">
                         <button onclick="copyCode()" class="click-to-copy">Click to Copy</button>
                     </div>
                     <p id="copyMessage" style="display:none; color: #80bf9b; margin-top: 10px;">Coupon code copied to clipboard!</p>
@@ -818,7 +818,6 @@ function copyCode() {
     const iwtCode = getEl("iwtCode");
     iwtCode.select();
     iwtCode.setSelectionRange(0, 99999); 
-
 
     navigator.clipboard.writeText(iwtCode.value).then(() => {
       getEl("copyMessage").style.display = "block";
