@@ -110,8 +110,11 @@ function syncTableCart() {
 }
 
 const gVIDURL = () => new URLSearchParams(window.location.search).get('variant');
-const gQTY = () => (document.querySelector('.quantity__input')?.value);
 const gCDT = () => new Date().toISOString();
+function gQTY() {
+    const qtyInpt = document.querySelector('.quantity__input');
+    return qtyInpt ? qtyInpt.value : 1;
+}
 
 function updateCartDates(isNewItem) {
     const currentDateTime = gCDT();
