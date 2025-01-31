@@ -76,10 +76,10 @@ resetModalData();
             console.log('Variant ID not found in URL');
         }
   
-        const qty = gQTY();
+        const inptQty = gQTY();
   
         try {
-            await addToCart({ ID, qty, template });
+            await addToCart({ ID, inptQty, template });
         } catch (error) {
             console.error(`Error adding product ${ID} to the cart`, error);
         }
@@ -110,7 +110,7 @@ function syncTableCart() {
 }
 
 const gVIDURL = () => new URLSearchParams(window.location.search).get('variant');
-const gQTY = () => (document.querySelector('.quantity__input')?.value || 1);
+const gQTY = () => (document.querySelector('.quantity__input')?.value);
 const gCDT = () => new Date().toISOString();
 
 function updateCartDates(isNewItem) {
@@ -667,7 +667,7 @@ async function submitOfferToAPI(event) {
     
         cart = await fetchCart(); // Fetch the cart
     
-        const offerPrice = parseFloat(getEl('iwt-consumer-price').value).toFixed(2);
+        const offerPrice = parseFloat(getEl('iwt-offer-price').value).toFixed(2);
         const cartTotalPrice = (cart.total_price / 100).toFixed(2); // Convert cents to dollars;
     
         const offerData = {
