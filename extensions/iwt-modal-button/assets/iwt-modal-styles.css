@@ -58,6 +58,13 @@
 
 }
 
+.offer-container{
+    width: 100%; 
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; 
+}
+
 .iwt-logo-container{
     display: flex;
     flex-direction: row;
@@ -74,13 +81,14 @@
 }
 
 .h2{
-    font-family: 'Kaushan Script' !important;;
-    font-size: 1.5em !important;;
-    font-weight: 700 !important;;
-    color: #0442bf !important;;
+    font-family: 'Inter' !important;
+    font-size: 1.5em !important;
+    font-weight: 500 !important;
+    color: #0442bf !important;
+    text-align:center;
 }
 
-.iwt-paragraph{
+.iwtP{
     font-family: 'Inter' !important;
     font-size: 1em !important;
     font-weight: 400 !important;
@@ -156,10 +164,11 @@
     font-family: 'Inter-regular', sans-serif;
 }
 
-.modal-content-container .cart-table {
+.cart-table {
     width: 100%;
     background-color:#fff;
     table-layout: auto;
+    margin-bottom:20px;
 }
 
 .cart-table, .cart-table .th, .cart-table .td {
@@ -265,12 +274,13 @@ cart-table th,
 
 }
 
-.form-container{
+.offer-container .form-container{
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     width:80%;
+    max-width:600px;
     gap:10px
 }
 

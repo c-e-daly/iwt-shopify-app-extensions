@@ -1,6 +1,6 @@
-let cart, srcTemplate, sGURL;
+let cart, srcTemplate, sGURL, cartCreated= null, cartUpdated = null;
 const getEl = (id) => document.getElementById(id);
-const addEvL = (event, el, fn) => el.addEventListener(event, fn);
+/*const addEvL = (event, el, fn) => el.addEventListener(event, fn);*/
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -45,7 +45,7 @@ function resetModalData() {
 }
 
 function closeModal() {
-    const iwtModal = getEl('iwt-modal-container');
+    const iwtModal = getEl('iwt-modal');
     if (iwtModal) {
         iwtModal.style.display = 'none';
     }
@@ -445,7 +445,7 @@ const rendTable = function(cart, offerAcceptedPrice = null) {
                         <div style="font-size: 0.8em; color: #666;">SKU: ${item.sku || 'N/A'}</div>
                     </td>`;
             } else if (key === 'quantity') {
-                tableContent += `<td><input type="number" class="iwt-input-number" value="${item[key]}" min="1" onchange="updateItemQuantity('${item.key}', this.value)" data-line-item-key="${item.key}"></td>`;
+                tableContent += `<td><input type="number" class="iwt-input-number" value="${item[key]}" min="1" onchange="uIQ('${item.key}', this.value)" data-line-item-key="${item.key}"></td>`;
             } else {
                 const value = key === 'price' ? formatPrice(item[key]) : item[key];
                 tableContent += `<td>${value || ''}</td>`;
@@ -487,7 +487,7 @@ const rendTable = function(cart, offerAcceptedPrice = null) {
   
     tableContent += '</tfoot></table>';
   
-    const cartTable = getEl('iwt-cart-table');
+    const cartTable = getEl('iwt-table');
     if (cartTable) {
         cartTable.innerHTML = tableContent;
     } else {
@@ -760,12 +760,12 @@ async function submitOfferToAPI(event) {
         storeBrand = storeBrand || "our store!";
 
                 const msgAccept = `
-                    <p class="iwt-paragraph">Hey ${firstName}, you just made a Great Deal using I Want That!  
+                    <p class="iwtP">Hey ${firstName}, you just made a Great Deal using I Want That!  
                     Your offer of ${offerAmount} has been <strong>accepted</strong>. 
                     Your deal will expire in ${expiryMinutes} minutes. Click on the button below and go claim it. Congratulations!</p>
-                    <p class="iwt-paragraph">Thanks for shopping ${storeBrand}</p>
+                    <p class="iwtP">Thanks for shopping ${storeBrand}</p>
                     </br>
-                    <p class="iwt-paragraph">p.s. Your coupon code is:</p>
+                    <p class="iwtP">p.s. Your coupon code is:</p>
                     <div>
                         <input type="text" value="${discountCode}" id="iwtdiscountCode" readonly class="floating-input">
                         <button onclick="copyDiscountCode()" class="click-to-copy">Click to Copy</button>
@@ -774,13 +774,13 @@ async function submitOfferToAPI(event) {
                 `;
         
                 const msgDecline = `
-                    <p class="iwt-paragraph">Hey ${firstName}, thanks for the offer but unfortunately we cannot make ${offerAmount} work. 
+                    <p class="iwtP">Hey ${firstName}, thanks for the offer but unfortunately we cannot make ${offerAmount} work. 
                     If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
                     <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>
                 `;
         
                 const msgPending = `
-                    <p class="iwt-paragraph">Hey ${firstName}, thanks for your offer of ${offerAmount} for your cart.  
+                    <p class="iwtP">Hey ${firstName}, thanks for your offer of ${offerAmount} for your cart.  
                     We are currently reviewing the offer and our customer service team will get back to you shortly. Have a great day and thanks for shopping ${storeBrand}!</p>
                 `;
         
@@ -788,7 +788,7 @@ async function submitOfferToAPI(event) {
                     woohoo.style.display = 'block'; 
                     respMsg = msgAccept;
         
-                    const ckBtnCont= getEl('iwt-checkout-button-container');
+                    const ckBtnCont= getEl('iwt-ck-btn-cont');
                     const ckBtn = getEl('checkout-button');
                     if (!ckBtnCont.style.display || ckBtnCont.style.display === 'none') {
                         ckBtn.href = checkoutUrl;
@@ -803,7 +803,7 @@ async function submitOfferToAPI(event) {
                     respMsg = msgPending;
 
                 } else {
-                    respMsg = `<p class="iwt-paragraph">Unexpected status: ${offerStatus}. Please try again later.</p>`;
+                    respMsg = `<p class="iwtP">Unexpected status: ${offerStatus}. Please try again later.</p>`;
                 }
         msgContainer.innerHTML = respMsg;
         
