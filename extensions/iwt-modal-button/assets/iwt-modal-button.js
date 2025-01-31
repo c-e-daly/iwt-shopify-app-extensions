@@ -736,7 +736,8 @@ async function submitOfferToAPI(event) {
     function dispResponse(apiResp) {
         console.log("`displayOfferResponse` was triggered!");
         console.log("Received `offerResponse`:", JSON.stringify(apiResp, null, 2));
-    
+        console.log("API Response: ", apiResp);
+
         let offerStatus = apiResp.offerStatus;
         let offerAmount = apiResp.offerAmount;
         let storeBrand = apiResp.storeBrand;
