@@ -605,7 +605,7 @@ function vForm() {
     }
     return isValid;
 }
-const vEmail = (email) => /^[\w.-]+@[a-zA-Z\d-]+\.[a-zA-Z]{2,}$/.test(email);
+const vEmail = (email) => /^[\w.+-]+@[a-zA-Z\d-]+\.[a-zA-Z]{2,}$/.test(email);
 
 const vPhone = (phone) => /^\d{10}$/.test(phone);
 
@@ -792,8 +792,8 @@ async function submitOfferToAPI(event) {
                     woohoo.style.display = 'block'; 
                     respMsg = msgAccept;
         
-                    const ckBtnCont= getEl('iwt-ck-btn-cont');
-                    const ckBtn = getEl('checkout-button');
+                    const ckBtnCont= getEl('iwt-checkout');
+                    const ckBtn = getEl('iwt-checkout-button');
                     if (!ckBtnCont.style.display || ckBtnCont.style.display === 'none') {
                         ckBtn.href = checkoutUrl;
                         ckBtnCont.style.display = 'flex'; 
