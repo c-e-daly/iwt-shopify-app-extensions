@@ -674,7 +674,7 @@ async function submitOfferToAPI(event) {
         const cartTotalPrice = (cart.total_price / 100).toFixed(2); // Convert cents to dollars;
     
         const offerData = {
-            storeUrl: storeUrlGlobal.replace(/^https?:\/\//, ''),
+            storeUrl: sGURL.replace(/^https?:\/\//, ''),
             consumerName: getEl('iwt-name').value,
             consumerEmail: getEl('iwt-email').value,
             consumerMobile: getEl('iwt-mobile').value,
