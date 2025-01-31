@@ -667,7 +667,7 @@ async function submitOfferToAPI(event) {
     
         cart = await fetchCart(); // Fetch the cart
     
-        const offerPrice = parseFloat(getEl('iwt-consumer-offer').value).toFixed(2);
+        const offerPrice = parseFloat(getEl('iwt-consumer-price').value).toFixed(2);
         const cartTotalPrice = (cart.total_price / 100).toFixed(2); // Convert cents to dollars;
     
         const offerData = {
