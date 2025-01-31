@@ -744,6 +744,7 @@ async function submitOfferToAPI(event) {
         let checkoutUrl = apiResp.checkoutUrl;
         let expiryMinutes = apiResp.expiryMinutes;
         let discountCode = apiResp.discountCode;
+        let cartPrice = apiResp.cartPrice;
 
         const offerContainer = getEl('iwt-offer');
         const modalResp = getEl('iwt-response');
@@ -771,15 +772,15 @@ async function submitOfferToAPI(event) {
                     <p class="iwtP">p.s. Your coupon code is:</p>
                     <div>
                         <input type="text" value="${discountCode}" id="iwtdiscountCode" readonly class="floating-input">
-                        <button onclick="copyDiscountCode()" class="click-to-copy">Click to Copy</button>
+                        <button onclick="copyCode()" class="click-to-copy">Click to Copy</button>
                     </div>
                     <p id="copyMessage" style="display:none; color: #80bf9b; margin-top: 10px;">Coupon code copied to clipboard!</p>
                 `;
         
                 const msgDecline = `
-                    <p class="iwtP">Hey ${firstName}, thanks for the offer but unfortunately we cannot make ${offerAmount} work. 
+                    <p class="iwtP">Hey ${firstName}, thanks for the offer but unfortunately we cannot make ${offerAmount} off ${cartPrice} work. 
                     If you would like to submit a new offer, just select the button below. Thanks for shopping ${storeBrand}!</p>
-                    <button class="iwt-retry-offer-button" onclick="retryOffer()">Make Another Offer</button>
+                    <button class="iwt-retry-offer-button" onclick="retry()">Make Another Offer</button>
                 `;
         
                 const msgPending = `
