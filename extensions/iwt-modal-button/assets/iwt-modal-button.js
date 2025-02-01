@@ -1,6 +1,5 @@
 let cart, srcTemplate, sGURL, cartCreated= null, cartUpdated = null;
 const getEl = (id) => document.getElementById(id);
-/*const addEvL = (event, el, fn) => el.addEventListener(event, fn);*/
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -62,7 +61,6 @@ resetModalData();
 
     if (template === 'cart' || template === 'checkout') {
         cart = await fetchCart();
-        console.log('Cart:', cart);
         cartToken = cart.token;
         rendTable(cart);
   
@@ -76,16 +74,18 @@ resetModalData();
             console.log('Variant ID not found in URL');
         }
   
-        const inptQty = gQTY();
+        
+        const quantity = gQTY();
+        console.log('Quantity:', quantity);
+
   
         try {
-            await addToCart({ ID, inptQty, template });
+            await addToCart({ ID, quantity, template });
         } catch (error) {
             console.error(`Error adding product ${ID} to the cart`, error);
         }
   
         cart = await fetchCart();
-        console.log('Cart:', cart);
         cartToken = cart.token;
         rendTable(cart);
     }
@@ -112,13 +112,18 @@ function syncTableCart() {
 const gVIDURL = () => new URLSearchParams(window.location.search).get('variant');
 const gCDT = () => new Date().toISOString();
 function gQTY() {
-    const qtyInpt = document.querySelector('.quantity__input');
-    return qtyInpt ? qtyInpt.value : 1;
+    const quantityInput = document.querySelector('.quantity__input');
+    if (quantityInput) {
+        console.log('Quantity input value:', quantityInput.value);
+        return parseInt(quantityInput.value, 10);
+    } else {
+        console.log('Quantity input not found, returning default value of 1');
+        return 1;
+    }
 }
 
 function updateCartDates(isNewItem) {
     const currentDateTime = gCDT();
-
     if (isNewItem && !cartCreateDate) {
         cartCreateDate = currentDateTime;
     }
@@ -128,10 +133,8 @@ function updateCartDates(isNewItem) {
 const addToCart = async function({ ID, quantity, template }) {
     try {
         const itemExist = cart.items.find(item => item.variant_id === ID && item.properties?.template === template);
-
         if (itemExist) {
             const newQty = itemExist.quantity + quantity;
-
             const response = await fetch('/cart/change.js', {
                 method: 'POST',
                 headers: {
@@ -236,6 +239,36 @@ const uRendCart = async () => {
     }
 };
 
+let cartTemplateMix = "single"; // Global variable to track template mix
+
+const fetchCart = async function() {
+    try {
+        const response = await fetch('/cart.js');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const cart = await response.json();
+        const items = cart.items || [];
+
+        // Check for template types in the cart
+        const hasClearance = items.some(item => item.properties?.template === 'iwtclearance');
+        const hasRegular = items.some(item => !item.properties?.template || item.properties.template !== 'iwtclearance');
+
+        // Update the global cartTemplateMix variable
+        cartTemplateMix = hasClearance && hasRegular ? "mixed" : hasClearance ? "clearance" : "regular";
+
+        console.log(`Cart Template Mix: ${cartTemplateMix}`);
+
+        return cart;
+    } catch (error) {
+        console.error('Error fetching cart:', error);
+        return null;
+    }
+};
+
+
+/*
 const fetchCart = async function() {
     try {
         const response = await fetch('/cart.js');
@@ -280,6 +313,7 @@ const fetchCart = async function() {
         return null;
     }
 };
+*/
   
 const uIQ = async (lineItemKey, newQty) => {
     try {
@@ -333,8 +367,6 @@ const uIQ = async (lineItemKey, newQty) => {
         }
     } catch (error) {
         console.error('Error updating item quantity:', error);
-
-     
         const inputField = document.querySelector(`input[data-line-item-key="${lineItemKey}"]`);
         if (inputField) {
             inputField.style.borderColor = 'red';
@@ -364,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
  
-  const clearInptError = (inputField) => {
+const clearInptError = (inputField) => {
       inputField.style.borderColor = ''; 
       inputField.title = ''; 
       const errorSection = getEl('iwt-modal-error');
@@ -374,15 +406,14 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   
   
-  document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
       const qtyInpts = document.querySelectorAll('.iwt-input-number');
       qtyInpts.forEach(input => {
           input.addEventListener('input', () => clearInptError(input));
       });
   });
-  
 
-  const removeItem = async (lineItemKey) => {
+const removeItem = async (lineItemKey) => {
     try {
         const response = await fetch(`/cart/change.js`, {
             method: 'POST',
@@ -412,7 +443,6 @@ const rendTable = function(cart, offerAcceptedPrice = null) {
         console.error('Cart is null');
         return;
     }
-  
     if (!cart.items) {
         console.error('Cart items property is missing');
         return;
@@ -489,7 +519,6 @@ const rendTable = function(cart, offerAcceptedPrice = null) {
     }
   
     tableContent += '</tfoot></table>';
-  
     const cartTable = getEl('iwt-table');
     if (cartTable) {
         cartTable.innerHTML = tableContent;
@@ -499,9 +528,7 @@ const rendTable = function(cart, offerAcceptedPrice = null) {
 };
   
 const formatPrice = (cents) => `$${(cents / 100).toFixed(2)}`;
-
 const checkTemplateMix = (items) => new Set(items.map(i => i.properties?.template || 'regular')).size > 1;
-
 
 function strtEventListen() {
     const submitBtn = getEl('submit-btn');
@@ -640,16 +667,6 @@ function clearError(element) {
     element.style.borderColor = '';
     element.style.borderWidth = '';
 
-    const tooltip = document.body.querySelector('.custom-tooltip');
-    if (tooltip) {
-        tooltip.remove();
-    }
-}
-
-function clearError(element) {
-    element.style.borderColor = '';
-    element.style.borderWidth = '';
-
     const tooltip = element.parentElement.querySelector('.custom-tooltip');
     if (tooltip) {
         tooltip.remove();
@@ -669,7 +686,7 @@ async function submitOfferToAPI(event) {
         submitBtn.disabled = true; // Disable the button
     
         cart = await fetchCart(); // Fetch the cart
-    
+        const cartComposition = checkTemplateMix(cart.items);
         const offerPrice = parseFloat(getEl('iwt-offer-price').value).toFixed(2);
         const cartTotalPrice = (cart.total_price / 100).toFixed(2); // Convert cents to dollars;
     
@@ -687,7 +704,7 @@ async function submitOfferToAPI(event) {
             cartCreateDate: cartCreated,
             cartUpdateDate: cartUpdated,
             offerCreateDate: new Date().toISOString(),
-            cartComposition: checkTemplateMix(cart.items) ? 'mixed' : 'single', // Check cart template
+            cartComposition: cartComposition,
             items: cart.items.map(item => ({
                 productID: item.product_id,
                 productName: item.product_title,
@@ -722,7 +739,6 @@ async function submitOfferToAPI(event) {
         if (apiResp?.response) {
             dispResponse(apiResp.response); 
         } else {
-            console.error("Unexpected response format:", apiResp);
             alert('Unexpected response. Please try again later.');
         }
         
@@ -734,9 +750,6 @@ async function submitOfferToAPI(event) {
     }
 
     function dispResponse(apiResp) {
-        console.log("`displayOfferResponse` was triggered!");
-        console.log("Received `offerResponse`:", JSON.stringify(apiResp, null, 2));
-        console.log("API Response: ", apiResp);
 
         let offerStatus = apiResp.offerStatus;
         let offerAmount = apiResp.offerAmount;
