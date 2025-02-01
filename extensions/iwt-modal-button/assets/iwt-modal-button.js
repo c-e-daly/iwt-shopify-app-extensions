@@ -831,10 +831,15 @@ function copyCode() {
 function retry() {
     const modalResp = getEl('iwt-response');
     modalResp.style.display = 'none';
-    const iwtContent = document.querySelector('.modal-content');
-    iwtContent.classList.remove('fade-out');
-    iwtContent.style.display = 'flex';
-    iwtContent.classList.add('fade-in');
+    const iwtForm = getEl('.iwt-offer');
+    iwtForm.classList.remove('fade-out');
+    iwtForm.style.display = 'flex';
+    iwtForm.classList.add('fade-in');
+
+    const offerInput = getEl('iwt-offer-price');
+    if (offerInput) {
+        offerInput.value = '';
+    }
 }
 
 document.addEventListener('DOMContentLoaded', strtEventListen);
