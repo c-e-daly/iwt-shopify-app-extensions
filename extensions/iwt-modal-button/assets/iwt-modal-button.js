@@ -815,7 +815,7 @@ async function submitOfferToAPI(event) {
     }, 500); 
 }
 
-function copyCode() {
+window.copyCode = function () {
     const iwtCode = getEl("iwtCode");
     iwtCode.select();
     iwtCode.setSelectionRange(0, 99999); 
@@ -828,14 +828,14 @@ function copyCode() {
     });
   }
 
-function retry() {
+window.retry = function () {
     const modalResp = getEl('iwt-response');
     modalResp.style.display = 'none';
-    const iwtForm = getEl('.iwt-offer');
-    iwtForm.classList.remove('fade-out');
-    iwtForm.style.display = 'flex';
-    iwtForm.classList.add('fade-in');
-
+    const iwtOfferContainer = getEl('iwt-offer');
+    iwtOfferContainer.classList.remove('fade-out');
+    iwtOfferContainer.style.display = 'flex';
+    iwtOfferContainer.classList.add('fade-in');
+    console.log('Retry button clicked');
     const offerInput = getEl('iwt-offer-price');
     if (offerInput) {
         offerInput.value = '';
