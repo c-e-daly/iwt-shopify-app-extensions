@@ -1,4 +1,4 @@
-let cart, srcTemplate, sGURL, cartCreated= null, cartUpdated = null;
+let cart, srcTemplate, sGURL, cartCreated= null, cartUpdated = null, cartTemplateMix;
 const getEl = (id) => document.getElementById(id);
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -239,8 +239,6 @@ const uRendCart = async () => {
     }
 };
 
-let cartTemplateMix = "single"; // Global variable to track template mix
-
 const fetchCart = async function() {
     try {
         const response = await fetch('/cart.js');
@@ -249,72 +247,15 @@ const fetchCart = async function() {
         }
 
         const cart = await response.json();
-        const items = cart.items || [];
+        console.log("Fetched Cart:", cart);
 
-        // Check for template types in the cart
-        const hasClearance = items.some(item => item.properties?.template === 'iwtclearance');
-        const hasRegular = items.some(item => !item.properties?.template || item.properties.template !== 'iwtclearance');
-
-        // Update the global cartTemplateMix variable
-        cartTemplateMix = hasClearance && hasRegular ? "mixed" : hasClearance ? "clearance" : "regular";
-
-        console.log(`Cart Template Mix: ${cartTemplateMix}`);
-
-        return cart;
+        return cart; // Just return the cart, let other functions handle the logic
     } catch (error) {
         console.error('Error fetching cart:', error);
         return null;
     }
 };
 
-
-/*
-const fetchCart = async function() {
-    try {
-        const response = await fetch('/cart.js');
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        const cart = await response.json();
-
-        let hasClearance = false, hasRegular = false;
-
-        cart.items.forEach((item, index) => {
-            
-            if (item.properties) {
-                
-                if (item.properties.template) {
-                    
-                    if (item.properties.template === 'iwtclearance') {
-                        hasClearance = true;
-                    } else {
-                        hasRegular = true;
-                    }
-                } else {
-
-                    hasRegular = true;
-                    console.warn(`Item ${index + 1} has no template property, assuming regular.`);
-                }
-            } else {
- 
-                hasRegular = true;
-                console.warn(`Item ${index + 1} has no properties object, assuming regular.`);
-            }
-        });
-
-        if (hasClearance && hasRegular) {
-        } else if (hasClearance) {
-        } else if (hasRegular) {
-        }
-        
-        return cart;
-    } catch (error) {
-        console.error('Error fetching cart:', error);
-        return null;
-    }
-};
-*/
-  
 const uIQ = async (lineItemKey, newQty) => {
     try {
         const currentItem = cart.items.find(item => item.key === lineItemKey);
@@ -686,7 +627,10 @@ async function submitOfferToAPI(event) {
         submitBtn.disabled = true; // Disable the button
     
         cart = await fetchCart(); // Fetch the cart
-        const cartComposition = checkTemplateMix(cart.items);
+        const checkTemplateMix = (items) => {
+            const templates = [...new Set(items.map(i => i.properties?.template || 'regular'))];
+            return templates.length > 1 ? 'mixed' : templates[0] === 'iwtclearance' ? 'clearance only' : 'regular only';
+        }; 
         const offerPrice = parseFloat(getEl('iwt-offer-price').value).toFixed(2);
         const cartTotalPrice = (cart.total_price / 100).toFixed(2); // Convert cents to dollars;
     
@@ -704,10 +648,11 @@ async function submitOfferToAPI(event) {
             cartCreateDate: cartCreated,
             cartUpdateDate: cartUpdated,
             offerCreateDate: new Date().toISOString(),
-            cartComposition: cartComposition,
+            cartComposition: checkTemplateMix(cart.items),
             items: cart.items.map(item => ({
                 productID: item.product_id,
                 productName: item.product_title,
+                productURL: item.url,
                 variantID: item.variant_id,
                 sku: item.sku,
                 quantity: item.quantity,
