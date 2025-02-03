@@ -1,6 +1,6 @@
 export let cart = null;
 
-export async function fetchCart() {
+async function fetchCart() {
     try {
         const response = await fetch('/cart.js');
         if (!response.ok) throw new Error('Network response was not ok');
@@ -12,7 +12,7 @@ export async function fetchCart() {
     }
 }
 
-export async function addToCart({ ID, quantity, template }) {
+async function addToCart({ ID, quantity, template }) {
     try {
         const data = {
             items: [{ id: ID, quantity, properties: { template } }]
@@ -44,8 +44,7 @@ export async function addToCart({ ID, quantity, template }) {
         return null;
     }
 }
-
-export async function updateCart(lineItemKey, newQty) {
+async function updateCart(lineItemKey, newQty) {
     const currentItem = cart.items.find(item => item.key === lineItemKey);
     if (!currentItem) {
         alert("Item not found in the cart.");
@@ -72,7 +71,7 @@ export async function updateCart(lineItemKey, newQty) {
     }
 }
 
-export function renderCartTable(cart) {
+function renderCartTable(cart) {
     if (!cart || !cart.items) return console.error('Cart data missing');
 
     let tableContent = '<table><thead><tr>';
@@ -107,3 +106,8 @@ export function renderCartTable(cart) {
 }
 
 const formatPrice = (cents) => `$${(cents / 100).toFixed(2)}`;
+
+window.fetchCart = fetchCart;
+window.addToCart = addToCart;
+window.updateCart = updateCart;
+window.renderCartTable = renderCartTable;

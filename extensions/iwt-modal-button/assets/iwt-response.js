@@ -1,6 +1,6 @@
 const getEl = (id) => document.getElementById(id);
 
-export function displayResponse(apiResp) {
+function displayResponse(apiResp) {
     let offerStatus = apiResp.offerStatus;
     let offerAmount = apiResp.offerAmount;
     let storeBrand = apiResp.storeBrand || "our store!";
@@ -79,7 +79,7 @@ export function displayResponse(apiResp) {
 }
 
 // Function to copy the discount code to clipboard
-export function copyCode() {
+function copyCode() {
     const iwtCode = getEl("iwtCode");
     iwtCode.select();
     iwtCode.setSelectionRange(0, 99999);
@@ -93,7 +93,7 @@ export function copyCode() {
 }
 
 // Function to retry submitting a new offer
-export function retry() {
+function retry() {
     const modalResp = getEl('iwt-response');
     modalResp.style.display = 'none';
 
@@ -110,3 +110,6 @@ export function retry() {
     }
 }
 
+window.displayResponse = displayResponse;
+window.copyCode = copyCode;
+window.retry = retry;   

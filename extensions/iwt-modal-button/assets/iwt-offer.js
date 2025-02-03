@@ -2,7 +2,7 @@ import { fetchCart } from './iwt-cart.js';
 
 const getEl = (id) => document.getElementById(id);
 
-export async function handleSubmit(event) {
+async function handleSubmit(event) {
     event.preventDefault();
     const submitBtn = getEl('submit-btn');
     
@@ -119,7 +119,7 @@ function clearError(element) {
     if (tooltip) tooltip.remove();
 }
 
-export async function submitOfferToAPI(event) {
+async function submitOfferToAPI(event) {
     event.preventDefault(); 
     if (!validateForm()) return;
 
@@ -194,3 +194,5 @@ export async function submitOfferToAPI(event) {
     }
 }
 
+window.handleSubmit = handleSubmit;
+window.submitOfferToAPI = submitOfferToAPI;
