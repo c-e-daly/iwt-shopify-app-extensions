@@ -1,11 +1,15 @@
-export let cart = null;
+// Ensure cart is available globally
+window.cart = null;
+
+// Utility function to get elements
+const getEl = (id) => document.getElementById(id);
 
 async function fetchCart() {
     try {
         const response = await fetch('/cart.js');
         if (!response.ok) throw new Error('Network response was not ok');
-        cart = await response.json();
-        return cart;
+        window.cart = await response.json();
+        return window.cart;
     } catch (error) {
         console.error('Error fetching cart:', error);
         return null;
@@ -24,10 +28,10 @@ async function addToCart({ ID, quantity, template }) {
         });
 
         if (!response.ok) throw new Error(`Network response was not ok, status: ${response.status}`);
-        cart = await response.json();
+        window.cart = await response.json();
 
         // Check if the item was successfully added
-        const addedItem = cart.items.find(item => item.id == ID);
+        const addedItem = window.cart.items.find(item => item.id == ID);
         if (!addedItem) {
             alert("This item is out of stock and cannot be added to the cart.");
             return null;
@@ -38,14 +42,20 @@ async function addToCart({ ID, quantity, template }) {
             alert(`Only ${addedItem.quantity} of this item is available. Your quantity has been adjusted.`);
         }
 
-        return cart;
+        return window.cart;
     } catch (error) {
         console.error("Error adding to cart:", error);
         return null;
     }
 }
+
 async function updateCart(lineItemKey, newQty) {
-    const currentItem = cart.items.find(item => item.key === lineItemKey);
+    if (!window.cart) {
+        console.error("Cart is not initialized.");
+        return;
+    }
+
+    const currentItem = window.cart.items.find(item => item.key === lineItemKey);
     if (!currentItem) {
         alert("Item not found in the cart.");
         return;
@@ -64,8 +74,9 @@ async function updateCart(lineItemKey, newQty) {
         });
 
         if (!response.ok) throw new Error(`Network response was not ok, status: ${response.status}`);
-        cart = await response.json();
-        return cart;
+        window.cart = await response.json();
+        window.renderCartTable(window.cart);
+        return window.cart;
     } catch (error) {
         console.error('Error updating cart:', error);
     }
@@ -94,7 +105,7 @@ function renderCartTable(cart) {
             <td>
                 <input type="number" class="iwt-input-number" value="${item.quantity}" 
                 min="1" max="${maxStock}" data-line-item-key="${item.key}" 
-                onchange="updateCart('${item.key}', this.value)">
+                onchange="window.updateCart('${item.key}', this.value)">
             </td>
             <td>${formatPrice(item.price)}</td>
             <td>${formatPrice(lineTotal)}</td>
@@ -107,7 +118,9 @@ function renderCartTable(cart) {
 
 const formatPrice = (cents) => `$${(cents / 100).toFixed(2)}`;
 
+// ✅ Attach all functions to `window` for global access
 window.fetchCart = fetchCart;
 window.addToCart = addToCart;
 window.updateCart = updateCart;
 window.renderCartTable = renderCartTable;
+window.formatPrice = formatPrice;

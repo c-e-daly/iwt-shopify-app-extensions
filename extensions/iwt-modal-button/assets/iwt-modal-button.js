@@ -1,7 +1,12 @@
 // Ensure all functions are available globally
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize the modal when the page loads
-    window.initializeModal();
+    if (typeof window.initializeModal === 'function') {
+        window.initializeModal();
+    } else {
+        console.error("initializeModal function is not available.");
+    }
+});
+
 
     // Handle opening the offer modal
     document.getElementById('iwt-modal-btn')?.addEventListener('click', () => {
@@ -39,4 +44,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fetch and render the cart when the modal loads
     window.fetchCart().then(window.renderCartTable);
-});
+

@@ -1,5 +1,9 @@
 {{ 'iwt-modal-styles.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'iwt-modal-button.js' | asset_url }}" defer="defer"></script>
+{{ 'iwt-cart.js' | asset_url | script_tag defer="defer"}}
+{{ 'iwt-modal.js' | asset_url | script_tag defer="defer"}}
+{{ 'iwt-offer.js' | asset_url | script_tag defer="defer"}}
+{{ 'iwt-response.js' | asset_url | script_tag defer="defer"}}
 
 <div id="iwt-modal" class="modal-container">
     <div id="iwt-content" class="modal-content">

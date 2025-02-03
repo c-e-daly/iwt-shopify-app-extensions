@@ -1,15 +1,22 @@
 const getEl = (id) => document.getElementById(id);
 
 function initializeModal() {
-    document.addEventListener('DOMContentLoaded', async () => {
-        const iwtModal = getEl('iwt-modal');
-        if (!iwtModal) return console.error('Modal container not found.');
+    const iwtModal = getEl('iwt-modal');
+    if (!iwtModal) {
+        console.error('Modal container not found.');
+        return;
+    }
 
-        iwtModal.style.display = 'none';
-        document.body.appendChild(iwtModal);
+    iwtModal.style.display = 'none';
+    document.body.appendChild(iwtModal);
 
-        getEl('iwt-modal-btn')?.addEventListener('click', (e) => (e.stopPropagation(), closeModal()));
-        iwtModal.addEventListener('click', (e) => e.target === iwtModal && closeModal());
+    getEl('iwt-modal-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeModal();
+    });
+
+    iwtModal.addEventListener('click', (e) => {
+        if (e.target === iwtModal) closeModal();
     });
 }
 
@@ -34,7 +41,10 @@ function openOfferModal({ template, dVID, sUrl }) {
     const iwtModal = getEl('iwt-modal');
     iwtModal.style.display = 'block';
 }
+
 window.openOfferModal = openOfferModal;
 window.initializeModal = initializeModal;
 window.closeModal = closeModal;
 window.resetModalData = resetModalData;
+
+initializeModal();
