@@ -52,7 +52,6 @@ function closeModal() {
 }
 
 const openOfferModal = async function({ template, dVID, sUrl}) {
-    console.log('Store URL:', sUrl, dVID, template);
     let cartToken;
     srcTemplate = template;
     sGURL = sUrl;
@@ -76,7 +75,6 @@ resetModalData();
   
         
         const quantity = gQTY();
-        console.log('Quantity:', quantity);
 
   
         try {
@@ -114,7 +112,6 @@ const gCDT = () => new Date().toISOString();
 function gQTY() {
     const quantityInput = document.querySelector('.quantity__input');
     if (quantityInput) {
-        console.log('Quantity input value:', quantityInput.value);
         return parseInt(quantityInput.value, 10);
     } else {
         console.log('Quantity input not found, returning default value of 1');
@@ -151,7 +148,6 @@ const addToCart = async function({ ID, quantity, template }) {
             }
 
             const updatedCart = await response.json();
-
             cartUpdated = gCDT();
 
             const itemUpdate = updatedCart.items.find(item => item.variant_id === ID);
@@ -245,10 +241,7 @@ const fetchCart = async function() {
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
-
         const cart = await response.json();
-        console.log("Fetched Cart:", cart);
-
         return cart; // Just return the cart, let other functions handle the logic
     } catch (error) {
         console.error('Error fetching cart:', error);
@@ -403,10 +396,7 @@ const rendTable = function(cart, offerAcceptedPrice = null) {
         tableContent += `<th>${labels[key]}</th>`;
     });
     tableContent += `<th>${labels.line_price}</th></tr></thead><tbody>`;
-  
     let subtotal = 0;
-  
-    
     cart.items.forEach((item, index) => {
         const rowColor = index % 2 === 0 ? '#fff' : '#f2f2f2';
         tableContent += `<tr style="background-color: ${rowColor};">`;
@@ -429,8 +419,6 @@ const rendTable = function(cart, offerAcceptedPrice = null) {
         const lineTotal = item.price * item.quantity;
         subtotal += lineTotal;
         tableContent += `<td>${formatPrice(lineTotal)}</td>`;
-  
-      
         tableContent += `
           <td style="background-color: white;">
             <button class="iwt-remove-item" onclick="removeItem('${item.key}')" title="Remove item" style="color: red; font-size: 16px; border: none; background: none;">
@@ -470,7 +458,6 @@ const rendTable = function(cart, offerAcceptedPrice = null) {
   
 const formatPrice = (cents) => `$${(cents / 100).toFixed(2)}`;
 const checkTemplateMix = (items) => new Set(items.map(i => i.properties?.template || 'regular')).size > 1;
-
 function strtEventListen() {
     const submitBtn = getEl('submit-btn');
     const form = getEl('iwt-form');
@@ -574,29 +561,21 @@ function vForm() {
     return isValid;
 }
 const vEmail = (email) => /^[\w.+-]+@[a-zA-Z\d-]+\.[a-zA-Z]{2,}$/.test(email);
-
 const vPhone = (phone) => /^\d{10}$/.test(phone);
-
-
 function showError(element, message) {
     element.style.borderColor = 'red';
     element.style.borderWidth = '2px';
-
     const existingTooltip = element.parentElement.querySelector('.custom-tooltip');
     if (existingTooltip) {
         existingTooltip.remove();
     }
-
-
     const tooltip = document.createElement('div');
     tooltip.className = 'iwt-custom-tooltip';
     tooltip.innerText = message;
-
     element.parentElement.appendChild(tooltip);
     const rect = element.getBoundingClientRect();
     tooltip.style.left = `${rect.left + window.scrollX}px`;
     tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`; 
-
     setTimeout(() => {
         tooltip.classList.add("fade-out"); 
         setTimeout(() => tooltip.remove(), 1800); 
@@ -607,7 +586,6 @@ function showError(element, message) {
 function clearError(element) {
     element.style.borderColor = '';
     element.style.borderWidth = '';
-
     const tooltip = element.parentElement.querySelector('.custom-tooltip');
     if (tooltip) {
         tooltip.remove();
@@ -615,25 +593,21 @@ function clearError(element) {
 }
 
 document.addEventListener('DOMContentLoaded', strtEventListen);
-
 async function submitOfferToAPI(event) {
     event.preventDefault(); 
     if (!vForm()) {
     return;
     }
     const submitBtn = getEl('submit-btn');
-
     try {
-        submitBtn.disabled = true; // Disable the button
-    
-        cart = await fetchCart(); // Fetch the cart
+        submitBtn.disabled = true;    
+        cart = await fetchCart(); 
         const checkTemplateMix = (items) => {
             const templates = [...new Set(items.map(i => i.properties?.template || 'regular'))];
             return templates.length > 1 ? 'mixed' : templates[0] === 'iwtclearance' ? 'clearance only' : 'regular only';
         }; 
         const offerPrice = parseFloat(getEl('iwt-offer-price').value).toFixed(2);
-        const cartTotalPrice = (cart.total_price / 100).toFixed(2); // Convert cents to dollars;
-    
+        const cartTotalPrice = (cart.total_price / 100).toFixed(2);    
         const offerData = {
             storeUrl: sGURL.replace(/^https?:\/\//, ''),
             consumerName: getEl('iwt-name').value,
@@ -665,8 +639,7 @@ async function submitOfferToAPI(event) {
             cartTotalPrice: cartTotalPrice,
         };
     
-        console.log("Submitting offer: ", offerData);
-    
+        console.log("Submitting offer: ", offerData);  
         const response = await fetch('https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation/', {
             method: 'POST',
             headers: {
@@ -695,7 +668,6 @@ async function submitOfferToAPI(event) {
     }
 
     function dispResponse(apiResp) {
-
         let offerStatus = apiResp.offerStatus;
         let offerAmount = apiResp.offerAmount;
         let storeBrand = apiResp.storeBrand;
@@ -710,15 +682,13 @@ async function submitOfferToAPI(event) {
         const msgContainer = getEl('iwt-message');
         const woohoo = getEl('woohoo-image');
         const whoops = getEl('whoops-image');
-        const pending = getEl('pending-image');
-    
+        const pending = getEl('pending-image');  
         offerContainer.classList.add('fade-out'); 
     
     setTimeout(() => {
         offerContainer.style.display = 'none'; 
         modalResp.style.display = 'flex'; 
-        modalResp.classList.add('fade-in'); 
-        
+        modalResp.classList.add('fade-in');       
         let respMsg = '';
         storeBrand = storeBrand || "our store!";
 
@@ -777,7 +747,6 @@ window.copyCode = function () {
     const iwtCode = getEl("iwtCode");
     iwtCode.select();
     iwtCode.setSelectionRange(0, 99999); 
-
     navigator.clipboard.writeText(iwtCode.value).then(() => {
       getEl("copyMessage").style.display = "block";
       setTimeout(() => {
@@ -799,6 +768,5 @@ window.retry = function () {
         offerInput.value = '';
     }
 }
-
 document.addEventListener('DOMContentLoaded', strtEventListen);
 };
