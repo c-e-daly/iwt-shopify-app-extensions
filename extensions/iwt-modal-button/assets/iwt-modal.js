@@ -35,3 +35,6 @@ function openOfferModal({ template, dVID, sUrl }) {
     iwtModal.style.display = 'block';
 }
 window.openOfferModal = openOfferModal;
+window.initializeModal = initializeModal;
+window.closeModal = closeModal;
+window.resetModalData = resetModalData;
