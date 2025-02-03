@@ -3,6 +3,20 @@ const getEl = (id) => document.getElementById(id);
 
 document.addEventListener('DOMContentLoaded', async () => {
     const iwtModal = getEl('iwt-modal');
+    if (!iwtModal) return console.error('Modal container not found.');
+
+    iwtModal.style.display = 'none';
+    document.body.appendChild(iwtModal);
+    
+    getEl('iwt-modal-btn')?.addEventListener('click', (e) => (e.stopPropagation(), closeModal()));
+    iwtModal.addEventListener('click', (e) => e.target === iwtModal && closeModal());
+
+    cart = await fetchCart();
+    strtEventListen();
+});
+
+/*document.addEventListener('DOMContentLoaded', async () => {
+    const iwtModal = getEl('iwt-modal');
     const iwtCloseBtn = getEl('iwt-modal-btn');
     if (iwtModal) {
         iwtModal.style.display = 'none';
@@ -23,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     cart = await fetchCart();
     strtEventListen();
-});
+});*/
 
 function resetModalData() {
     getEl('iwt-table').innerHTML = '';
@@ -471,6 +485,7 @@ async function handleSubmit(event) {
     }
 }
 
+/*
 function vForm() {
     let isValid = true;
     const name = getEl('iwt-name');
@@ -570,7 +585,7 @@ function clearError(element) {
         tooltip.remove();
     }
 }
-
+*/
 document.addEventListener('DOMContentLoaded', strtEventListen);
 
 async function submitOfferToAPI(event) {
