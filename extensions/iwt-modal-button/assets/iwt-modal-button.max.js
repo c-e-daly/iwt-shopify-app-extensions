@@ -2,31 +2,25 @@ let cart, srcTemplate, sGURL, cartCreated= null, cartUpdated = null, cartTemplat
 const getEl = (id) => document.getElementById(id);
 
 document.addEventListener('DOMContentLoaded', async () => {
-
     const iwtModal = getEl('iwt-modal');
     const iwtCloseBtn = getEl('iwt-modal-btn');
-
     if (iwtModal) {
         iwtModal.style.display = 'none';
         document.body.appendChild(iwtModal);
-
         if (iwtCloseBtn) {
             iwtCloseBtn.addEventListener('click', (event) => {
                 event.stopPropagation();
                 closeModal();
             });
         }
-
         iwtModal.addEventListener('click', (event) => {
             if (event.target === iwtModal) {
                 closeModal();
             }
         });
-
     } else {
         console.error('Modal container not found.');
     }
-
     cart = await fetchCart();
     strtEventListen();
 });
@@ -71,23 +65,18 @@ resetModalData();
             ID = uVID; 
         } else {
             console.log('Variant ID not found in URL');
-        }
-  
-        
+        }       
         const quantity = gQTY();
-
-  
+        console.log('Quantity:', quantity);
         try {
             await addToCart({ ID, quantity, template });
         } catch (error) {
             console.error(`Error adding product ${ID} to the cart`, error);
         }
-  
         cart = await fetchCart();
         cartToken = cart.token;
         rendTable(cart);
     }
-  
     syncTableCart();
     const iwtModal = getEl('iwt-modal');
     iwtModal.style.display = 'block';
@@ -99,7 +88,6 @@ function syncTableCart() {
         const tQTY = cart.items.reduce((total, item) => total + item.quantity, 0);
         qtyInpt.value = tQTY;
     }
-  
     const subttlInpt = getEl('iwt-subtotal');
     if (subttlInpt) {
         subttlInpt.value = cart.total_price;
@@ -148,6 +136,7 @@ const addToCart = async function({ ID, quantity, template }) {
             }
 
             const updatedCart = await response.json();
+
             cartUpdated = gCDT();
 
             const itemUpdate = updatedCart.items.find(item => item.variant_id === ID);
@@ -202,10 +191,8 @@ const addToCart = async function({ ID, quantity, template }) {
                     cart: result
                 };
             }
-
             return { success: true, availQty: quantity, backOrdQty: 0, cart: result };
         }
-
     } catch (error) {
         console.error("Error adding to cart:", error);
         return { success: false, error };
@@ -310,7 +297,6 @@ const uIQ = async (lineItemKey, newQty) => {
     }
 };
 
-
 const clearModalError = () => {
     const errorSection = getEl('iwt-modal-error');
     if (errorSection) {
@@ -358,12 +344,10 @@ const removeItem = async (lineItemKey) => {
                 id: lineItemKey,
                 quantity: 0
             })
-        });
-  
+        }); 
         if (!response.ok) {
             throw new Error(`Network response was not ok, status: ${response.status}`);
-        }
-  
+        }  
         const result = await response.json();
         rendTable(result);  
     } catch (error) {
@@ -390,17 +374,14 @@ const rendTable = function(cart, offerAcceptedPrice = null) {
         price: 'Price',
         line_price: 'Line Price'
     };
-  
- 
     allowedKeys.forEach(key => {
         tableContent += `<th>${labels[key]}</th>`;
     });
-    tableContent += `<th>${labels.line_price}</th></tr></thead><tbody>`;
-    let subtotal = 0;
+    tableContent += `<th>${labels.line_price}</th></tr></thead><tbody>`; 
+    let subtotal = 0;  
     cart.items.forEach((item, index) => {
         const rowColor = index % 2 === 0 ? '#fff' : '#f2f2f2';
-        tableContent += `<tr style="background-color: ${rowColor};">`;
-  
+        tableContent += `<tr style="background-color: ${rowColor};">`; 
         allowedKeys.forEach(key => {
             if (key === 'product_title') {
                 tableContent += `
@@ -418,7 +399,7 @@ const rendTable = function(cart, offerAcceptedPrice = null) {
   
         const lineTotal = item.price * item.quantity;
         subtotal += lineTotal;
-        tableContent += `<td>${formatPrice(lineTotal)}</td>`;
+        tableContent += `<td>${formatPrice(lineTotal)}</td>`; 
         tableContent += `
           <td style="background-color: white;">
             <button class="iwt-remove-item" onclick="removeItem('${item.key}')" title="Remove item" style="color: red; font-size: 16px; border: none; background: none;">
@@ -458,10 +439,10 @@ const rendTable = function(cart, offerAcceptedPrice = null) {
   
 const formatPrice = (cents) => `$${(cents / 100).toFixed(2)}`;
 const checkTemplateMix = (items) => new Set(items.map(i => i.properties?.template || 'regular')).size > 1;
+
 function strtEventListen() {
     const submitBtn = getEl('submit-btn');
     const form = getEl('iwt-form');
-
     if (submitBtn && form) {
         submitBtn.removeEventListener('click', handleSubmit);
         submitBtn.addEventListener('click', handleSubmit); 
@@ -471,9 +452,7 @@ function strtEventListen() {
 
 async function handleSubmit(event) {
     event.preventDefault();
-
     const submitBtn = getEl('submit-btn');
-
     if (submitBtn.disabled) {
         return;
     }
@@ -494,7 +473,6 @@ async function handleSubmit(event) {
 
 function vForm() {
     let isValid = true;
-
     const name = getEl('iwt-name');
     const email = getEl('iwt-email');
     const mobile = getEl('iwt-mobile');
@@ -502,7 +480,6 @@ function vForm() {
     const offer = getEl('iwt-offer-price');
     const tosCheckbox = getEl('iwt-tos-checkbox');
     const cartTotalElement = getEl('iwt-cart-total');
-
     let cartTotal = 0;
 
     if (cartTotalElement && cartTotalElement.textContent) {
@@ -524,7 +501,6 @@ function vForm() {
     clearError(offer);
     getEl('iwt-tos-error').style.display = 'none';
 
-    // Validation logic
     if (!name.value.trim()) {
         showError(name, 'Please fill in your first and last name');
         isValid = false;
@@ -562,6 +538,7 @@ function vForm() {
 }
 const vEmail = (email) => /^[\w.+-]+@[a-zA-Z\d-]+\.[a-zA-Z]{2,}$/.test(email);
 const vPhone = (phone) => /^\d{10}$/.test(phone);
+
 function showError(element, message) {
     element.style.borderColor = 'red';
     element.style.borderWidth = '2px';
@@ -576,6 +553,7 @@ function showError(element, message) {
     const rect = element.getBoundingClientRect();
     tooltip.style.left = `${rect.left + window.scrollX}px`;
     tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`; 
+
     setTimeout(() => {
         tooltip.classList.add("fade-out"); 
         setTimeout(() => tooltip.remove(), 1800); 
@@ -586,6 +564,7 @@ function showError(element, message) {
 function clearError(element) {
     element.style.borderColor = '';
     element.style.borderWidth = '';
+
     const tooltip = element.parentElement.querySelector('.custom-tooltip');
     if (tooltip) {
         tooltip.remove();
@@ -593,21 +572,25 @@ function clearError(element) {
 }
 
 document.addEventListener('DOMContentLoaded', strtEventListen);
+
 async function submitOfferToAPI(event) {
     event.preventDefault(); 
     if (!vForm()) {
     return;
     }
     const submitBtn = getEl('submit-btn');
+
     try {
-        submitBtn.disabled = true;    
-        cart = await fetchCart(); 
+        submitBtn.disabled = true; // Disable the button
+    
+        cart = await fetchCart(); // Fetch the cart
         const checkTemplateMix = (items) => {
             const templates = [...new Set(items.map(i => i.properties?.template || 'regular'))];
             return templates.length > 1 ? 'mixed' : templates[0] === 'iwtclearance' ? 'clearance only' : 'regular only';
         }; 
         const offerPrice = parseFloat(getEl('iwt-offer-price').value).toFixed(2);
-        const cartTotalPrice = (cart.total_price / 100).toFixed(2);    
+        const cartTotalPrice = (cart.total_price / 100).toFixed(2); // Convert cents to dollars;
+    
         const offerData = {
             storeUrl: sGURL.replace(/^https?:\/\//, ''),
             consumerName: getEl('iwt-name').value,
@@ -639,7 +622,8 @@ async function submitOfferToAPI(event) {
             cartTotalPrice: cartTotalPrice,
         };
     
-        console.log("Submitting offer: ", offerData);  
+        console.log("Submitting offer: ", offerData);
+    
         const response = await fetch('https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation/', {
             method: 'POST',
             headers: {
@@ -676,13 +660,12 @@ async function submitOfferToAPI(event) {
         let expiryMinutes = apiResp.expiryMinutes;
         let discountCode = apiResp.discountCode;
         let cartPrice = apiResp.cartPrice;
-
         const offerContainer = getEl('iwt-offer');
         const modalResp = getEl('iwt-response');
         const msgContainer = getEl('iwt-message');
         const woohoo = getEl('woohoo-image');
         const whoops = getEl('whoops-image');
-        const pending = getEl('pending-image');  
+        const pending = getEl('pending-image');   
         offerContainer.classList.add('fade-out'); 
     
     setTimeout(() => {
@@ -691,7 +674,6 @@ async function submitOfferToAPI(event) {
         modalResp.classList.add('fade-in');       
         let respMsg = '';
         storeBrand = storeBrand || "our store!";
-
                 const msgAccept = `
                     <p class="iwtP">Hey ${firstName}, you just made a Great Deal using I Want That!  
                     Your offer of ${offerAmount} has been <strong>accepted</strong>. 
@@ -747,6 +729,7 @@ window.copyCode = function () {
     const iwtCode = getEl("iwtCode");
     iwtCode.select();
     iwtCode.setSelectionRange(0, 99999); 
+
     navigator.clipboard.writeText(iwtCode.value).then(() => {
       getEl("copyMessage").style.display = "block";
       setTimeout(() => {
@@ -768,5 +751,6 @@ window.retry = function () {
         offerInput.value = '';
     }
 }
+
 document.addEventListener('DOMContentLoaded', strtEventListen);
 };
