@@ -1,6 +1,3 @@
-import { fetchCart } from './iwt-cart.js';
-
-const getEl = (id) => document.getElementById(id);
 
 async function handleSubmit(event) {
     event.preventDefault();

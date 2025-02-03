@@ -1,9 +1,6 @@
 // Ensure cart is available globally
 window.cart = null;
 
-// Utility function to get elements
-const getEl = (id) => document.getElementById(id);
-
 async function fetchCart() {
     try {
         const response = await fetch('/cart.js');
@@ -118,7 +115,9 @@ function renderCartTable(cart) {
 
 const formatPrice = (cents) => `$${(cents / 100).toFixed(2)}`;
 
-// ✅ Attach all functions to `window` for global access
+console.log("window.fetchCart:", window.fetchCart);
+console.log(cart);
+
 window.fetchCart = fetchCart;
 window.addToCart = addToCart;
 window.updateCart = updateCart;

@@ -1,9 +1,11 @@
 {{ 'iwt-modal-styles.css' | asset_url | stylesheet_tag }}
-<script src="{{ 'iwt-modal-button.js' | asset_url }}" defer="defer"></script>
+
+<script src="{{'iwt-utils.js' | asset_url }}" defer="defer"></script>
+<script src="{{'iwt-modal.js' | asset_url }}" defer="defer"></script>
 <script src="{{'iwt-cart.js' | asset_url }}" defer="defer"></script>
 <script src="{{'iwt-offer.js' | asset_url }}" defer="defer"></script>
-<script src="{{'iwt-modal.js' | asset_url }}" defer="defer"></script>
 <script src="{{'iwt-response.js' | asset_url }}" defer="defer"></script>
+<script src="{{'iwt-modal-button.js' | asset_url }}" defer="defer"></script>
 
 <div id="iwt-modal" class="modal-container">
     <div id="iwt-content" class="modal-content">

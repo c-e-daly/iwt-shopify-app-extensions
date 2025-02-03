@@ -1,4 +1,3 @@
-const getEl = (id) => document.getElementById(id);
 
 function initializeModal() {
     const iwtModal = getEl('iwt-modal');
@@ -43,8 +42,7 @@ function openOfferModal({ template, dVID, sUrl }) {
 }
 
 window.openOfferModal = openOfferModal;
-window.initializeModal = initializeModal;
 window.closeModal = closeModal;
 window.resetModalData = resetModalData;
 
-initializeModal();
+window.initializeModal();

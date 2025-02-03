@@ -1,4 +1,3 @@
-const getEl = (id) => document.getElementById(id);
 
 function displayResponse(apiResp) {
     let offerStatus = apiResp.offerStatus;
