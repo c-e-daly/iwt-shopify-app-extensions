@@ -12,6 +12,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             console.error("openOfferModal function is not available.");
         }
+
+        const variantID = new URLSearchParams(window.location.search).get('variant');
+
+    if (!variantID) {
+        console.error("❌ No Variant ID found in URL. Cannot add product to cart.");
+        alert("No product selected. Please select an option before making an offer.");
+        return;
+    }
+
+    console.log(`Variant ID Found: ${variantID}`);
+
+    const cart = window.addToCart({ ID: variantID, quantity: 1, template: "product" });
+
+    if (cart && cart.items.length > 0) {
+        window.renderCartTable(cart);
+    } else {
+        console.warn("⚠️ Cart is empty after adding item.");
+    }
     });
 
     // Close modal when clicking outside
