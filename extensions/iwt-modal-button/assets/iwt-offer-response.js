@@ -1,5 +1,5 @@
 
-function displayResponse(apiResp) {
+window.displayResponse(apiResp) {
     let offerStatus = apiResp.offerStatus;
     let offerAmount = apiResp.offerAmount;
     let storeBrand = apiResp.storeBrand || "our store!";
@@ -78,7 +78,7 @@ function displayResponse(apiResp) {
 }
 
 // Function to copy the discount code to clipboard
-function copyCode() {
+window.copyCode() {
     const iwtCode = getEl("iwtCode");
     iwtCode.select();
     iwtCode.setSelectionRange(0, 99999);
@@ -92,7 +92,7 @@ function copyCode() {
 }
 
 // Function to retry submitting a new offer
-function retry() {
+window.retry() {
     const modalResp = getEl('iwt-response');
     modalResp.style.display = 'none';
 
