@@ -56,7 +56,7 @@ window.updateCart = async function(lineItemKey, newQty) {
         if (!response.ok) throw new Error(`Network response was not ok, status: ${response.status}`);
 
         window.cart = await response.json();
-        window.renderCartTable(window.cart);
+        window.renderTable(window.cart);
         return window.cart;
     } catch (error) {
         console.error('Error updating cart:', error);
@@ -75,90 +75,93 @@ window.removeItem = async function(lineItemKey) {
         if (!response.ok) throw new Error(`Network response was not ok, status: ${response.status}`);
 
         window.cart = await response.json();
-        window.renderCartTable(window.cart);
+        window.renderTable(window.cart);
     } catch (error) {
         console.error('Error removing item from cart:', error);
     }
 };
 
-window.renderCartTable = function(cart) {
-    if (!cart || !cart.items) {
-        console.error(" Cart data is missing.");
+window,renderTable = function(cart, offerAcceptedPrice = null) {
+    if (!cart) {
+        console.error('Cart is null');
         return;
     }
-
-    let tableContent = '<table><thead><tr>';
-    const labels = { product_title: 'Product Name', quantity: 'Qty', price: 'Price', line_price: 'Total' , remove: 'Remove'};
-
-    Object.keys(labels).forEach(key => {
-        tableContent += `<th>${labels[key]}</th>`;
-    });
-
-    tableContent += '</tr></thead><tbody>';
-
-    let subtotal = 0;
-    cart.items.forEach((item) => {
-        const lineTotal = item.price * item.quantity;
-        subtotal += lineTotal;
-
-        tableContent += `<tr>
-            <td>${item.product_title} (SKU: ${item.sku || 'N/A'})</td>
-            <td>
-                <input type="number" class="iwt-input-number" value="${item.quantity}" 
-                min="1" max="999" data-line-item-key="${item.key}" 
-                onchange="window.updateCart('${item.key}', this.value)">
-            </td>
-            <td>${(item.price / 100).toFixed(2)}</td>
-            <td>${(lineTotal / 100).toFixed(2)}</td>
-            <td><button class="iwt-remove-item" onclick="window.removeItem('${item.key}')" 
-            title="Remove Item" style="color: red; font-size: 16px; border: none; background: none;"> ❌</button></td>
-        </tr>`;
-
-        tableContent += `<tfoot><tr><td colspan="3">Subtotal</td><td>${(subtotal / 100).toFixed(2)}</td></tr></tfoot></table>`;
-    });
-
+    if (!cart.items) {
+        console.error('Cart items property is missing');
+        return;
+    }
   
-
-    document.getElementById('iwt-table').innerHTML = tableContent;
-};
-
-/*Render the cart table inside the modal
-window.renderCartTable = function(cart) {
-    if (!cart || !cart.items) {
-        console.error("Cart data is missing.");
-        return;
-    }
-
-    let tableContent = '<table><thead><tr>';
-    const labels = { product_title: 'Product Name', quantity: 'Qty', price: 'Price', line_price: 'Total' };
-
-    Object.keys(labels).forEach(key => {
+    let tableContent = '<table><thead class="table-header"><tr>';
+    const allowedKeys = ['product_title', 'quantity', 'price'];
+    const labels = {
+        product_title: 'Product Name',
+        quantity: 'Units',
+        price: 'Price',
+        line_price: 'Line Price'
+    };
+    allowedKeys.forEach(key => {
         tableContent += `<th>${labels[key]}</th>`;
     });
-
-    tableContent += '</tr></thead><tbody>';
-
-    let subtotal = 0;
-    cart.items.forEach((item) => {
+    tableContent += `<th>${labels.line_price}</th></tr></thead><tbody>`; 
+    let subtotal = 0;  
+    cart.items.forEach((item, index) => {
+        const rowColor = index % 2 === 0 ? '#fff' : '#f2f2f2';
+        tableContent += `<tr style="background-color: ${rowColor};">`; 
+        allowedKeys.forEach(key => {
+            if (key === 'product_title') {
+                tableContent += `
+                    <td>
+                        <div>${item.product_title}</div>
+                        <div style="font-size: 0.8em; color: #666;">SKU: ${item.sku || 'N/A'}</div>
+                    </td>`;
+            } else if (key === 'quantity') {
+                tableContent += `<td><input type="number" class="iwt-input-number" value="${item[key]}" min="1" onchange="uIQ('${item.key}', this.value)" data-line-item-key="${item.key}"></td>`;
+            } else {
+                const value = key === 'price' ? formatPrice(item[key]) : item[key];
+                tableContent += `<td>${value || ''}</td>`;
+            }
+        });
+  
         const lineTotal = item.price * item.quantity;
         subtotal += lineTotal;
-
-        tableContent += `<tr>
-            <td>${item.product_title} (SKU: ${item.sku || 'N/A'})</td>
-            <td>
-                <input type="number" class="iwt-input-number" value="${item.quantity}" 
-                min="1" max="${item.quantity}" data-line-item-key="${item.key}" 
-                onchange="window.updateCart('${item.key}', this.value)">
-            </td>
-            <td>${(item.price / 100).toFixed(2)}</td>
-            <td>${(lineTotal / 100).toFixed(2)}</td>
-        </tr>`;
+        tableContent += `<td>${formatPrice(lineTotal)}</td>`; 
+        tableContent += `
+          <td style="background-color: white;">
+            <button class="iwt-remove-item" onclick="removeItem('${item.key}')" title="Remove item" style="color: red; font-size: 16px; border: none; background: none;">
+              &cross;
+            </button>
+          </td>
+        `;
+        tableContent += '</tr>';
     });
-
-    tableContent += `<tfoot><tr><td colspan="3">Subtotal</td><td>${(subtotal / 100).toFixed(2)}</td></tr></tfoot></table>`;
-    document.getElementById('iwt-table').innerHTML = tableContent;
+  
+    tableContent += `
+      </tbody>
+      <tfoot>
+        <tr style="background-color: #0442b4; color: #fff;">
+          <td colspan="${allowedKeys.length}">Subtotal</td>
+          <td id="iwt-cart-total">${formatPrice(subtotal)}</td>
+        </tr>
+    `;
+  
+    if (offerAcceptedPrice !== null) {
+        tableContent += `
+        <tr>
+          <td colspan="${allowedKeys.length}">Accepted Offer Price</td>
+          <td>${formatPrice(offerAcceptedPrice)}</td>
+        </tr>
+      `;
+    }
+  
+    tableContent += '</tfoot></table>';
+    const cartTable = getEl('iwt-table');
+    if (cartTable) {
+        cartTable.innerHTML = tableContent;
+    } else {
+        console.error('Element with ID iwt-cart-table not found');
+    }
 };
-*/
+
 // Sync cart data with modal
 window.syncTableCart = function() {
     const qtyInput = document.getElementById('iwt-qty');
@@ -194,40 +197,18 @@ window.updateCartDates = function(isNewItem) {
     window.cartUpdateDate = currentDateTime;
 };
 
-// Open offer modal with correct cart data
-window.openOfferModal = async function({ template, dVID, sUrl }) {
-    let cartToken;
+function updateCartTotals(cart) {
+    let subtotal = 0;
 
-    if (template === 'cart' || template === 'checkout') {
-        window.cart = await fetchCart();
-        cartToken = window.cart.token;
-        window.renderCartTable(window.cart);
-    } else if (template === 'product' || template === 'iwantthat' || template === 'iwtclearance') {
-        let ID = dVID || gVIDURL();
-        let quantity = gQTY();
+    cart.items.forEach(item => {
+        subtotal += item.price * item.quantity;
+    });
 
-        if (!ID) {
-            console.error("Variant ID not found, cannot add to cart.");
-            alert("Please select a product option before making an offer.");
-            return;
-        }
-
-        console.log(` Adding Product to Cart in Modal - ID: ${ID}, Quantity: ${quantity}`);
-
-        try {
-            await window.addToCart({ ID, quantity, template });
-        } catch (error) {
-            console.error(`Error adding product ${ID} to the cart`, error);
-        }
-
-        window.cart = await fetchCart();
-        cartToken = window.cart.token;
-        window.renderCartTable(window.cart);
+    const cartTotalElement = document.getElementById('iwt-cart-total');
+    if (cartTotalElement) {
+        cartTotalElement.innerText = formatPrice(subtotal);
     }
-
-    window.syncTableCart();
-    document.getElementById('iwt-modal').style.display = 'block';
-};
+}
 
 // Format price display
 const formatPrice = (cents) => `$${(cents / 100).toFixed(2)}`;
@@ -235,12 +216,12 @@ const formatPrice = (cents) => `$${(cents / 100).toFixed(2)}`;
 // Debugging to ensure functions are assigned correctly
 console.log("window.fetchCart:", window.fetchCart);
 console.log("window.addToCart:", window.addToCart);
-console.log("window.renderCartTable:", window.renderCartTable);
+console.log("window.renderTable:", window.renderTable);
 console.log("window.openOfferModal:", window.openOfferModal);
 
 
 window.fetchCart = fetchCart;
 window.addToCart = addToCart;
 window.updateCart = updateCart;
-window.renderCartTable = renderCartTable;
+window.renderTable = renderTable;
 window.formatPrice = formatPrice;

@@ -1,3 +1,5 @@
+window.cartFetched = false;
+
 function initializeModal() {
     const iwtModal = getEl('iwt-modal');
     if (!iwtModal) {
@@ -63,7 +65,14 @@ async function openOfferModal({ template, dVID, sUrl }) {
             console.error(`Error adding product ${ID} to the cart`, error);
         }
 
-        window.cart = await fetchCart();
+        if (!window.cartFetched) {
+            console.log("🛒 Fetching cart for this modal session...");
+            window.cart = await fetchCart();
+            window.cartFetched = true; // Mark cart as fetched
+        } else {
+            console.log("⚠️ Cart fetch skipped (already fetched in this modal session)");
+        }
+
         cartToken = window.cart.token;
         window.renderCartTable(window.cart);
     }
