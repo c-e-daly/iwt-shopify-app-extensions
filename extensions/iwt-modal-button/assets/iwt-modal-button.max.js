@@ -15,29 +15,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     strtEventListen();
 });
 
-/*document.addEventListener('DOMContentLoaded', async () => {
-    const iwtModal = getEl('iwt-modal');
-    const iwtCloseBtn = getEl('iwt-modal-btn');
-    if (iwtModal) {
-        iwtModal.style.display = 'none';
-        document.body.appendChild(iwtModal);
-        if (iwtCloseBtn) {
-            iwtCloseBtn.addEventListener('click', (event) => {
-                event.stopPropagation();
-                closeModal();
-            });
-        }
-        iwtModal.addEventListener('click', (event) => {
-            if (event.target === iwtModal) {
-                closeModal();
-            }
-        });
-    } else {
-        console.error('Modal container not found.');
-    }
-    cart = await fetchCart();
-    strtEventListen();
-});*/
 
 function resetModalData() {
     getEl('iwt-table').innerHTML = '';

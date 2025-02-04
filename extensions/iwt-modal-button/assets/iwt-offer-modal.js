@@ -40,10 +40,11 @@ function closeModal() {
 // 🟢 Updated openOfferModal to correctly handle different pages (Cart vs. Product)
 async function openOfferModal({ template, dVID, sUrl }) {
     let cartToken;
+    console.log(`Opening Offer Modal for ${template} | dVID: ${dVID} | sUrl: ${sUrl}`); 
     const iwtModal = getEl('iwt-modal');
 
     if (template === 'cart' || template === 'checkout') {
-        console.log("🛒 Fetching cart directly from Cart Page...");
+        console.log(" Fetching cart directly from Cart Page...");
         window.cart = await fetchCart();
         cartToken = window.cart.token;
         window.renderCartTable(window.cart);
