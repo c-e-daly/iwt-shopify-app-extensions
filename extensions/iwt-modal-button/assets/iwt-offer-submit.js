@@ -180,8 +180,8 @@ async function submitOfferToAPI(event) {
         
         if (apiResp?.response) {
             console.log("Offer Response Received:", apiResp.response);
-            if (typeof window.dispResponse === 'function') {
-                window.dispResponse(apiResp.response);
+            if (typeof window.displayResponse === 'function') {
+                window.displayResponse(apiResp.response);
             } else {
                 console.error(" dispResponse function is not available.");
                 alert('Offer submitted, but response handling failed.');
@@ -199,7 +199,7 @@ async function submitOfferToAPI(event) {
 }
 
 // Ensure `dispResponse()` is available
-if (typeof window.dispResponse !== 'function') {
+if (typeof window.displayResponse !== 'function') {
     console.error(" dispResponse function is missing. Ensure iwt-offer-response.js is loaded.");
 }
 

@@ -67,7 +67,7 @@ async function openOfferModal({ template, dVID, sUrl }) {
         }
 
         if (!window.cartFetched) {
-            console.log("🛒 Fetching cart for this modal session...");
+            console.log(" Fetching cart for this modal session...");
             window.cart = await fetchCart();
             window.cartFetched = true; // Mark cart as fetched
         } else {
