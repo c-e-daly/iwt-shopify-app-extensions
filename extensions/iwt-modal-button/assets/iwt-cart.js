@@ -18,7 +18,7 @@ window.fetchCart = async function() {
 window.addToCart = async function({ ID, quantity, template }) {
     try {
         if (!ID) {
-            console.error("❌ Missing Variant ID. Cannot add to cart.");
+            console.error(" Missing Variant ID. Cannot add to cart.");
             return;
         }
 
@@ -35,11 +35,11 @@ window.addToCart = async function({ ID, quantity, template }) {
         if (!response.ok) throw new Error(`Network response was not ok, status: ${response.status}`);
 
         window.cart = await response.json();
-        console.log("✅ Cart Updated After Adding Item:", window.cart);
+        console.log("Cart Updated After Adding Item:", window.cart);
 
         return window.cart;
     } catch (error) {
-        console.error("❌ Error adding to cart:", error);
+        console.error("Error adding to cart:", error);
         return null;
     }
 };
@@ -81,10 +81,50 @@ window.removeItem = async function(lineItemKey) {
     }
 };
 
-// Render the cart table inside the modal
 window.renderCartTable = function(cart) {
     if (!cart || !cart.items) {
-        console.error("❌ Cart data is missing.");
+        console.error(" Cart data is missing.");
+        return;
+    }
+
+    let tableContent = '<table><thead><tr>';
+    const labels = { product_title: 'Product Name', quantity: 'Qty', price: 'Price', line_price: 'Total' , remove: 'Remove'};
+
+    Object.keys(labels).forEach(key => {
+        tableContent += `<th>${labels[key]}</th>`;
+    });
+
+    tableContent += '</tr></thead><tbody>';
+
+    let subtotal = 0;
+    cart.items.forEach((item) => {
+        const lineTotal = item.price * item.quantity;
+        subtotal += lineTotal;
+
+        tableContent += `<tr>
+            <td>${item.product_title} (SKU: ${item.sku || 'N/A'})</td>
+            <td>
+                <input type="number" class="iwt-input-number" value="${item.quantity}" 
+                min="1" max="999" data-line-item-key="${item.key}" 
+                onchange="window.updateCart('${item.key}', this.value)">
+            </td>
+            <td>${(item.price / 100).toFixed(2)}</td>
+            <td>${(lineTotal / 100).toFixed(2)}</td>
+        </tr>`;
+    });
+
+    tableContent += `<tfoot><tr><td colspan="3">Subtotal</td><td>${(subtotal / 100).toFixed(2)}</td></tr></tfoot></table>`;
+    tableContent += `<td><button class="iwt-remove-item" onclick="window.removeItem('${item.key}')" 
+    title="Remove item" style="color: red; font-size: 16px; border: none; background: none;">
+      ❌</button></td>`;
+
+    document.getElementById('iwt-table').innerHTML = tableContent;
+};
+
+/*Render the cart table inside the modal
+window.renderCartTable = function(cart) {
+    if (!cart || !cart.items) {
+        console.error("Cart data is missing.");
         return;
     }
 
@@ -117,7 +157,7 @@ window.renderCartTable = function(cart) {
     tableContent += `<tfoot><tr><td colspan="3">Subtotal</td><td>${(subtotal / 100).toFixed(2)}</td></tr></tfoot></table>`;
     document.getElementById('iwt-table').innerHTML = tableContent;
 };
-
+*/
 // Sync cart data with modal
 window.syncTableCart = function() {
     const qtyInput = document.getElementById('iwt-qty');
@@ -166,17 +206,17 @@ window.openOfferModal = async function({ template, dVID, sUrl }) {
         let quantity = gQTY();
 
         if (!ID) {
-            console.error("❌ Variant ID not found, cannot add to cart.");
+            console.error("Variant ID not found, cannot add to cart.");
             alert("Please select a product option before making an offer.");
             return;
         }
 
-        console.log(`✅ Adding Product to Cart in Modal - ID: ${ID}, Quantity: ${quantity}`);
+        console.log(` Adding Product to Cart in Modal - ID: ${ID}, Quantity: ${quantity}`);
 
         try {
             await window.addToCart({ ID, quantity, template });
         } catch (error) {
-            console.error(`❌ Error adding product ${ID} to the cart`, error);
+            console.error(`Error adding product ${ID} to the cart`, error);
         }
 
         window.cart = await fetchCart();
