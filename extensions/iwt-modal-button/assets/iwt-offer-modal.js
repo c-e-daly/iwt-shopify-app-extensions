@@ -47,7 +47,7 @@ async function openOfferModal({ template, dVID, sUrl }) {
         console.log(" Fetching cart directly from Cart Page...");
         window.cart = await fetchCart();
         cartToken = window.cart.token;
-        window.renderCartTable(window.cart);
+        window.renderTable(window.cart);
     } else if (template === 'product' || template === 'iwantthat' || template === 'iwtclearance') {
         let ID = dVID || gVIDURL();
         let quantity = gQTY();
@@ -71,11 +71,11 @@ async function openOfferModal({ template, dVID, sUrl }) {
             window.cart = await fetchCart();
             window.cartFetched = true; // Mark cart as fetched
         } else {
-            console.log("⚠️ Cart fetch skipped (already fetched in this modal session)");
+            console.log(" Cart fetch skipped (already fetched in this modal session)");
         }
 
         cartToken = window.cart.token;
-        window.renderCartTable(window.cart);
+        window.renderTable(window.cart);
     }
 
     window.syncTableCart();

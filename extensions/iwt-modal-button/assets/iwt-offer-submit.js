@@ -175,20 +175,32 @@ async function submitOfferToAPI(event) {
             body: JSON.stringify(offerData),
         });
 
-        if (!response.ok) throw new Error(`Error when submitting offer: ${response.status}`);
+        if (!response.ok) throw new Error(` Error when submitting offer: ${response.status}`);
         const apiResp = await response.json();
         
         if (apiResp?.response) {
-            displayResponse(apiResp.response);
+            console.log("Offer Response Received:", apiResp.response);
+            if (typeof window.dispResponse === 'function') {
+                window.dispResponse(apiResp.response);
+            } else {
+                console.error(" dispResponse function is not available.");
+                alert('Offer submitted, but response handling failed.');
+            }
         } else {
+            console.warn(" Unexpected response format. Please try again.");
             alert('Unexpected response. Please try again later.');
         }
     } catch (error) {
-        console.error("Error when submitting offer:", error);
+        console.error(" Error when submitting offer:", error);
         alert('Error when submitting offer. Please try again later.');
     } finally {
         submitBtn.disabled = false;
     }
+}
+
+// Ensure `dispResponse()` is available
+if (typeof window.dispResponse !== 'function') {
+    console.error(" dispResponse function is missing. Ensure iwt-offer-response.js is loaded.");
 }
 
 window.handleSubmit = handleSubmit;
