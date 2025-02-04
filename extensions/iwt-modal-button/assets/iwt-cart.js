@@ -110,13 +110,12 @@ window.renderCartTable = function(cart) {
             </td>
             <td>${(item.price / 100).toFixed(2)}</td>
             <td>${(lineTotal / 100).toFixed(2)}</td>
+            <td><button class="iwt-remove-item" onclick="window.removeItem('${item.key}')" 
+            title="Remove Item" style="color: red; font-size: 16px; border: none; background: none;"> ❌</button></td>
         </tr>`;
     });
 
     tableContent += `<tfoot><tr><td colspan="3">Subtotal</td><td>${(subtotal / 100).toFixed(2)}</td></tr></tfoot></table>`;
-    tableContent += `<td><button class="iwt-remove-item" onclick="window.removeItem('${item.key}')" 
-    title="Remove item" style="color: red; font-size: 16px; border: none; background: none;">
-      ❌</button></td>`;
 
     document.getElementById('iwt-table').innerHTML = tableContent;
 };
