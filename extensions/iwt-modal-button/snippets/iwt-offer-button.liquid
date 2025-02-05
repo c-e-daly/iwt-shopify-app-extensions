@@ -9,6 +9,8 @@
   {% assign pagetemplate = 'iwtclearance' %}
 {% elsif template.suffix == 'iwantthat' %}
   {% assign pagetemplate = 'iwantthat' %}
+{% else if template == 'cart' %}
+  {% assign pagetemplate = 'cart' %}
 {% else %}
   {% assign pagetemplate = template.suffix %}
 {% endif %}
