@@ -13,3 +13,12 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(error => console.error("Error fetching cart:", error));
     }
 });
+
+(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const remarketingKey = urlParams.get('iwt');
+
+    if (remarketingKey) {
+        localStorage.setItem('iwtRemarketingKey', remarketingKey);
+    }
+})();
