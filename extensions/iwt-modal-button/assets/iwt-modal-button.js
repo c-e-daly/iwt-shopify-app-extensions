@@ -9,24 +9,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("❌ Modal element 'iwt-modal' not found.");
     }
 
+    // Wait a moment to ensure all scripts are loaded
+    setTimeout(() => {
+        if (typeof window.iwtOpenOfferModal !== 'function') {
+            console.error("❌ iwtOpenOfferModal is still not available. Check iwt-offer-modal.js.");
+        } else {
+            console.log("✅ iwtOpenOfferModal is now available.");
+        }
+    }, 1000);
+
     // Check if the URL contains ?iwt=customergeneratedoffer and open modal
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('iwt')) {
         console.log("🔹 Detected customer-generated offer in URL. Launching modal.");
         setTimeout(() => {
-            window.iwtOpenOfferModal({ 
-                sUrl: window.location.href, 
-                template: "cart", 
-                dVID: null 
-            });
-        }, 1000); // Allow DOM to settle before opening modal
+            if (typeof window.iwtOpenOfferModal === 'function') {
+                window.iwtOpenOfferModal({
+                    sUrl: window.location.href,
+                    template: "cart",
+                    dVID: null
+                });
+            } else {
+                console.error("❌ iwtOpenOfferModal function is not available.");
+            }
+        }, 500); // Short delay to ensure scripts have initialized
     }
 
     // Event Listener: Open Offer Modal when clicking 'Make Offer' button
     document.getElementById('iwt-modal-btn')?.addEventListener('click', () => {
-        const sUrl = window.location.href; 
-        const template = document.body.dataset.template || "product"; 
-        const dVID = new URLSearchParams(window.location.search).get('variant'); 
+        const sUrl = window.location.href;
+        const template = document.body.dataset.template || "product";
+        const dVID = new URLSearchParams(window.location.search).get('variant');
 
         if (typeof window.iwtOpenOfferModal === 'function') {
             console.log(`🔹 Calling iwtOpenOfferModal with: sUrl=${sUrl}, template=${template}, dVID=${dVID}`);
@@ -79,15 +92,4 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error("❌ iwtCheckout function is not available.");
         }
     });
-
-    // Monitor `fetchCart()` availability and call it when ready
-    let checkFetchCart = setInterval(() => {
-        if (typeof window.iwtFetchCart === 'function' && typeof window.iwtRenderCartTable === 'function') {
-            console.log("✅ iwtFetchCart found, calling now...");
-            window.iwtFetchCart().then(window.iwtRenderCartTable);
-            clearInterval(checkFetchCart);
-        } else {
-            console.warn("⏳ Waiting for iwtFetchCart to be available...");
-        }
-    }, 500);
 });

@@ -21,45 +21,59 @@ window.iwtCloseModal = function() {
 
 // Function to open the offer modal
 window.iwtOpenOfferModal = async function({ template, dVID, sUrl }) {
-    let cartToken;
     console.log(`Opening Offer Modal for ${template} | dVID: ${dVID} | sUrl: ${sUrl}`); 
     const iwtModal = iwtGetEl('iwt-modal');
 
+    // Helper functions (only needed inside this function)
+    const getVariantID = () => new URLSearchParams(window.location.search).get('variant');
+    const getQuantity = () => {
+        const quantityInput = document.querySelector('.quantity__input');
+        return quantityInput ? parseInt(quantityInput.value, 10) : 1;
+    };
+
+    // Open modal immediately before updating content
+    iwtModal.style.display = 'block';
+
     if (template === 'cart' || template === 'checkout') {
-        console.log("Fetching cart directly from Cart Page...");
-        window.iwtCart = await iwtFetchCart();
-        cartToken = window.iwtCart.token;
-        iwtRenderCartTable(window.iwtCart);
+        console.log("🔹 Requesting cart fetch from iwt-offer-management.js...");
+        if (typeof window.iwtFetchCart === 'function') {
+            window.iwtFetchCart().then(cartData => {
+                window.iwtRenderCartTable(cartData);
+            }).catch(error => console.error("❌ Error fetching cart:", error));
+        } else {
+            console.error("❌ iwtFetchCart is not available.");
+        }
     } else if (template === 'product' || template === 'iwantthat' || template === 'iwtclearance') {
-        let ID = dVID || iwtGVIDURL();
-        let quantity = iwtGQTY();
+        let ID = dVID || getVariantID();
+        let quantity = getQuantity();
 
         if (!ID) {
-            console.error("Variant ID not found, cannot add to cart.");
+            console.error("⚠️ Variant ID not found, cannot add to cart.");
             alert("Please select a product option before making an offer.");
             return;
         }
 
-        console.log(`Adding Product to Cart - ID: ${ID}, Quantity: ${quantity}`);
+        console.log(`🛒 Adding Product to Cart - ID: ${ID}, Quantity: ${quantity}`);
 
         try {
             await iwtAddToCart({ ID, quantity, template });
+            console.log("✅ Product added to cart");
         } catch (error) {
-            console.error(`Error adding product ${ID} to the cart`, error);
+            console.error(`❌ Error adding product ${ID} to the cart`, error);
         }
 
+        // Fetch updated cart
         if (!window.cartFetched) {
-            console.log("Fetching cart for this modal session...");
-            window.iwtCart = await iwtFetchCart();
-            window.cartFetched = true; 
+            console.log("🔹 Requesting cart fetch for this modal session...");
+            window.iwtFetchCart().then(cartData => {
+                window.iwtRenderCartTable(cartData);
+            }).catch(error => console.error("❌ Error fetching updated cart:", error));
+            window.cartFetched = true;
         } else {
-            console.log("Cart fetch skipped (already fetched in this modal session)");
+            console.log("✅ Cart fetch skipped (already fetched in this modal session)");
         }
-
-        cartToken = window.iwtCart.token;
-        iwtRenderCartTable(window.iwtCart);
     }
-
+    
     iwtSyncTableCart();
     iwtModal.style.display = 'block';
 };

@@ -2,23 +2,23 @@
 window.cart = null;
 
 // Fetch the cart data from Shopify
-window.fetchCart = async function() {
+window.iwtFetchCart = async function() {
     try {
         const response = await fetch('/cart.js');
         if (!response.ok) throw new Error('Network response was not ok');
         window.cart = await response.json();
         return window.cart;
     } catch (error) {
-        console.error('Error fetching cart:', error);
+        console.error('❌ Error fetching cart:', error);
         return null;
     }
 };
 
 // Function to add items to the cart
-window.addToCart = async function({ ID, quantity, template }) {
+window.iwtAddToCart = async function({ ID, quantity, template }) {
     try {
         if (!ID) {
-            console.error(" Missing Variant ID. Cannot add to cart.");
+            console.error("❌ Missing Variant ID. Cannot add to cart.");
             return;
         }
 
@@ -35,17 +35,17 @@ window.addToCart = async function({ ID, quantity, template }) {
         if (!response.ok) throw new Error(`Network response was not ok, status: ${response.status}`);
 
         window.cart = await response.json();
-        console.log("Cart Updated After Adding Item:", window.cart);
+        console.log("✅ Cart Updated After Adding Item:", window.cart);
 
         return window.cart;
     } catch (error) {
-        console.error("Error adding to cart:", error);
+        console.error("❌ Error adding to cart:", error);
         return null;
     }
 };
 
 // Update cart item quantity
-window.updateCart = async function(lineItemKey, newQty) {
+window.iwtUpdateCart = async function(lineItemKey, newQty) {
     try {
         const response = await fetch('/cart/change.js', {
             method: 'POST',
@@ -56,15 +56,15 @@ window.updateCart = async function(lineItemKey, newQty) {
         if (!response.ok) throw new Error(`Network response was not ok, status: ${response.status}`);
 
         window.cart = await response.json();
-        window.renderTable(window.cart);
+        window.iwtRenderTable(window.cart);
         return window.cart;
     } catch (error) {
-        console.error('Error updating cart:', error);
+        console.error('❌ Error updating cart:', error);
     }
 };
 
 // Remove an item from the cart
-window.removeItem = async function(lineItemKey) {
+window.iwtRemoveItem = async function(lineItemKey) {
     try {
         const response = await fetch('/cart/change.js', {
             method: 'POST',
@@ -75,22 +75,19 @@ window.removeItem = async function(lineItemKey) {
         if (!response.ok) throw new Error(`Network response was not ok, status: ${response.status}`);
 
         window.cart = await response.json();
-        window.renderTable(window.cart);
+        window.iwtRenderTable(window.cart);
     } catch (error) {
-        console.error('Error removing item from cart:', error);
+        console.error('❌ Error removing item from cart:', error);
     }
 };
 
-window,renderTable = function(cart, offerAcceptedPrice = null) {
-    if (!cart) {
-        console.error('Cart is null');
+// Render cart table in the modal
+window.iwtRenderTable = function(cart, offerAcceptedPrice = null) {
+    if (!cart || !cart.items) {
+        console.error('❌ Cart is empty or missing items.');
         return;
     }
-    if (!cart.items) {
-        console.error('Cart items property is missing');
-        return;
-    }
-  
+
     let tableContent = '<table><thead class="table-header"><tr>';
     const allowedKeys = ['product_title', 'quantity', 'price'];
     const labels = {
@@ -104,6 +101,7 @@ window,renderTable = function(cart, offerAcceptedPrice = null) {
     });
     tableContent += `<th>${labels.line_price}</th></tr></thead><tbody>`; 
     let subtotal = 0;  
+
     cart.items.forEach((item, index) => {
         const rowColor = index % 2 === 0 ? '#fff' : '#f2f2f2';
         tableContent += `<tr style="background-color: ${rowColor};">`; 
@@ -115,55 +113,55 @@ window,renderTable = function(cart, offerAcceptedPrice = null) {
                         <div style="font-size: 0.8em; color: #666;">SKU: ${item.sku || 'N/A'}</div>
                     </td>`;
             } else if (key === 'quantity') {
-                tableContent += `<td><input type="number" class="iwt-input-number" value="${item[key]}" min="1" onchange="uIQ('${item.key}', this.value)" data-line-item-key="${item.key}"></td>`;
+                tableContent += `<td><input type="number" class="iwt-input-number" value="${item[key]}" min="1" onchange="iwtUpdateCart('${item.key}', this.value)" data-line-item-key="${item.key}"></td>`;
             } else {
-                const value = key === 'price' ? formatPrice(item[key]) : item[key];
+                const value = key === 'price' ? iwtFormatPrice(item[key]) : item[key];
                 tableContent += `<td>${value || ''}</td>`;
             }
         });
-  
+
         const lineTotal = item.price * item.quantity;
         subtotal += lineTotal;
-        tableContent += `<td>${formatPrice(lineTotal)}</td>`; 
+        tableContent += `<td>${iwtFormatPrice(lineTotal)}</td>`; 
         tableContent += `
           <td style="background-color: white;">
-            <button class="iwt-remove-item" onclick="removeItem('${item.key}')" title="Remove item" style="color: red; font-size: 16px; border: none; background: none;">
+            <button class="iwt-remove-item" onclick="iwtRemoveItem('${item.key}')" title="Remove item" style="color: red; font-size: 16px; border: none; background: none;">
               &cross;
             </button>
           </td>
         `;
         tableContent += '</tr>';
     });
-  
+
     tableContent += `
       </tbody>
       <tfoot>
         <tr style="background-color: #0442b4; color: #fff;">
           <td colspan="${allowedKeys.length}">Subtotal</td>
-          <td id="iwt-cart-total">${formatPrice(subtotal)}</td>
+          <td id="iwt-cart-total">${iwtFormatPrice(subtotal)}</td>
         </tr>
     `;
-  
+
     if (offerAcceptedPrice !== null) {
         tableContent += `
         <tr>
           <td colspan="${allowedKeys.length}">Accepted Offer Price</td>
-          <td>${formatPrice(offerAcceptedPrice)}</td>
+          <td>${iwtFormatPrice(offerAcceptedPrice)}</td>
         </tr>
       `;
     }
-  
+
     tableContent += '</tfoot></table>';
-    const cartTable = getEl('iwt-table');
+    const cartTable = document.getElementById('iwt-table');
     if (cartTable) {
         cartTable.innerHTML = tableContent;
     } else {
-        console.error('Element with ID iwt-cart-table not found');
+        console.error('❌ Element with ID iwt-cart-table not found');
     }
 };
 
 // Sync cart data with modal
-window.syncTableCart = function() {
+window.iwtSyncTableCart = function() {
     const qtyInput = document.getElementById('iwt-qty');
     const subtotalInput = document.getElementById('iwt-subtotal');
 
@@ -176,47 +174,20 @@ window.syncTableCart = function() {
     }
 };
 
-// Get variant ID from URL
-const gVIDURL = () => new URLSearchParams(window.location.search).get('variant');
-
 // Get current date/time
-const gCDT = () => new Date().toISOString();
-
-// Get quantity from input field
-const gQTY = () => {
-    const quantityInput = document.querySelector('.quantity__input');
-    return quantityInput ? parseInt(quantityInput.value, 10) : 1;
-};
+const iwtGCDT = () => new Date().toISOString();
 
 // Update cart timestamps
-window.updateCartDates = function(isNewItem) {
-    const currentDateTime = gCDT();
+window.iwtUpdateCartDates = function(isNewItem) {
+    const currentDateTime = iwtGCDT();
     if (isNewItem && !window.cartCreateDate) {
         window.cartCreateDate = currentDateTime;
     }
     window.cartUpdateDate = currentDateTime;
 };
 
-function updateCartTotals(cart) {
-    let subtotal = 0;
-
-    cart.items.forEach(item => {
-        subtotal += item.price * item.quantity;
-    });
-
-    const cartTotalElement = document.getElementById('iwt-cart-total');
-    if (cartTotalElement) {
-        cartTotalElement.innerText = formatPrice(subtotal);
-    }
-}
-
 // Format price display
-const formatPrice = (cents) => `$${(cents / 100).toFixed(2)}`;
+const iwtFormatPrice = (cents) => `$${(cents / 100).toFixed(2)}`;
 
 // Debugging to ensure functions are assigned correctly
-console.log("window.fetchCart:", window.fetchCart);
-console.log("window.addToCart:", window.addToCart);
-console.log("window.renderTable:", window.renderTable);
-console.log("window.updateCart:", window.updateCart);
-console.log("window.removeItem:", window.removeItem);
-console.log("window.updateCartDates:", window.updateCartDates);
+console.log("✅ iwt-offer-cart.js Loaded");
