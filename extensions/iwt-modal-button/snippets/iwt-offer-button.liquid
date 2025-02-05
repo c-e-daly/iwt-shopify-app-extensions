@@ -3,23 +3,29 @@
 
 {% assign default_variant = product.variants.first.id %}
 
-{% if template.suffix == blank or template.suffix == null %}
-  {% assign pagetemplate = 'product' %}  
-{% elsif template.suffix == 'iwtclearance' %}
-  {% assign pagetemplate = 'iwtclearance' %}
-{% elsif template.suffix == 'iwantthat' %}
-  {% assign pagetemplate = 'iwantthat' %}
-{% else if template.name == 'cart' %}
+{% if template.name == 'cart' %}
   {% assign pagetemplate = 'cart' %}
 {% else %}
-  {% assign pagetemplate = template.suffix %}
+  {% if pagetemplate == null %}
+    {% if template.suffix == blank or template.suffix == null %}
+      {% assign pagetemplate = 'product' %}
+    {% elsif template.suffix == 'iwtclearance' %}
+      {% assign pagetemplate = 'iwtclearance' %}
+    {% elsif template.suffix == 'iwantthat' %}
+      {% assign pagetemplate = 'iwantthat' %}
+    {% else %}
+      {% assign pagetemplate = template.suffix %}
+    {% endif %}
+  {% endif %}
 {% endif %}
+
 
 {% assign buttonwidth = block.settings.button_width | default: '100px' %}
 {% assign buttonradius = block.settings.button_radius | default: '5px' %}
 {% assign buttonalign = button.align.setting | default: 'center' %}
 
 {% assign storeurl = shop.url %}
+<p style="display:none;">Template: {{ template.name }}</p>
 
 <div style="text-align:{{ buttonalign }}";>
   <button 
