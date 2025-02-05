@@ -1,56 +1,38 @@
 window.cartFetched = false;
 
-function initializeModal() {
-    const iwtModal = getEl('iwt-modal');
-    if (!iwtModal) {
-        console.error(' Modal container not found.');
-        return;
-    }
-
-    iwtModal.style.display = 'none';
-    document.body.appendChild(iwtModal);
-
-    getEl('iwt-modal-btn')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        closeModal();
-    });
-
-    iwtModal.addEventListener('click', (e) => {
-        if (e.target === iwtModal) closeModal();
-    });
-}
-
-function resetModalData() {
-    getEl('iwt-table').innerHTML = '';
-    const qtyInput = getEl('iwt-quantity');
+// Function to reset modal data before opening a new session
+window.iwtResetModalData = function() {
+    iwtGetEl('iwt-table').innerHTML = '';
+    const qtyInput = iwtGetEl('iwt-quantity');
     if (qtyInput) qtyInput.value = 1;
 
-    const subtotalInput = getEl('iwt-subtotal');
+    const subtotalInput = iwtGetEl('iwt-subtotal');
     if (subtotalInput) subtotalInput.value = 0;
-}
+};
 
-function closeModal() {
-    const iwtModal = getEl('iwt-modal');
+// Function to close the modal
+window.iwtCloseModal = function() {
+    const iwtModal = iwtGetEl('iwt-modal');
     if (iwtModal) {
         iwtModal.style.display = 'none';
     }
-    resetModalData();
-}
+    iwtResetModalData();
+};
 
-// 🟢 Updated openOfferModal to correctly handle different pages (Cart vs. Product)
-async function openOfferModal({ template, dVID, sUrl }) {
+// Function to open the offer modal
+window.iwtOpenOfferModal = async function({ template, dVID, sUrl }) {
     let cartToken;
     console.log(`Opening Offer Modal for ${template} | dVID: ${dVID} | sUrl: ${sUrl}`); 
-    const iwtModal = getEl('iwt-modal');
+    const iwtModal = iwtGetEl('iwt-modal');
 
     if (template === 'cart' || template === 'checkout') {
-        console.log(" Fetching cart directly from Cart Page...");
-        window.cart = await fetchCart();
-        cartToken = window.cart.token;
-        window.renderTable(window.cart);
+        console.log("Fetching cart directly from Cart Page...");
+        window.iwtCart = await iwtFetchCart();
+        cartToken = window.iwtCart.token;
+        iwtRenderCartTable(window.iwtCart);
     } else if (template === 'product' || template === 'iwantthat' || template === 'iwtclearance') {
-        let ID = dVID || gVIDURL();
-        let quantity = gQTY();
+        let ID = dVID || iwtGVIDURL();
+        let quantity = iwtGQTY();
 
         if (!ID) {
             console.error("Variant ID not found, cannot add to cart.");
@@ -58,31 +40,65 @@ async function openOfferModal({ template, dVID, sUrl }) {
             return;
         }
 
-        console.log(` Adding Product to Cart - ID: ${ID}, Quantity: ${quantity}`);
+        console.log(`Adding Product to Cart - ID: ${ID}, Quantity: ${quantity}`);
 
         try {
-            await window.addToCart({ ID, quantity, template });
+            await iwtAddToCart({ ID, quantity, template });
         } catch (error) {
             console.error(`Error adding product ${ID} to the cart`, error);
         }
 
         if (!window.cartFetched) {
-            console.log(" Fetching cart for this modal session...");
-            window.cart = await fetchCart();
-            window.cartFetched = true; // Mark cart as fetched
+            console.log("Fetching cart for this modal session...");
+            window.iwtCart = await iwtFetchCart();
+            window.cartFetched = true; 
         } else {
-            console.log(" Cart fetch skipped (already fetched in this modal session)");
+            console.log("Cart fetch skipped (already fetched in this modal session)");
         }
 
-        cartToken = window.cart.token;
-        window.renderTable(window.cart);
+        cartToken = window.iwtCart.token;
+        iwtRenderCartTable(window.iwtCart);
     }
 
-    window.syncTableCart();
+    iwtSyncTableCart();
     iwtModal.style.display = 'block';
-}
+};
 
-window.openOfferModal = openOfferModal;
-window.closeModal = closeModal;
-window.resetModalData = resetModalData;
-window.initializeModal = initializeModal;
+// Attach necessary functions to the window for global access
+window.iwtSubmitOffer = function(offers) {
+    console.log("Submitting offer:", offers);
+    // Implement API call here...
+};
+
+window.iwtDisplayResponse = function(response) {
+    console.log("Displaying response:", response);
+    // Implement UI response update here...
+};
+
+// Function to retry submitting a new offer
+window.iwtRetry = function() {
+    const modalResp = iwtGetEl('iwt-response');
+    modalResp.style.display = 'none';
+
+    const iwtOfferContainer = iwtGetEl('iwt-offer');
+    iwtOfferContainer.classList.remove('fade-out');
+    iwtOfferContainer.style.display = 'flex';
+    iwtOfferContainer.classList.add('fade-in');
+
+    console.log('Retry button clicked');
+
+    const offerInput = iwtGetEl('iwt-offer-price');
+    if (offerInput) {
+        offerInput.value = '';
+    }
+};
+
+// Attach event listener for closing the modal
+document.addEventListener("DOMContentLoaded", () => {
+    const iwtModal = iwtGetEl('iwt-modal');
+    if (iwtModal) {
+        iwtModal.addEventListener('click', (e) => {
+            if (e.target === iwtModal) iwtCloseModal();
+        });
+    }
+});

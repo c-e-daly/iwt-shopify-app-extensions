@@ -217,11 +217,6 @@ const formatPrice = (cents) => `$${(cents / 100).toFixed(2)}`;
 console.log("window.fetchCart:", window.fetchCart);
 console.log("window.addToCart:", window.addToCart);
 console.log("window.renderTable:", window.renderTable);
-console.log("window.openOfferModal:", window.openOfferModal);
-
-
-window.fetchCart = fetchCart;
-window.addToCart = addToCart;
-window.updateCart = updateCart;
-window.renderTable = renderTable;
-window.formatPrice = formatPrice;
+console.log("window.updateCart:", window.updateCart);
+console.log("window.removeItem:", window.removeItem);
+console.log("window.updateCartDates:", window.updateCartDates);

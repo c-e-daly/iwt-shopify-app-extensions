@@ -1,5 +1,5 @@
-
-function displayResponse(apiResp) {
+// Function to handle API response and update the modal
+window.iwtDisplayResponse = function(apiResp) {
     let offerStatus = apiResp.offerStatus;
     let offerAmount = apiResp.offerAmount;
     let storeBrand = apiResp.storeBrand || "our store!";
@@ -9,12 +9,12 @@ function displayResponse(apiResp) {
     let discountCode = apiResp.discountCode;
     let cartPrice = apiResp.cartPrice;
 
-    const offerContainer = getEl('iwt-offer');
-    const modalResp = getEl('iwt-response');
-    const msgContainer = getEl('iwt-message');
-    const woohoo = getEl('woohoo-image');
-    const whoops = getEl('whoops-image');
-    const pending = getEl('pending-image');
+    const offerContainer = iwtGetEl('iwt-offer');
+    const modalResp = iwtGetEl('iwt-response');
+    const msgContainer = iwtGetEl('iwt-message');
+    const woohoo = iwtGetEl('woohoo-image');
+    const whoops = iwtGetEl('whoops-image');
+    const pending = iwtGetEl('pending-image');
 
     offerContainer.classList.add('fade-out');
 
@@ -34,7 +34,7 @@ function displayResponse(apiResp) {
             <p class="iwtP">p.s. Your coupon code is:</p>
             <div>
                 <input type="text" value="${discountCode}" id="iwtCode" readonly class="floating-input">
-                <button onclick="copyCode()" class="click-to-copy">Click to Copy</button>
+                <button onclick="iwtCopyCode()" class="click-to-copy">Click to Copy</button>
             </div>
             <p id="copyMessage" style="display:none; color: #80bf9b; margin-top: 10px;">Coupon code copied to clipboard!</p>
         `;
@@ -42,7 +42,7 @@ function displayResponse(apiResp) {
         const msgDecline = `
             <p class="iwtP">Hey ${firstName}, thanks for the offer but unfortunately, we cannot make ${offerAmount} off ${cartPrice} work. 
             If you would like to submit a new offer, just select the button below. Thanks for shopping at ${storeBrand}!</p>
-            <button class="iwt-retry-offer-button" onclick="retry()">Make Another Offer</button>
+            <button class="iwt-retry-offer-button" onclick="iwtRetry()">Make Another Offer</button>
         `;
 
         const msgPending = `
@@ -54,8 +54,8 @@ function displayResponse(apiResp) {
             woohoo.style.display = 'block';
             respMsg = msgAccept;
 
-            const ckBtnCont = getEl('iwt-checkout');
-            const ckBtn = getEl('iwt-checkout-button');
+            const ckBtnCont = iwtGetEl('iwt-checkout');
+            const ckBtn = iwtGetEl('iwt-checkout-button');
             if (!ckBtnCont.style.display || ckBtnCont.style.display === 'none') {
                 ckBtn.href = checkoutUrl;
                 ckBtnCont.style.display = 'flex';
@@ -73,42 +73,19 @@ function displayResponse(apiResp) {
         }
 
         msgContainer.innerHTML = respMsg;
-
     }, 500);
-}
+};
 
 // Function to copy the discount code to clipboard
-function copyCode() {
-    const iwtCode = getEl("iwtCode");
+window.iwtCopyCode = function() {
+    const iwtCode = iwtGetEl("iwtCode");
     iwtCode.select();
     iwtCode.setSelectionRange(0, 99999);
 
     navigator.clipboard.writeText(iwtCode.value).then(() => {
-        getEl("copyMessage").style.display = "block";
+        iwtGetEl("copyMessage").style.display = "block";
         setTimeout(() => {
-            getEl("copyMessage").style.display = "none";
+            iwtGetEl("copyMessage").style.display = "none";
         }, 2000);
     });
-}
-
-// Function to retry submitting a new offer
-function retry() {
-    const modalResp = getEl('iwt-response');
-    modalResp.style.display = 'none';
-
-    const iwtOfferContainer = getEl('iwt-offer');
-    iwtOfferContainer.classList.remove('fade-out');
-    iwtOfferContainer.style.display = 'flex';
-    iwtOfferContainer.classList.add('fade-in');
-
-    console.log('Retry button clicked');
-
-    const offerInput = getEl('iwt-offer-price');
-    if (offerInput) {
-        offerInput.value = '';
-    }
-}
-
-window.displayResponse = displayResponse;
-window.copyCode = copyCode;
-window.retry = retry;   
+};
