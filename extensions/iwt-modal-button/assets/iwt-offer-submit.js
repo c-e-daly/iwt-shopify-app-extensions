@@ -43,6 +43,9 @@ window.iwtSubmitOfferToAPI = async function() {
             return templates.length > 1 ? 'mixed' : templates[0] === 'iwtclearance' ? 'clearance only' : 'regular only';
         };
 
+        console.log(iwttCart);
+        console.log("Store url: ", storeUrl);
+
         // Prepare offer data
         const offerPrice = parseFloat(iwtGetEl('iwt-offer-price').value).toFixed(2);
         const cartTotalPrice = (iwtCart.total_price / 100).toFixed(2);
@@ -78,7 +81,9 @@ window.iwtSubmitOfferToAPI = async function() {
             cartTotalPrice: cartTotalPrice,
         };
 
-        console.log("🚀 Submitting offer: ", offerData);
+        console.log("Submitting offer: ", offerData);
+      
+      
 
         // Submit offer to API
         const response = await fetch('https://app.iwantthat.io/version-test/api/1.1/wf/cart-offer-evaluation/', {
