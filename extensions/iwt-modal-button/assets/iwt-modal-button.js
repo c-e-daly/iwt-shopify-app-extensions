@@ -6,9 +6,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (iwtModal) {
         document.body.appendChild(iwtModal);
     } else {
-        console.error(" Modal element 'iwt-modal' not found.");
+        console.error(" Modal element is not found.");
     }
 
+    /*
     // Wait a moment to ensure all scripts are loaded
     setTimeout(() => {
         if (typeof window.iwtOpenOfferModal !== 'function') {
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.log(" iwtOpenOfferModal is now available.");
         }
     }, 1000);
+    */
 
     // Check if the URL contains ?iwt=customergeneratedoffer and open modal
     const urlParams = new URLSearchParams(window.location.search);
@@ -30,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     dVID: null
                 });
             } else {
-                console.error("❌ iwtOpenOfferModal function is not available.");
+                console.error("Offer Modal function is not available.");
             }
         }, 500); // Short delay to ensure scripts have initialized
     }
@@ -40,27 +42,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof window.iwtCloseModal === 'function') {
             window.iwtCloseModal(e);
         } else {
-            console.error("iwtCloseModal function is not available.");
+            console.error("Close Modal function is not available.");
         }
     });
+        // Event Listener: Close modal when clicking outside
+        document.getElementById('iwt-modal')?.addEventListener('click', (e) => {
+            if (e.target === document.getElementById('iwt-modal') && typeof window.iwtCloseModal === 'function') {
+                window.iwtCloseModal();
+            }
+        });
     
 
+/*
     // Event Listener: Open Offer Modal when clicking 'Make Offer' button
-    document.getElementById('iwt-modal-btn')?.addEventListener('click', () => {
-        if (typeof window.iwtOpenOfferModal === 'function') {
-            console.log(`🔹 Calling iwtOpenOfferModal with: sUrl=${sUrl}, template=${template}, dVID=${dVID}`);
-            window.iwtOpenOfferModal({ sUrl, template, dVID });
-        } else {
-            console.error("❌ iwtOpenOfferModal function is not available.");
-        }
-    });
+document.getElementById('iwt-modal-offer-button')?.addEventListener('click', () => {
+    if (typeof window.iwtOpenOfferModal === 'function') {
+        window.iwtOpenOfferModal();
+    } else {
+        console.error("Offer Modal function is not available.");
+    }
+});
+*/
 
-    // Event Listener: Close modal when clicking outside
-    document.getElementById('iwt-modal')?.addEventListener('click', (e) => {
-        if (e.target === document.getElementById('iwt-modal') && typeof window.iwtCloseModal === 'function') {
-            window.iwtCloseModal();
-        }
-    });
+
 
     // Event Listener: Handle Offer Submission
     document.getElementById('submit-btn')?.addEventListener('click', async (event) => {
@@ -68,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof window.iwtHandleSubmit === 'function') {
             window.iwtHandleSubmit(event);
         } else {
-            console.error("❌ iwtHandleSubmit function is not available.");
+            console.error("Submit function is not available.");
         }
     });
 
@@ -77,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof window.iwtRetry === 'function') {
             window.iwtRetry();
         } else {
-            console.error("❌ iwtRetry function is not available.");
+            console.error(" Retry function is not available.");
         }
     });
 
@@ -86,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof window.iwtCopyCode === 'function') {
             window.iwtCopyCode();
         } else {
-            console.error("❌ iwtCopyCode function is not available.");
+            console.error(" Copy Code function is not available.");
         }
     });
 
@@ -95,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof window.iwtCheckout === 'function') {
             window.iwtCheckout();
         } else {
-            console.error("❌ iwtCheckout function is not available.");
+            console.error(" Checkout function is not available.");
         }
     });
 });
