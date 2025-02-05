@@ -11,7 +11,8 @@ window.iwtResetModalData = function() {
 };
 
 // Function to close the modal
-window.iwtCloseModal = function() {
+window.iwtCloseModal = function(event) {
+    event?.stopPropagation();
     const iwtModal = iwtGetEl('iwt-modal');
     if (iwtModal) {
         iwtModal.style.display = 'none';
@@ -25,7 +26,13 @@ window.iwtOpenOfferModal = async function({ template, dVID, sUrl }) {
     const iwtModal = iwtGetEl('iwt-modal');
 
     // Helper functions (only needed inside this function)
-    const getVariantID = () => new URLSearchParams(window.location.search).get('variant');
+    const getVariantID = () => {
+        const urlVariant = new URLSearchParams(window.location.search).get('variant');
+        const selectedVariant = document.querySelector('input[name="id"]:checked')?.value; 
+        const singleVariant = document.querySelector('input[name="id"]')?.value; 
+        return urlVariant || selectedVariant || singleVariant || null;
+    };
+
     const getQuantity = () => {
         const quantityInput = document.querySelector('.quantity__input');
         return quantityInput ? parseInt(quantityInput.value, 10) : 1;
@@ -34,21 +41,21 @@ window.iwtOpenOfferModal = async function({ template, dVID, sUrl }) {
     // Open modal immediately before updating content
     iwtModal.style.display = 'block';
 
-    if (template === 'cart' || template === 'checkout') {
-        console.log("🔹 Requesting cart fetch from iwt-offer-management.js...");
+    if (template === 'cart' ) {
+        console.log(" Requesting cart fetch from iwt-offer-management.js...");
         if (typeof window.iwtFetchCart === 'function') {
             window.iwtFetchCart().then(cartData => {
                 window.iwtRenderTable(cartData);
-            }).catch(error => console.error("❌ Error fetching cart:", error));
+            }).catch(error => console.error(" Error fetching cart:", error));
         } else {
-            console.error("❌ iwtFetchCart is not available.");
+            console.error(" iwtFetchCart is not available.");
         }
     } else if (template === 'product' || template === 'iwantthat' || template === 'iwtclearance') {
         let ID = dVID || getVariantID();
         let quantity = getQuantity();
 
         if (!ID) {
-            console.error("⚠️ Variant ID not found, cannot add to cart.");
+            console.error("Variant ID not found, cannot add to cart.");
             alert("Please select a product option before making an offer.");
             return;
         }
@@ -57,9 +64,9 @@ window.iwtOpenOfferModal = async function({ template, dVID, sUrl }) {
 
         try {
             await iwtAddToCart({ ID, quantity, template });
-            console.log("✅ Product added to cart");
+            console.log(" Product added to cart");
         } catch (error) {
-            console.error(`❌ Error adding product ${ID} to the cart`, error);
+            console.error(` Error adding product ${ID} to the cart`, error);
         }
 
         // Fetch updated cart
@@ -67,10 +74,10 @@ window.iwtOpenOfferModal = async function({ template, dVID, sUrl }) {
             console.log("🔹 Requesting cart fetch for this modal session...");
             window.iwtFetchCart().then(cartData => {
                 window.iwtRenderTable(cartData);
-            }).catch(error => console.error("❌ Error fetching updated cart:", error));
+            }).catch(error => console.error(" Error fetching updated cart:", error));
             window.cartFetched = true;
         } else {
-            console.log("✅ Cart fetch skipped (already fetched in this modal session)");
+            console.log(" Cart fetch skipped (already fetched in this modal session)");
         }
     }
 

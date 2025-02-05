@@ -287,8 +287,9 @@ cart-table th,
 .tos-font{
     font-family: "Inter" !important;
     letter-spacing: .25px !important;
-    font-size:10px !important;
+    font-size:11px !important;
     font-weight: 400;
+    padding: 0px 20px 0px 20px !important;
 }
 
 .button-container{

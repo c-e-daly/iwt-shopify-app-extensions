@@ -1,20 +1,20 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("🟢 iwt-offer-management.js loaded");
+    console.log(" iwt-offer-management.js loaded");
 
     // Append modal to body on load
     const iwtModal = document.getElementById('iwt-modal');
     if (iwtModal) {
         document.body.appendChild(iwtModal);
     } else {
-        console.error("❌ Modal element 'iwt-modal' not found.");
+        console.error(" Modal element 'iwt-modal' not found.");
     }
 
     // Wait a moment to ensure all scripts are loaded
     setTimeout(() => {
         if (typeof window.iwtOpenOfferModal !== 'function') {
-            console.error("❌ iwtOpenOfferModal is still not available. Check iwt-offer-modal.js.");
+            console.error("iwtOpenOfferModal is still not available. Check iwt-offer-modal.js.");
         } else {
-            console.log("✅ iwtOpenOfferModal is now available.");
+            console.log(" iwtOpenOfferModal is now available.");
         }
     }, 1000);
 
@@ -35,12 +35,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 500); // Short delay to ensure scripts have initialized
     }
 
+    document.getElementById('iwt-modal-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation(); // ✅ Prevents any other events from running
+        if (typeof window.iwtCloseModal === 'function') {
+            window.iwtCloseModal(e);
+        } else {
+            console.error("iwtCloseModal function is not available.");
+        }
+    });
+    
+
     // Event Listener: Open Offer Modal when clicking 'Make Offer' button
     document.getElementById('iwt-modal-btn')?.addEventListener('click', () => {
-        const sUrl = window.location.href;
-        const template = document.body.dataset.template || "product";
-        const dVID = new URLSearchParams(window.location.search).get('variant');
-
         if (typeof window.iwtOpenOfferModal === 'function') {
             console.log(`🔹 Calling iwtOpenOfferModal with: sUrl=${sUrl}, template=${template}, dVID=${dVID}`);
             window.iwtOpenOfferModal({ sUrl, template, dVID });
