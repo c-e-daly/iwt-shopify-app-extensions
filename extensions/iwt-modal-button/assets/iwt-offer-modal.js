@@ -38,7 +38,7 @@ window.iwtOpenOfferModal = async function({ template, dVID, sUrl }) {
         console.log("🔹 Requesting cart fetch from iwt-offer-management.js...");
         if (typeof window.iwtFetchCart === 'function') {
             window.iwtFetchCart().then(cartData => {
-                window.iwtRenderCartTable(cartData);
+                window.iwtRenderTable(cartData);
             }).catch(error => console.error("❌ Error fetching cart:", error));
         } else {
             console.error("❌ iwtFetchCart is not available.");
@@ -66,14 +66,14 @@ window.iwtOpenOfferModal = async function({ template, dVID, sUrl }) {
         if (!window.cartFetched) {
             console.log("🔹 Requesting cart fetch for this modal session...");
             window.iwtFetchCart().then(cartData => {
-                window.iwtRenderCartTable(cartData);
+                window.iwtRenderTable(cartData);
             }).catch(error => console.error("❌ Error fetching updated cart:", error));
             window.cartFetched = true;
         } else {
             console.log("✅ Cart fetch skipped (already fetched in this modal session)");
         }
     }
-    
+
     iwtSyncTableCart();
     iwtModal.style.display = 'block';
 };
