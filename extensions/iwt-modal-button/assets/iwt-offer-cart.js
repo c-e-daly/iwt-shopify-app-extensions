@@ -9,7 +9,7 @@ window.iwtFetchCart = async function() {
         window.cart = await response.json();
         return window.cart;
     } catch (error) {
-        console.error('❌ Error fetching cart:', error);
+        console.error(' Error fetching cart:', error);
         return null;
     }
 };
@@ -18,7 +18,7 @@ window.iwtFetchCart = async function() {
 window.iwtAddToCart = async function({ ID, quantity, template }) {
     try {
         if (!ID) {
-            console.error("❌ Missing Variant ID. Cannot add to cart.");
+            console.error(" Missing Variant ID. Cannot add to cart.");
             return;
         }
 
@@ -35,11 +35,11 @@ window.iwtAddToCart = async function({ ID, quantity, template }) {
         if (!response.ok) throw new Error(`Network response was not ok, status: ${response.status}`);
 
         window.cart = await response.json();
-        console.log("✅ Cart Updated After Adding Item:", window.cart);
+        console.log("Cart Updated After Adding Item:", window.cart);
 
         return window.cart;
     } catch (error) {
-        console.error("❌ Error adding to cart:", error);
+        console.error(" Error adding to cart:", error);
         return null;
     }
 };
@@ -59,7 +59,7 @@ window.iwtUpdateCart = async function(lineItemKey, newQty) {
         window.iwtRenderTable(window.cart);
         return window.cart;
     } catch (error) {
-        console.error('❌ Error updating cart:', error);
+        console.error(' Error updating cart:', error);
     }
 };
 
@@ -77,14 +77,14 @@ window.iwtRemoveItem = async function(lineItemKey) {
         window.cart = await response.json();
         window.iwtRenderTable(window.cart);
     } catch (error) {
-        console.error('❌ Error removing item from cart:', error);
+        console.error(' Error removing item from cart:', error);
     }
 };
 
 // Render cart table in the modal
 window.iwtRenderTable = function(cart, offerAcceptedPrice = null) {
     if (!cart || !cart.items) {
-        console.error('❌ Cart is empty or missing items.');
+        console.error(' Cart is empty or missing items.');
         return;
     }
 

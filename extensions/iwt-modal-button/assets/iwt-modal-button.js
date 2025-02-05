@@ -9,21 +9,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error(" Modal element is not found.");
     }
 
-    /*
-    // Wait a moment to ensure all scripts are loaded
-    setTimeout(() => {
-        if (typeof window.iwtOpenOfferModal !== 'function') {
-            console.error("iwtOpenOfferModal is still not available. Check iwt-offer-modal.js.");
-        } else {
-            console.log(" iwtOpenOfferModal is now available.");
-        }
-    }, 1000);
-    */
 
     // Check if the URL contains ?iwt=customergeneratedoffer and open modal
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('iwt')) {
-        console.log("🔹 Detected customer-generated offer in URL. Launching modal.");
+        console.log(" Detected Customer generarted Offer in URL. Launching modal.");
         setTimeout(() => {
             if (typeof window.iwtOpenOfferModal === 'function') {
                 window.iwtOpenOfferModal({
@@ -34,11 +24,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 console.error("Offer Modal function is not available.");
             }
-        }, 500); // Short delay to ensure scripts have initialized
+        }, 100); 
     }
 
     document.getElementById('iwt-modal-btn')?.addEventListener('click', (e) => {
-        e.stopPropagation(); // ✅ Prevents any other events from running
+        e.stopPropagation(); 
         if (typeof window.iwtCloseModal === 'function') {
             window.iwtCloseModal(e);
         } else {
@@ -51,23 +41,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.iwtCloseModal();
             }
         });
-    
-
-/*
-    // Event Listener: Open Offer Modal when clicking 'Make Offer' button
-document.getElementById('iwt-modal-offer-button')?.addEventListener('click', () => {
-    if (typeof window.iwtOpenOfferModal === 'function') {
-        window.iwtOpenOfferModal();
-    } else {
-        console.error("Offer Modal function is not available.");
-    }
-});
-*/
-
 
 
     // Event Listener: Handle Offer Submission
-    document.getElementById('submit-btn')?.addEventListener('click', async (event) => {
+    document.getElementById('iwt-submit-offer')?.addEventListener('click', async (event) => {
         event.preventDefault();
         if (typeof window.iwtHandleSubmit === 'function') {
             window.iwtHandleSubmit(event);

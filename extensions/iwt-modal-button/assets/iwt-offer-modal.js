@@ -22,12 +22,12 @@ window.iwtCloseModal = function(event) {
 
 // Function to open the offer modal
 window.iwtOpenOfferModal = async function({ template, dVID, sUrl }) {
-    console.log(`🔹 Opening Offer Modal | Template: ${template} | dVID: ${dVID} | sUrl: ${sUrl}`);
+    console.log(` Opening Offer Modal | Template: ${template} | dVID: ${dVID} | sUrl: ${sUrl}`);
     const iwtModal = iwtGetEl('iwt-modal');
 
     // Handle Cart Page: Fetch the cart immediately
     if (template === 'cart') {
-        console.log("🔹 Fetching cart for cart page...");
+        console.log("Fetching cart for cart page...");
         if (typeof window.iwtFetchCart === 'function') {
             try {
                 const cartData = await window.iwtFetchCart();
