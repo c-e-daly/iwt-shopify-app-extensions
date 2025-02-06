@@ -2,9 +2,9 @@ api_version = "2024-10"
 
 # Existing theme extension (App Block)
 [[extensions]]
-name = "iwt-modal-button"
+name = "I Want That!"
 description = "Wanna Make a Deal"
-handle = "iwt-modal-button"
+handle = "i-want-that-app"
 type = "theme"
 
 [extensions.capabilities]
