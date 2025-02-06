@@ -94,7 +94,7 @@ window.iwtRenderTable = function(cart, offerAcceptedPrice = null) {
         product_title: 'Product Name',
         quantity: 'Units',
         price: 'Price',
-        line_price: 'Line Price'
+        line_price: 'Subtotal'
     };
     allowedKeys.forEach(key => {
         tableContent += `<th>${labels[key]}</th>`;
