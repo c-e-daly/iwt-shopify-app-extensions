@@ -7,7 +7,7 @@ application_url = "https://app.iwantthat.io/version-test/authorize"
 embedded = false
 
 [build]
-dev_store_url = "iwanttthat.myshopify.com"
+dev_store_url = "oldetownehardware.myshopify.com"
 include_config_on_deploy = true
 
 [access_scopes]
@@ -18,7 +18,7 @@ scopes = "read_all_orders,read_billing,read_checkouts,read_customers,read_discou
 redirect_urls = [ "https://app.iwantthat.io/version-test/oauth2callback" ]
 
 [webhooks]
-api_version = "2024-04"
+api_version = "2024-10"
 
   [[webhooks.subscriptions]]
   uri = "https://app.iwantthat.io/version-test/api/1.1/wf/gdpr-customer-data-redact"
