@@ -1,4 +1,25 @@
 /* Add these styles to your CSS file */
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=KaushanScript:wght@300;400;500;600;700&display=swap');
+
+/* Font family variables for easy use */
+:root {
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-poppins: 'Kaushan Script', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Example usage in your modal styles */
+.iwt-modal {
+  font-family: var(--font-inter);
+}
+
+.iwt-modal h1,
+.iwt-modal h2,
+.iwt-modal h3 {
+  font-family: var(--font-inter);
+}
+
+
 .fade-out {
     opacity: 0;
     transition: opacity 0.5s ease-in-out;
