@@ -19,6 +19,12 @@
   font-family: var(--font-inter);
 }
 
+.iwt-logo-font{
+    font-family: var(--font-kaushan);
+    font-size: 1.5em !important;
+    font-weight:400 !important;
+    color: #0442bf;
+}
 
 .iwt-h2 {
 font-family: var(--font-kaushan);
