@@ -1,3 +1,5 @@
+//iwt-utils.js - utilities to ensre the form is valid and values are viable
+
 // Get an element by ID
 window.iwtGetEl = function(id) {
     return document.getElementById(id);

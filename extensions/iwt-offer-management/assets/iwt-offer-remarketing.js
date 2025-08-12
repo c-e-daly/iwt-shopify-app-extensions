@@ -1,3 +1,4 @@
+//iwt-offer-remarketing.js - embedded app to manage remarketing and retargeting 
 document.addEventListener("DOMContentLoaded", async function () {
     const urlParams = new URLSearchParams(window.location.search);
     const iwtParam = urlParams.get("iwt");

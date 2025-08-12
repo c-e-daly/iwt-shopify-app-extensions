@@ -1,3 +1,5 @@
+//iwt-offer-response.js - manage the response from the decision engine
+
 // Function to handle API response and update the modal
 window.iwtDisplayResponse = function(apiResp) {
     let offerStatus = apiResp.offerStatus;

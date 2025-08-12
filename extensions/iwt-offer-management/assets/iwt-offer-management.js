@@ -1,3 +1,5 @@
+//iwt-offer-management.js  manage the offer data collecion process
+
 document.addEventListener('DOMContentLoaded', async () => {
     console.log(" iwt-offer-management.js loaded");
 

@@ -1,3 +1,5 @@
+//iwt-offer-modal.js - manage the modal window and actions
+
 window.cartFetched = false;
 
 // Function to reset modal data before opening a new session

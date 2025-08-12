@@ -1,3 +1,5 @@
+//iwt-offer-submit.js - manage the offer submission and form validation
+
 // Ensure functions are globally available
 window.iwtHandleSubmit = async function(event) {
     event.preventDefault();

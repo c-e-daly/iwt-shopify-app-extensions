@@ -1,4 +1,4 @@
-// Ensure cart is available globally
+// iwt-offer-cart.js  managed the cart and cart table synchronization
 window.cart = null;
 
 // Fetch the cart data from Shopify
