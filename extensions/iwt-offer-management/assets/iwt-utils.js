@@ -83,24 +83,24 @@ window.iwtValidateTerms = function(tosCheckbox) {
 
 // Helper function to safely get cart total
 window.iwtGetCartTotal = function() {
-    const cartTotalElement = iwtGetEl('iwt-cart-total');
-    
-    if (!cartTotalElement) {
-        console.error('Cart total element (iwt-cart-total) not found - this is required for offer validation');
+    // Check if cartTotal variable exists and is valid
+    if (typeof cartTotal === 'undefined') {
+        console.error('cartTotal variable not found - this is required for offer validation');
         return null;
     }
     
-    const textContent = cartTotalElement.textContent || cartTotalElement.innerText || '';
-    const parsedTotal = parseFloat(textContent.replace(/[^\d.-]/g, ''));
+    // Ensure cartTotal is a valid number greater than 0
+    const parsedTotal = parseFloat(cartTotal);
     
     if (isNaN(parsedTotal) || parsedTotal <= 0) {
-        console.error('Could not parse valid cart total from element - found:', textContent);
+        console.error('cartTotal is not a valid number greater than 0 - found:', cartTotal);
         return null;
     }
     
-    console.log('Cart total successfully parsed:', parsedTotal);
+    console.log('Cart total successfully retrieved:', parsedTotal);
     return parsedTotal;
 };
+
 
 // Main validation function (auto-fetches input fields)
 window.iwtValidateForm = function() {
