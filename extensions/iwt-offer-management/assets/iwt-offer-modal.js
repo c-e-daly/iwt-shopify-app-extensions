@@ -43,7 +43,7 @@ window.iwtOpenOfferModal = async function({ template, dVID, sUrl }) {
     }
 
     // Handle Product Pages (product, iwantthat, iwtclearance)
-    if (template === 'product' || template === 'iwantthat' || template === 'iwtclearance') {
+    if (template === 'product' || template === 'iwtstandard' || template === 'iwtclearance') {
         const ID = dVID || getVariantID();
         const quantity = getQuantity();
 
