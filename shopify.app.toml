@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "61b36a57ba82c920e1c9ca04d6595cad"
-name = "development"
+name = "IWT Customer Generated Offers"
 handle = "development-43"
 application_url = "https://app.iwantthat.io/version-test/authorize"
 embedded = false
@@ -18,7 +18,7 @@ scopes = "read_all_orders,read_billing,read_checkouts,read_customers,read_discou
 redirect_urls = [ "https://app.iwantthat.io/version-test/oauth2callback" ]
 
 [webhooks]
-api_version = "2024-10"
+api_version = "2025-07"
 
   [[webhooks.subscriptions]]
   uri = "https://app.iwantthat.io/version-test/api/1.1/wf/gdpr-customer-data-redact"
